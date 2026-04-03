@@ -173,11 +173,10 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
         </>
       )}
 
-      {gameType === "wizard" && selectedNames.length >= 2 && (
-        <div style={{ fontSize: 13, color: "#9d6b00", margin: "14px 0 8px" }}>
-          {GAME_PLUGINS.wizard.getRoundCount(selectedNames.length)} Runden
-        </div>
-      )}
+      {(() => {
+        const HintComponent = GAME_PLUGINS[gameType]?.SessionCreationHint;
+        return HintComponent ? <HintComponent playerCount={selectedNames.length} /> : null;
+      })()}
 
       <button
         style={{ ...styles.btnConfirm, opacity: canSubmit ? 1 : 0.5, cursor: canSubmit ? "pointer" : "not-allowed" }}
@@ -203,32 +202,22 @@ export default function SessionList({ sessions, registeredPlayers, onSessionSele
     const session = sessions.find(s => s.id === id);
     if (!session) return;
     
-    // Wizard-Sessions: Unterscheiden zwischen aktiv und beendet
-    if (session.game_type === "wizard") {
-      if (session.wizard_status === "completed") {
-        // Beendete Wizard-Session: Nur anzeigen, nicht archivieren
-        alert("Beendete Wizard-Sessions können in der Liste nicht bearbeitet werden.");
-        return;
-      } else {
-        // Aktive Wizard-Session: Ins Archiv verschieben
-        if (!confirm("Wizard-Session ins Archiv verschieben?")) return;
-        const res = await fetch(`/api/sessions/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ archived_at: new Date().toISOString() }),
-        });
-        if (res.ok) onSessionDeleted(id);
-      }
-    } else {
-      // Schafkopf-Session: Ins Archiv verschieben
-      if (!confirm("Runde ins Archiv verschieben?")) return;
-      const res = await fetch(`/api/sessions/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived_at: new Date().toISOString() }),
-      });
-      if (res.ok) onSessionDeleted(id);
+    const plugin = GAME_PLUGINS[session.game_type];
+    const confirmMsg = plugin?.getArchiveConfirm?.(session);
+    
+    if (confirmMsg === null) {
+      alert("Kann nicht archiviert werden.");
+      return;
     }
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const res = await fetch(`/api/sessions/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ archived_at: new Date().toISOString() }),
+    });
+    if (res.ok) onSessionDeleted(id);
   };
 
   return (
@@ -267,13 +256,9 @@ export default function SessionList({ sessions, registeredPlayers, onSessionSele
 
       <div style={styles.sessionList}>
         {sessions.map((s) => {
+          const plugin = GAME_PLUGINS[s.game_type];
+          const metaText = plugin?.getSessionMeta?.(s) ?? `${s.game_count} Spiele`;
           const isCompletedWizard = s.game_type === "wizard" && s.wizard_status === "completed";
-          let metaText;
-          if (s.game_type === "wizard") {
-            metaText = s.wizard_status === "completed" ? "Beendet" : `${s.game_count}/${s.game_count_max || "?"} Runden`;
-          } else {
-            metaText = `${s.game_count} ${s.game_count === 1 ? "Spiel" : "Spiele"}`;
-          }
           
           return (
             <div key={s.id} style={{ ...styles.sessionCard, ...(isCompletedWizard ? { opacity: 0.7 } : {}) }} onClick={() => onSessionSelect(s.id)}>
@@ -281,7 +266,7 @@ export default function SessionList({ sessions, registeredPlayers, onSessionSele
                 <span style={styles.sessionName}>{s.name}</span>
                 {isCompletedWizard && <span style={{ marginLeft: 8, fontSize: 11, color: "#9d0208" }}>✓</span>}
                 <span style={styles.sessionMeta}>
-                  {GAME_PLUGINS[s.game_type]?.label ?? s.game_type}
+                  {plugin?.label ?? s.game_type}
                   {" · "}
                   {s.players.join(", ")}
                   {" · "}

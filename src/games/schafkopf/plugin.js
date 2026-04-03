@@ -2,6 +2,8 @@ import { GAME_TYPES, calcSpielwert, resolveGame, calcBalances } from "./logic.js
 import GameForm from "./GameForm.jsx";
 import HistoryCard from "./HistoryCard.jsx";
 import RulesBox from "../../components/RulesBox.jsx";
+import SchafkopfSession from "./SchafkopfSession.jsx";
+import { buildFullCommentary } from "./commentary.js";
 
 function makeDefaultForm(players) {
   return {
@@ -21,6 +23,7 @@ const schafkopfPlugin = {
   label: "Schafkopf",
   description: "Bayerisches Kartenspiel · Dreier · 50 Cent",
   defaultStake: 0.50,
+  showStake: true,
   gameTypes: GAME_TYPES,
   makeDefaultForm,
   calcSpielwert,
@@ -29,6 +32,10 @@ const schafkopfPlugin = {
   FormComponent: GameForm,
   HistoryCardComponent: HistoryCard,
   RulesComponent: RulesBox,
+  SessionComponent: SchafkopfSession,
+  buildCommentary: buildFullCommentary,
+  getSessionMeta: (s) => `${s.game_count} ${s.game_count === 1 ? "Spiel" : "Spiele"}`,
+  getArchiveConfirm: () => "Runde ins Archiv verschieben?",
 };
 
 export default schafkopfPlugin;

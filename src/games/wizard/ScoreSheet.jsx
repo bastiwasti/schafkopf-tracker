@@ -1,31 +1,10 @@
 import { useState, useEffect } from "react";
 import styles from "../../components/styles.js";
 import RulesBox from "./RulesBox.jsx";
-import { buildWizardCommentary, PERSONALITIES } from "./commentary.js";
+import { buildWizardCommentary } from "./commentary.js";
 import CommentaryOverlay from "../../components/CommentaryOverlay.jsx";
+import CommentarySettingsPanel from "../../components/CommentarySettingsPanel.jsx";
 import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
-
-const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
-
-function VoicePickerInline({ value, onChange }) {
-  const [voices, setVoices] = useState([]);
-  useEffect(() => {
-    if (!hasSpeech) return;
-    const load = () => setVoices(window.speechSynthesis.getVoices());
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
-  if (!hasSpeech || voices.length === 0) return null;
-  return (
-    <select style={styles.voiceSelect} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
-      <option value="">— Standard (System) —</option>
-      {voices.map((v) => (
-        <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
-      ))}
-    </select>
-  );
-}
 
 export default function ScoreSheet({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
   const [showRules, setShowRules] = useState(false);
@@ -106,7 +85,11 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
     }
 
     // State zurücksetzen
-    setRoundPhases(prev => ({ ...prev, [roundNum]: 'completed' }));
+    setRoundPhases(prev => {
+      const newPhases = { ...prev };
+      delete newPhases[roundNum];
+      return newPhases;
+    });
     setRoundsData(prev => {
       const newData = { ...prev };
       delete newData[roundNum];
@@ -311,41 +294,11 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
         </button>
       </div>
 
-      {/* Commentator settings panel */}
       {showCommentatorSettings && (
-        <div style={styles.commentatorSettingsPanel}>
-          <div style={styles.commentatorSettingsTitle}>Kommentator</div>
-
-          <div style={{ ...styles.commentatorToggleRow, marginBottom: 10 }}>
-            <span>Kommentator aktiv</span>
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
-              style={{ width: 18, height: 18, cursor: "pointer" }}
-            />
-          </div>
-
-          {enabled && (
-            <>
-              <label style={{ ...styles.label, marginTop: 0 }}>Persönlichkeit</label>
-              <div style={styles.personalityChipRow}>
-                {Object.entries(PERSONALITIES).map(([key, p]) => (
-                  <button
-                    key={key}
-                    style={{ ...styles.personalityChip, ...(personality === key ? styles.personalityChipActive : {}) }}
-                    onClick={() => setPersonality(key)}
-                  >
-                    {p.icon} {p.label}
-                  </button>
-                ))}
-              </div>
-
-              <label style={styles.label}>Stimme des Kommentators</label>
-              <VoicePickerInline value={voice} onChange={setVoice} />
-            </>
-          )}
-        </div>
+        <CommentarySettingsPanel
+          personality={personality} voice={voice} enabled={enabled}
+          onPersonality={setPersonality} onVoice={setVoice} onEnabled={setEnabled}
+        />
       )}
 
       {/* Regeln (modal) */}
@@ -487,6 +440,14 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
             const tricksEnabled = phase === 'tricks';
             const showSavedValues = isSaved && !isEditing;
 
+            const getAvailableTricks = (playerName) => {
+              if (!tricksEnabled) return roundNum;
+              const otherTricks = Object.entries(currentTricks)
+                .filter(([name]) => name !== playerName)
+                .reduce((sum, [, val]) => sum + (parseInt(val) || 0), 0);
+              return roundNum - otherTricks;
+            };
+
             // Dropdown-Stil
             const dropdownStyle = (active) => ({
               ...styles.input,
@@ -562,7 +523,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
                             style={dropdownStyle(tricksEnabled)}
                           >
                             <option value="">–</option>
-                            {Array.from({ length: roundNum + 1 }, (_, j) => j).map(val => (
+                            {Array.from({ length: getAvailableTricks(p) + 1 }, (_, j) => j).map(val => (
                               <option key={val} value={val}>{val}</option>
                             ))}
                           </select>

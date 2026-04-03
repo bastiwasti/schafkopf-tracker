@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { PERSONALITIES, buildFullCommentary } from "../games/schafkopf/commentary.js";
+import { PERSONALITIES } from "../games/shared/commentary.js";
+import { buildFullCommentary } from "../games/schafkopf/commentary.js";
 import styles from "./styles.js";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
@@ -7,23 +8,58 @@ const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose, buildFn }) {
   const personality = PERSONALITIES[commentatorPersonality] ?? PERSONALITIES.dramatic;
   const fn = buildFn ?? buildFullCommentary;
-  const { segments, spokenText } = useRef(
+  const { segments } = useRef(
     fn(game, registeredPlayers, commentatorPersonality)
   ).current;
 
   useEffect(() => {
     if (!hasSpeech) return;
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(spokenText);
+
+    const playerVoiceMap = Object.fromEntries(
+      (registeredPlayers ?? []).map(p => [p.name, p.voice])
+    );
+
     const voices = window.speechSynthesis.getVoices();
-    utter.voice = voices.find((v) => v.name === commentatorVoice)
-      ?? voices.find((v) => v.lang.startsWith("de"))
-      ?? null;
-    utter.pitch = personality.pitch;
-    utter.rate = personality.rate;
-    utter.lang = "de-DE";
-    utter.onend = onClose;
-    window.speechSynthesis.speak(utter);
+
+    const speakSegment = (index) => {
+      if (index >= segments.length) {
+        onClose();
+        return;
+      }
+
+      const seg = segments[index];
+      const isPlayer = index > 0;
+
+      const utter = new SpeechSynthesisUtterance(seg.text);
+
+      if (isPlayer && seg.name) {
+        const playerVoice = playerVoiceMap[seg.name];
+        utter.voice = voices.find((v) => v.name === playerVoice)
+          ?? voices.find((v) => v.lang.startsWith("de"))
+          ?? null;
+
+        const player = (registeredPlayers ?? []).find(p => p.name === seg.name);
+        const playerChar = player?.character_type ?? "dramatic";
+        const playerPers = PERSONALITIES[playerChar] ?? PERSONALITIES.dramatic;
+        utter.pitch = playerPers.pitch;
+        utter.rate = playerPers.rate;
+      } else {
+        utter.voice = voices.find((v) => v.name === commentatorVoice)
+          ?? voices.find((v) => v.lang.startsWith("de"))
+          ?? null;
+        utter.pitch = personality.pitch;
+        utter.rate = personality.rate;
+      }
+
+      utter.lang = "de-DE";
+      utter.onend = () => speakSegment(index + 1);
+
+      window.speechSynthesis.speak(utter);
+    };
+
+    speakSegment(0);
+
     return () => { window.speechSynthesis.cancel(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

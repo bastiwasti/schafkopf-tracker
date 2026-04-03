@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const KEYS = {
-  personality: "sk_commentator_personality",
-  voice: "sk_commentator_voice",
-  enabled: "sk_commentator_enabled",
+  personality: "tracker_commentator_personality",
+  voice: "tracker_commentator_voice",
+  enabled: "tracker_commentator_enabled",
 };
 
 function load(key, fallback) {
@@ -18,7 +18,9 @@ function load(key, fallback) {
 function save(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  } catch {
+    // eslint-disable-next-line no-empty
+  }
 }
 
 export default function useCommentatorSettings() {

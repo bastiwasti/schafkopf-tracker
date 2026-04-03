@@ -1,17 +1,8 @@
-export const PERSONALITIES = {
-  dramatic: { label: "Dramatischer Stadion-Reporter", icon: "🎙️", pitch: 1.2, rate: 0.95 },
-  tagesschau: { label: "Nüchterner Tagesschau-Sprecher", icon: "📺", pitch: 0.88, rate: 0.78 },
-  bavarian: { label: "Bayerischer Opa", icon: "🍺", pitch: 0.82, rate: 0.72 },
-  fan: { label: "Aufgeregter Fan im Biergarten", icon: "🤩", pitch: 1.3, rate: 1.1 },
-};
+import { PERSONALITIES, pickRandom, fill } from '../shared/commentary.js';
+import { PLAYER_PERSONALITIES, PLAYER_REACTIONS } from '../shared/playerPersonalities.js';
+import { analyzeGameScenario } from './gameScenarios.js';
 
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function fill(template, vars) {
-  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "");
-}
+export { PERSONALITIES };
 
 // ---------------------------------------------------------------------------
 // COMMENTATOR TEMPLATES
@@ -235,124 +226,6 @@ const MODIFIERS = {
 };
 
 // ---------------------------------------------------------------------------
-// PLAYER REACTION TEMPLATES
-// ---------------------------------------------------------------------------
-
-const PLAYER_REACTIONS = {
-  dramatic: {
-    won: [
-      "Ja, das war ich! Hat jemand etwas anderes erwartet?!",
-      "CHAMPION! Das ist meine Bühne!",
-      "Grandios, ich weiß. Danke, danke, kein Applaus nötig.",
-      "Das nenne ich mal ein Spiel! Ich bin beeindruckt — von mir selbst!",
-      "So läuft das hier. Merkt euch das.",
-    ],
-    lost: [
-      "Das ist ein SKANDAL! Ich fordere eine Neuauszählung!",
-      "Unglaublich! Das war Sabotage!",
-      "Ich verlange eine Erklärung für diese Schande!",
-      "Das war... strategisch. Ja. Strategisch verloren.",
-      "Beim nächsten Mal gewinne ICH. Das steht fest.",
-    ],
-  },
-  tagesschau: {
-    won: [
-      "Die Berechnung war korrekt. Das Spiel ist gewonnen.",
-      "Ergebnis: positiv. Weiter.",
-      "Das Ergebnis entspricht meiner Erwartung.",
-      "Zufriedenstellend. Weiter.",
-    ],
-    lost: [
-      "Das Ergebnis ist zur Kenntnis genommen.",
-      "Verlust verbucht. Nächstes Spiel.",
-      "Die Zahlen sind eindeutig. Ich akzeptiere das.",
-      "So ist es. Weiter.",
-    ],
-  },
-  bavarian: {
-    won: [
-      "Jo, hob i ma glei dacht!",
-      "Freilich! Was sonst!",
-      "Des war a schene Partie, muss i sagn.",
-      "Ja mei, dann hoid so.",
-      "Heast, des war sauguad!",
-    ],
-    lost: [
-      "Jo mei. Halt ned mein Tog.",
-      "Des war halt nix. Nächste Runde.",
-      "Hm. Passiert. Schad.",
-      "Naja, des Leben geht weida.",
-    ],
-  },
-  fan: {
-    won: [
-      "JAAAA! Das ist mein Moment! Ich liebe dieses Spiel!",
-      "Habe ich euch nicht gesagt, dass ich gewinne?!",
-      "OH WOW! Das war so gut! Ich bin so gut!",
-      "Unglaublich! Nein! Doch! Oh!",
-    ],
-    lost: [
-      "NOOO! Das ist nicht fair! Das war Pech!",
-      "Ich fasse es nicht! Nächste Runde gehört mir!",
-      "Ugh! Nein! Aber gut... nächstes Mal!",
-      "Das kann nicht sein! Das KANN NICHT SEIN!",
-    ],
-  },
-};
-
-// Opponent reactions (winner's perspective = their team won/lost the round)
-const OPPONENT_REACTIONS = {
-  dramatic: {
-    won: [
-      "Hervorragend! Wir haben sie zerstört!",
-      "Das ist GERECHTIGKEIT! Uns aufhalten? Unmöglich!",
-      "Das Ergebnis war nie in Frage. Nie.",
-    ],
-    lost: [
-      "Glück gehabt. Nur Glück.",
-      "Das war Glück. Das nächste Mal gewinnen WIR.",
-      "Genießt es. Es wird nicht wieder passieren.",
-    ],
-  },
-  tagesschau: {
-    won: [
-      "Das Ergebnis ist erfreulich.",
-      "Gewonnen. Gut.",
-      "Der Ausgang war absehbar.",
-    ],
-    lost: [
-      "Verlust akzeptiert.",
-      "Schade. Aber so ist es.",
-      "Das Ergebnis wird dokumentiert.",
-    ],
-  },
-  bavarian: {
-    won: [
-      "Jo, hab i ma dacht! Schee!",
-      "Freilich ham mia gwunna!",
-      "Heast, des war leiwand!",
-    ],
-    lost: [
-      "Na, des war nix. Oba gut.",
-      "Schad. Nächstes Moi.",
-      "Jo mei, so is des hoid.",
-    ],
-  },
-  fan: {
-    won: [
-      "YESSS! Wir haben gewonnen! Wir sind die Besten!",
-      "HA! Das geschieht euch recht!",
-      "Ich bin AUSSER MIR! Was ein Spiel!",
-    ],
-    lost: [
-      "Oh komm schon! Das war so knapp!",
-      "Nein nein nein! Nächste Runde!",
-      "Ich glaub's nicht! Wie kann das passieren?!",
-    ],
-  },
-};
-
-// ---------------------------------------------------------------------------
 // PUBLIC API
 // ---------------------------------------------------------------------------
 
@@ -419,6 +292,21 @@ export function buildFullCommentary(game, regPlayers = [], personality = "dramat
   const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
   const isSauspiel = game.type === "Sauspiel";
   const partnerName = isSauspiel ? game.partner : null;
+  const players = game.players ?? [];
+
+  const balances = {};
+  players.forEach((p) => (balances[p] = 0));
+  if (game.history) {
+    game.history.forEach((g) => {
+      if (g.changes) {
+        Object.entries(g.changes).forEach(([player, change]) => {
+          balances[player] = (balances[player] ?? 0) + change;
+        });
+      }
+    });
+  }
+
+  const scenario = analyzeGameScenario(game, players, balances);
 
   const segments = [
     {
@@ -434,12 +322,16 @@ export function buildFullCommentary(game, regPlayers = [], personality = "dramat
   // Declarer reaction
   if (Math.random() < chance) {
     const reg = regMap[game.player];
-    const charType = reg?.character_type ?? "dramatic";
-    const pool = (PLAYER_REACTIONS[charType] ?? PLAYER_REACTIONS.dramatic)[game.won ? "won" : "lost"];
+    const charType = reg?.character_type ?? "optimist";
+    const fallbackScenario = game.won ? "routine_win" : "routine_loss";
+    const pool = PLAYER_REACTIONS[charType]?.[scenario]
+              ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
+              ?? PLAYER_REACTIONS.optimist?.[scenario]
+              ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
     segments.push({
       avatar: reg?.avatar ?? "🃏",
       name: game.player,
-      label: PERSONALITIES[charType]?.label ?? "",
+      label: PLAYER_PERSONALITIES[charType]?.label ?? "",
       text: pickRandom(pool),
     });
   }
@@ -450,13 +342,15 @@ export function buildFullCommentary(game, regPlayers = [], personality = "dramat
       (p) => p.name !== game.player && p.name !== partnerName
     );
     if (opponentReg) {
-      const charType = opponentReg.character_type ?? "dramatic";
+      const charType = opponentReg.character_type ?? "optimist";
       const opponentWon = !game.won;
-      const pool = (OPPONENT_REACTIONS[charType] ?? OPPONENT_REACTIONS.dramatic)[opponentWon ? "won" : "lost"];
+      const fallbackScenario = opponentWon ? "routine_win" : "routine_loss";
+      const pool = PLAYER_REACTIONS[charType]?.[fallbackScenario]
+                ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
       segments.push({
         avatar: opponentReg.avatar ?? "🃏",
         name: opponentReg.name,
-        label: PERSONALITIES[charType]?.label ?? "",
+        label: PLAYER_PERSONALITIES[charType]?.label ?? "",
         text: pickRandom(pool),
       });
     }

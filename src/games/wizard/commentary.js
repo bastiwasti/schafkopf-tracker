@@ -1,14 +1,8 @@
-import { PERSONALITIES as _PERSONALITIES } from '../schafkopf/commentary.js';
+import { PERSONALITIES, pickRandom, fill } from '../shared/commentary.js';
+import { PLAYER_PERSONALITIES, PLAYER_REACTIONS } from '../shared/playerPersonalities.js';
+import { analyzeRoundScenario } from './roundScenarios.js';
 
-export { PERSONALITIES } from '../schafkopf/commentary.js';
-
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function fill(template, vars) {
-  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "");
-}
+export { PERSONALITIES };
 
 // ---------------------------------------------------------------------------
 // COMMENTATOR TEMPLATES
@@ -18,7 +12,7 @@ const COMMENTATOR_TEMPLATES = {
   dramatic: {
     allCorrect: [
       "UNGLAUBLICH! Runde {roundNum} — und ALLE SPIELER lagen EXAKT RICHTIG! {correctCount} von {totalPlayers} perfekte Vorhersagen! Das ist kein Zufall — das ist KÖNNEN! {topPlayer} führt mit {topScore} Punkten!",
-      "WAS FÜR EINE RUNDE! Runde {roundNum} mit VOLLSTÄNDIGER PUNKTEAUSBEUTE für alle! {topPlayer} an der Spitze mit {topScore} Punkten — das ist Wizard auf höchstem Niveau!",
+      "WAS FÜR EINE RUNDE! Runde {roundNum} mit VOLLSTÄNDIGER PUNKTEAUSBEUTE für alle! {topPlayer} an der Spitze mit {topScore} Punkten — der Tisch tobt!",
       "PERFEKTE RUNDE! In Runde {roundNum} haben alle Spieler ihre Vorhersage HAARGENAU erfüllt! {topPlayer} mit {topScore} Punkten vorne — der Tisch tobt!",
     ],
     allWrong: [
@@ -36,7 +30,7 @@ const COMMENTATOR_TEMPLATES = {
   tagesschau: {
     allCorrect: [
       "Runde {roundNum}: Alle {totalPlayers} Spieler lagen korrekt. {topPlayer} führt mit {topScore} Punkten. Das Ergebnis ist bemerkenswert.",
-      "Meldung aus Runde {roundNum}: Vollständige Vorhersagegenauigkeit. {correctCount} von {totalPlayers}. {topPlayer} mit {topScore} Punkten an erster Position.",
+      "Meldung aus Runde {roundNum}: Vollständige Vorhersagegenauigkeit. {correctCount} von {totalPlayers}. {topPlayer}: {topScore} Punkte. Weiter.",
       "Runde {roundNum} abgeschlossen. Alle Vorhersagen korrekt. {topPlayer}: {topScore} Punkte. Weiter.",
     ],
     allWrong: [
@@ -72,119 +66,18 @@ const COMMENTATOR_TEMPLATES = {
   fan: {
     allCorrect: [
       "OH MEIN GOTT! Runde {roundNum} — ALLE RICHTIG! Das ist WAHNSINN! {topPlayer} mit {topScore} Punkten! Ich dreh durch!",
-      "JAAAAAA! Runde {roundNum} und alle haben's getroffen! {correctCount} perfekte Vorhersagen! {topPlayer} führt mit {topScore}! Unglaublich!",
+      "JAAAAAA! Runde {roundNum} und alle haben's getroffen! {correctCount} perfekte Vorhersagen! {topPlayer} mit {topScore}! Unglaublich!",
       "Ich fasse es NICHT! Alle in Runde {roundNum} exakt richtig! {topPlayer} mit {topScore} Punkten — der ist auf einem anderen Level!",
     ],
     allWrong: [
-      "NOOOO! Runde {roundNum} — KEINER lag richtig?! Das kann doch nicht sein! {bigMissPlayer} mit {bigMissDiff} Stichen daneben! Was ist das?!",
-      "Aaaargh! Runde {roundNum} und alle falsch! Alle! {bottomPlayer} am schlimmsten! {topPlayer} hält sich noch mit {topScore} — aber wie?!",
-      "OH NEIN OH NEIN! In Runde {roundNum} schießt jeder am Ziel vorbei! {topPlayer} führt mit {topScore} aber das ist auch kein Ruhm!",
+      "NOOO! Runde {roundNum} — KEINER lag richtig?! Das kann doch nicht sein! {bigMissPlayer} mit {bigMissDiff} Stichen daneben! Was ist das?!",
+      "Aaaargh! Runde {roundNum} und alle falsch! Alle! {bottomPlayer} am schlimmsten! {topPlayer} hält sich noch mit {topScore} Punkten — aber wie?!",
+      "OH NEIN OH NEIN! In Runde {roundNum} schießt jeder am Ziel vorbei! {topPlayer} führt mit {topScore} Punkten aber das ist auch kein Ruhm!",
     ],
     mixed: [
       "WOW! Runde {roundNum} ist durch! {correctCount} von {totalPlayers} lagen richtig! {topPlayer} mit {topScore} Punkten — der macht das!",
       "Runde {roundNum}! {topPlayer} mit {topScore} Punkten — STARK! {bottomPlayer} muss sich was überlegen! {bigMissPlayer} mit {bigMissDiff} Stichen daneben — oje!",
-      "YES! {correctCount} richtige Vorhersagen in Runde {roundNum}! {topPlayer} mit {topScore} führt! Das wird spannend!",
-    ],
-  },
-};
-
-// ---------------------------------------------------------------------------
-// PLAYER REACTION TEMPLATES
-// ---------------------------------------------------------------------------
-
-const PLAYER_REACTIONS = {
-  dramatic: {
-    won: [
-      "Natürlich! Hat jemand etwas anderes erwartet?!",
-      "Präzision ist mein zweiter Vorname.",
-      "Das war Wissenschaft, keine Glücksache!",
-      "Ich hab es gewusst. Ich hab es die ganze Zeit gewusst.",
-    ],
-    lost: [
-      "Das ist ein SKANDAL! Ich verlange eine Neuauszählung!",
-      "Sabotage. Eindeutig Sabotage.",
-      "Das war... taktisches Danebentippen. Ja.",
-      "Beim nächsten Mal wird das anders. Das schwöre ich.",
-    ],
-  },
-  tagesschau: {
-    won: [
-      "Die Vorhersage war korrekt. Das Ergebnis entspricht der Erwartung.",
-      "Richtig gelegen. Weiter.",
-      "Ergebnis: positiv.",
-    ],
-    lost: [
-      "Die Vorhersage war fehlerhaft. Wird vermerkt.",
-      "Falsch. Wird zur Kenntnis genommen.",
-      "Die Abweichung ist dokumentiert.",
-    ],
-  },
-  bavarian: {
-    won: [
-      "Jo, hob i ma glei dacht!",
-      "Freilich! Was sonst!",
-      "Des war a gute Runde, muss i sagn.",
-      "Heast, des war sauguad!",
-    ],
-    lost: [
-      "Jo mei. Ned mein Tog.",
-      "Passiert. Nächste Runde.",
-      "Hm. Des war halt nix.",
-    ],
-  },
-  fan: {
-    won: [
-      "JAAAA! Das ist mein Moment!",
-      "Hab ich euch nicht gesagt?! Ich bin so gut!",
-      "UNGLAUBLICH! Ich liebe dieses Spiel!",
-    ],
-    lost: [
-      "NOOO! Das war so knapp! Oder auch nicht!",
-      "Ich fasse es nicht! Nächste Runde!",
-      "Ugh! Das darf nicht wahr sein!",
-    ],
-  },
-};
-
-const OPPONENT_REACTIONS = {
-  dramatic: {
-    won: [
-      "Gut gemacht. Mein Vorsprung wächst.",
-      "Solide Runde. Wie erwartet.",
-    ],
-    lost: [
-      "Glück gehabt. Das nächste Mal gewinne ich.",
-      "Das war Glück. Nur Glück.",
-    ],
-  },
-  tagesschau: {
-    won: [
-      "Ergebnis notiert. Weiter.",
-      "Akzeptabel.",
-    ],
-    lost: [
-      "Verlust verbucht.",
-      "Nächste Runde.",
-    ],
-  },
-  bavarian: {
-    won: [
-      "Jo, schee!",
-      "Freilich, des geht scho!",
-    ],
-    lost: [
-      "Na, nächste Moi.",
-      "Jo mei, so is des.",
-    ],
-  },
-  fan: {
-    won: [
-      "Ja! Das war auch meine Runde!",
-      "Super! Weiter so!",
-    ],
-    lost: [
-      "Oh komm schon!",
-      "Nächste Runde gehört mir!",
+      "YES! {correctCount} richtige Vorhersagen in Runde {roundNum}! {topPlayer} mit {topScore} Punkten führt! Das wird spannend!",
     ],
   },
 };
@@ -251,15 +144,15 @@ export function reactionChance(round, players, totalRounds) {
  * @param {string} personality  - commentator personality key
  */
 export function buildWizardCommentary(round, regPlayers = [], personality = "dramatic") {
-  const pers = _PERSONALITIES[personality] ?? _PERSONALITIES.dramatic;
+  const pers = PERSONALITIES[personality] ?? PERSONALITIES.dramatic;
   const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
   const players = Object.keys(round.predictions ?? {});
   const totalRounds = getTotalRounds(players.length);
 
-  const { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore, allCorrect, allWrong } =
+  const { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore } =
     analyzeRound(round, players);
 
-  const scenario = allCorrect ? "allCorrect" : allWrong ? "allWrong" : "mixed";
+  const scenario = analyzeRoundScenario(round, players, totalRounds);
   const templates = (COMMENTATOR_TEMPLATES[personality] ?? COMMENTATOR_TEMPLATES.dramatic)[scenario];
 
   const vars = {
@@ -287,13 +180,17 @@ export function buildWizardCommentary(round, regPlayers = [], personality = "dra
   // Best scorer reaction
   if (Math.random() < chance) {
     const reg = regMap[topPlayer];
-    const charType = reg?.character_type ?? "dramatic";
+    const charType = reg?.character_type ?? "optimist";
     const topPlayerCorrect = (round.scores?.[topPlayer] ?? 0) >= 0;
-    const pool = (PLAYER_REACTIONS[charType] ?? PLAYER_REACTIONS.dramatic)[topPlayerCorrect ? "won" : "lost"];
+    const fallbackScenario = topPlayerCorrect ? "routine_win" : "routine_loss";
+    const pool = PLAYER_REACTIONS[charType]?.[scenario]
+              ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
+              ?? PLAYER_REACTIONS.optimist?.[scenario]
+              ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
     segments.push({
       avatar: reg?.avatar ?? "🃏",
       name: topPlayer,
-      label: _PERSONALITIES[charType]?.label ?? "",
+      label: PLAYER_PERSONALITIES[charType]?.label ?? "",
       text: pickRandom(pool),
     });
   }
@@ -301,13 +198,17 @@ export function buildWizardCommentary(round, regPlayers = [], personality = "dra
   // Worst scorer reaction (slightly lower chance)
   if (bottomPlayer !== topPlayer && Math.random() < chance * 0.75) {
     const reg = regMap[bottomPlayer];
-    const charType = reg?.character_type ?? "dramatic";
+    const charType = reg?.character_type ?? "optimist";
     const bottomPlayerCorrect = (round.scores?.[bottomPlayer] ?? 0) >= 0;
-    const pool = (OPPONENT_REACTIONS[charType] ?? OPPONENT_REACTIONS.dramatic)[bottomPlayerCorrect ? "won" : "lost"];
+    const fallbackScenario = bottomPlayerCorrect ? "routine_win" : "routine_loss";
+    const pool = PLAYER_REACTIONS[charType]?.[scenario]
+              ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
+              ?? PLAYER_REACTIONS.optimist?.[scenario]
+              ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
     segments.push({
       avatar: reg?.avatar ?? "🃏",
       name: bottomPlayer,
-      label: "",
+      label: PLAYER_PERSONALITIES[charType]?.label ?? "",
       text: pickRandom(pool),
     });
   }

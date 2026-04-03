@@ -73,7 +73,7 @@ export default function RulesBox() {
         <strong style={{ color: "#8b6914" }}>Spezielle Karten:</strong>
         <ul style={{ marginTop: 8, paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
           <li><strong>Narr:</strong> Niedrigste Karte, verliert immer</li>
-          <li><strong>Zauberer (Wizard):</strong> Höchste Karte, gewinnt immer</li>
+          <li><strong>Zauberer:</strong> Höchste Karte, gewinnt immer</li>
           <li><strong>Trümpf:</strong> Beste Karte im gespielten Suit</li>
         </ul>
       </div>

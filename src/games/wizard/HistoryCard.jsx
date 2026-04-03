@@ -1,6 +1,6 @@
 import styles from "../../components/styles.js";
 
-export default function HistoryCard({ round, players, onEdit, onArchive, avatarMap = {} }) {
+export default function HistoryCard({ round, players, avatarMap = {}, onEdit, onArchive }) {
   return (
     <div style={styles.historyCard}>
       <div style={styles.historyCardHeader}>

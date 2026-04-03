@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import styles from "../../components/styles.js";
-import AvatarPicker from "../../components/AvatarPicker.jsx";
 
 export default function RoundForm({ round, players, currentRound, maxRounds, predictions, tricks, onPredictionChange, onTricksChange, onSave, onCancel }) {
   const [localPredictions, setLocalPredictions] = useState({});
   const [localTricks, setLocalTricks] = useState({});
-  const [showPicker, setShowPicker] = useState(false);
-  const [editingPlayer, setEditingPlayer] = useState(null);
 
   // Initialize form from round data
   useEffect(() => {
@@ -41,7 +38,7 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
     const pred = localPredictions[p] ?? 0;
     const act = localTricks[p] ?? 0;
     const diff = pred - act;
-    
+
     if (diff === 0) {
       scores[p] = 20 + (act * 10);
     } else {
@@ -65,17 +62,8 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
     onTricksChange(player, value);
   };
 
-  const handleSubmit = () => {
-    const payload = {
-      predictions: localPredictions,
-      tricks: localTricks,
-    };
-
-    onSave(payload);
-  };
-
-  const canSubmit = players.every(p => 
-    localPredictions[p] !== undefined && 
+  const canSubmit = players.every(p =>
+    localPredictions[p] !== undefined &&
     localPredictions[p] !== null &&
     localTricks[p] !== undefined &&
     localTricks[p] !== null
@@ -110,9 +98,16 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
         </div>
 
         {players.map((p, idx) => {
-          const pred = predictions[p] ?? 0;
-          const act = tricks[p] ?? 0;
+          const pred = localPredictions[p] ?? 0;
+          const act = localTricks[p] ?? 0;
           const score = scores[p] ?? 0;
+          const avatarMap = {
+            "Basti": "🃏",
+            "Fabi": "⚡",
+            "Patrick": "🥨",
+            "Testor": "🎲",
+          };
+          const avatar = avatarMap[p] || "🃏";
 
           return (
             <div key={p} style={{
@@ -127,43 +122,43 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
                 alignItems: "center",
                 gap: 8,
               }}>
-                <span style={{ fontSize: 20 }}>{avatarMap[p] || "🃏"}</span>
+                <span style={{ fontSize: 20 }}>{avatar}</span>
                 <span>{p}</span>
               </div>
 
-            <div>
-              <input
-                type="number"
-                min="0"
-                max={currentRound}
-                value={localPredictions[p]}
-                onChange={(e) => handlePredictionChange(p, e.target.value)}
-                style={{
-                  ...styles.input,
-                  width: "80px",
-                  padding: "8px 12px",
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              />
-            </div>
+              <div>
+                <input
+                  type="number"
+                  min="0"
+                  max={currentRound}
+                  value={localPredictions[p]}
+                  onChange={(e) => handlePredictionChange(p, e.target.value)}
+                  style={{
+                    ...styles.input,
+                    width: "80px",
+                    padding: "8px 12px",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                />
+              </div>
 
-            <div>
-              <input
-                type="number"
-                min="0"
-                max={currentRound}
-                value={localTricks[p]}
-                onChange={(e) => handleTricksChange(p, e.target.value)}
-                style={{
-                  ...styles.input,
-                  width: "80px",
-                  padding: "8px 12px",
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              />
-            </div>
+              <div>
+                <input
+                  type="number"
+                  min="0"
+                  max={currentRound}
+                  value={localTricks[p]}
+                  onChange={(e) => handleTricksChange(p, e.target.value)}
+                  style={{
+                    ...styles.input,
+                    width: "80px",
+                    padding: "8px 12px",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                />
+              </div>
 
               {idx === players.length - 1 && (
                 <div style={{
@@ -194,7 +189,7 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
             opacity: canSubmit ? 1 : 0.5,
             cursor: canSubmit ? "pointer" : "not-allowed",
           }}
-          onClick={handleSubmit}
+          onClick={onSave}
           disabled={!canSubmit}
         >
           {round ? "Änderungen speichern" : "Runde speichern"}
@@ -206,11 +201,3 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
     </div>
   );
 }
-
-// Avatar-Map aus registeredPlayers (würde via Props übergeben)
-const avatarMap = {
-  "Basti": "🃏",
-  "Fabi": "⚡",
-  "Patrick": "🥨",
-  "Testor": "🎲",
-};

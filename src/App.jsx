@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import SessionList from "./components/SessionList.jsx";
-import SchafkopfSessionView from "./components/SchafkopfSessionView.jsx";
-import WizardSessionView from "./components/WizardSessionView.jsx";
+import SessionView from "./components/SessionView.jsx";
 import PlayerManager from "./components/PlayerManager.jsx";
 import ArchiveView from "./components/ArchiveView.jsx";
 
@@ -9,7 +8,7 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [registeredPlayers, setRegisteredPlayers] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
-  const [view, setView] = useState("sessions");
+  const [view, setView] = useState("sessions"); // 'sessions' | 'players' | 'session' | 'archive'
 
   const fetchSessions = () =>
     fetch("/api/sessions").then((r) => r.json()).then(setSessions).catch(console.error);
@@ -25,9 +24,7 @@ export default function App() {
   const handleSessionSelect = async (id) => {
     const res = await fetch(`/api/sessions/${id}`);
     if (res.ok) {
-      const session = await res.json();
-      const viewComponent = session.game_type === "wizard" ? WizardSessionView : SchafkopfSessionView;
-      setActiveSession(session);
+      setActiveSession(await res.json());
       setView("session");
     }
   };
@@ -49,7 +46,9 @@ export default function App() {
     setActiveSession(updated);
     setSessions((prev) =>
       prev.map((s) =>
-        s.id === updated.id ? updated : s
+        s.id === updated.id
+          ? { ...s, bock: updated.bock, game_count: updated.history.filter((g) => !g.archived_at).length }
+          : s
       )
     );
   };
@@ -58,17 +57,15 @@ export default function App() {
     fetchSessions();
   };
 
-  if (view === "session") {
-    if (!activeSession) return null;
-
-    const viewComponent = activeSession.game_type === "wizard" ? WizardSessionView : SchafkopfSessionView;
-
-    return <viewComponent
-      session={activeSession}
-      registeredPlayers={registeredPlayers}
-      onBack={() => setView("sessions")}
-      onSessionUpdated={handleSessionUpdated}
-    />;
+  if (view === "session" && activeSession) {
+    return (
+      <SessionView
+        session={activeSession}
+        registeredPlayers={registeredPlayers}
+        onBack={() => setView("sessions")}
+        onSessionUpdated={handleSessionUpdated}
+      />
+    );
   }
 
   if (view === "players") {

@@ -174,7 +174,7 @@ export default function SchafkopfSession({ session, registeredPlayers = [], onBa
   const submitLabel = editingGame ? "✓ Änderungen speichern" : undefined;
 
   return (
-    <div style={styles.container}>
+    <>
       {pendingCommentary && (
         <CommentaryOverlay
           game={pendingCommentary}
@@ -184,23 +184,6 @@ export default function SchafkopfSession({ session, registeredPlayers = [], onBa
           onClose={() => setPendingCommentary(null)}
         />
       )}
-
-      <div style={styles.sessionHeader}>
-        <button style={styles.backBtn} onClick={onBack}>← Runden</button>
-        <div style={{ flex: 1 }}>
-          <div style={styles.sessionTitle}>{session.name}</div>
-          <div style={styles.sessionSubtitle}>
-            {plugin.label} · {players.join(", ")}
-          </div>
-        </div>
-        <button
-          style={{ ...styles.btnGear, ...(showCommentatorSettings ? { background: "#2c1810", color: "#fdf6e3" } : {}) }}
-          onClick={() => setShowCommentatorSettings((v) => !v)}
-          title="Kommentator einstellen"
-        >
-          🎙️
-        </button>
-      </div>
 
       {showCommentatorSettings && (
         <CommentarySettingsPanel
@@ -270,6 +253,6 @@ export default function SchafkopfSession({ session, registeredPlayers = [], onBa
             />
            ))}
       </div>
-    </div>
+    </>
   );
 }

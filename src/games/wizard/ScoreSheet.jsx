@@ -224,7 +224,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
   };
 
   return (
-    <div style={styles.container}>
+    <>
       {/* Commentary overlay */}
       {pendingCommentary && (
         <CommentaryOverlay
@@ -646,7 +646,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

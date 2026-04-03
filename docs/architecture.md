@@ -14,7 +14,7 @@ Express-Server (Port 3001)
 SQLite-Datenbank (data/tracker.db)
 ```
 
-Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Express-Server. Im Produktionsbetrieb liefert Express die gebauten Vite-Assets aus.
+Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Express-Server. Im Produktionsbetrieb liefert Nginx die gebauten Vite-Assets aus (`dist/`) und proxied `/api` an den Express-Server.
 
 ---
 
@@ -26,12 +26,12 @@ Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Expr
 |---|---|---|
 | `id` | TEXT PK | UUID |
 | `name` | TEXT | Anzeigename der Runde |
-| `game_type` | TEXT | Plugin-ID (z. B. `"schafkopf"`) |
+| `game_type` | TEXT | Plugin-ID: `"schafkopf"` oder `"wizard"` |
 | `players` | TEXT | JSON-Array von Spielernamen |
-| `stake` | REAL | Grundeinsatz in Euro |
-| `bock` | INTEGER | Aktueller Bock-Multiplikator (≥1) |
+| `stake` | REAL | Grundeinsatz in Euro (nur Schafkopf relevant) |
+| `bock` | INTEGER | Aktueller Bock-Multiplikator ≥1 (nur Schafkopf) |
 | `created_at` | TEXT | ISO-Timestamp |
-| `archived_at` | TEXT \| NULL | Archiviert wenn gesetzt |
+| `archived_at` | TEXT \| NULL | Archiviert wenn gesetzt (nur Schafkopf) |
 
 ### Tabelle `players`
 
@@ -40,17 +40,17 @@ Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Expr
 | `id` | TEXT PK | UUID |
 | `name` | TEXT UNIQUE | Anzeigename |
 | `avatar` | TEXT | Emoji-Zeichen (Standard: `🃏`) |
-| `character_type` | TEXT | Kommentator-Persönlichkeit des Spielers |
-| `voice_name` | TEXT \| NULL | Name der System-Stimme für TTS |
+| `character_type` | TEXT | Kommentator-Persönlichkeit des Spielers für Reaktionen |
+| `voice_name` | TEXT \| NULL | Name der System-TTS-Stimme |
 | `created_at` | TEXT | ISO-Timestamp |
 
-### Tabelle `games`
+### Tabelle `games` (Schafkopf)
 
 | Spalte | Typ | Beschreibung |
 |---|---|---|
 | `id` | INTEGER PK | Auto-Increment |
 | `session_id` | TEXT FK | Referenz auf `sessions.id` (CASCADE DELETE) |
-| `seq` | INTEGER | Laufende Nummer innerhalb der Runde |
+| `seq` | INTEGER | Laufende Nummer innerhalb der Session |
 | `type` | TEXT | Spieltyp: `Sauspiel`, `Solo`, `Wenz`, `Solo Tout`, `Wenz Tout` |
 | `player` | TEXT | Ansagender Spieler |
 | `partner` | TEXT \| NULL | Partner (nur bei Sauspiel) |
@@ -61,9 +61,22 @@ Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Expr
 | `bock` | INTEGER | Bock-Wert zum Zeitpunkt des Spiels |
 | `klopfer` | TEXT | JSON-Array von Spielernamen |
 | `spielwert` | REAL | Berechneter Spielwert in Euro |
-| `changes` | TEXT | JSON-Objekt `{spielername: betrag}` |
+| `changes` | TEXT | JSON-Objekt `{ spielername: betrag }` |
 | `created_at` | TEXT | ISO-Timestamp |
 | `archived_at` | TEXT \| NULL | Archiviert wenn gesetzt |
+
+### Tabelle `wizard_rounds`
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | INTEGER PK | Auto-Increment |
+| `session_id` | TEXT FK | Referenz auf `sessions.id` |
+| `round_number` | INTEGER | Rundennummer (1-basiert, eindeutig pro Session) |
+| `predictions` | TEXT | JSON-Objekt `{ spielername: vorhersage }` |
+| `tricks` | TEXT | JSON-Objekt `{ spielername: tatsächliche_stiche }` |
+| `scores` | TEXT | JSON-Objekt `{ spielername: punkte }` — vom Server berechnet |
+| `created_at` | TEXT | ISO-Timestamp |
+| `archived_at` | TEXT \| NULL | Reserviert (derzeit nicht genutzt) |
 
 ### Migrationen
 
@@ -71,11 +84,13 @@ Neue Spalten werden per `try/catch`-Pattern nachträglich hinzugefügt (SQLite u
 
 ```js
 try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT "dramatic"'); } catch (e) {}
+try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
 ```
 
 ---
 
-## Datenfluss: Spiel eintragen
+## Datenfluss: Schafkopf-Spiel eintragen
 
 ```
 1. User füllt GameForm aus
@@ -102,15 +117,66 @@ try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {
    → Scoreboard neu berechnet (calcBalances)
         │
 8. CommentaryOverlay erscheint (falls aktiviert)
-   buildFullCommentary() → Text + Segmente
+   buildFullCommentary() → Segmente + spokenText
+   SpeechSynthesisUtterance → TTS
+```
+
+## Datenfluss: Wizard-Runde eintragen
+
+```
+1. User klickt "Starten" für die nächste Runde
+   → Phase: 'prediction'
+
+2. User trägt Vorhersagen ein (Dropdowns)
+   → roundsData[roundNum].predictions
+
+3. User klickt "Weiter →"
+   → Phase: 'tricks'
+
+4. User trägt tatsächliche Stiche ein
+   → roundsData[roundNum].tricks
+
+5. User klickt "✓ Speichern"
+   POST /api/sessions/:id/wizard-rounds
+   Body: { predictions, tricks }
+        │
+6. Backend: Scores berechnen, INSERT INTO wizard_rounds
+   round_number = MAX(round_number)+1
+        │
+7. Response: vollständiges Round-Objekt mit scores
+        │
+8. onSessionUpdated() [App.jsx]
+   → history wird lokal aktualisiert
+   → Scoreboard neu berechnet (Summe aller scores)
+        │
+9. CommentaryOverlay erscheint (falls aktiviert)
+   buildWizardCommentary() → Segmente + spokenText
    SpeechSynthesisUtterance → TTS
 ```
 
 ---
 
+## Wizard-Synchronisation
+
+Der `GET /api/sessions/:id`-Endpunkt gibt nur `games` (Schafkopf), nicht `wizard_rounds` zurück. Deshalb lädt `ScoreSheet.jsx` beim Mount die eigenen Runden separat:
+
+```js
+useEffect(() => {
+  fetch(`/api/sessions/${session.id}/wizard-rounds`)
+    .then(r => r.json())
+    .then(rounds => {
+      if (rounds.length > 0) onSessionUpdated({ ...session, history: rounds });
+    });
+}, [session.id]);
+```
+
+Das stellt sicher, dass `round_number` mit dem tatsächlichen DB-Stand übereinstimmt und neue Runden korrekt nummeriert werden.
+
+---
+
 ## Soft-Delete (Archiv-Pattern)
 
-Weder Runden noch Spiele werden sofort gelöscht. Stattdessen wird ein `archived_at`-Timestamp gesetzt:
+Nur bei Schafkopf verwendet. Weder Runden noch Spiele werden sofort gelöscht:
 
 ```
 Aktiv:      archived_at IS NULL
@@ -123,45 +189,52 @@ Archiviert: archived_at = "2025-04-03T10:00:00.000Z"
 
 Einzelne Spiele funktionieren analog über `PATCH /api/sessions/:id/games/:gameId`.
 
-Die **Kontostand-Berechnung** (`calcBalances`) und der **Spielverlauf** ignorieren archivierte Spiele konsequent (`history.filter(g => !g.archived_at)`).
+Die **Kontostand-Berechnung** (`calcBalances`) und der **Spielverlauf** ignorieren archivierte Spiele (`history.filter(g => !g.archived_at)`).
+
+Wizard verwendet **kein Soft-Delete** — dort gibt es nur Undo (löscht die letzte Runde direkt via `DELETE /api/sessions/:id/wizard-rounds/last`).
 
 ---
 
 ## Plugin-Architektur
 
-Das Spiellogik-System ist plugin-basiert, sodass zukünftig weitere Kartenspiele ergänzt werden können.
+Das Spiellogik-System ist plugin-basiert. Aktuell registrierte Plugins:
 
 ```js
 // src/games/index.js
 export const GAME_PLUGINS = {
   schafkopf: schafkopfPlugin,
-  // weiteres Spiel: meinePlugin,
+  wizard: wizardPlugin,
 };
 ```
 
-Jedes Plugin exportiert ein Objekt mit:
+### Schafkopf-Plugin
+
+Vollständiges Plugin mit eigener Logik, Formular, History-Karte, Regelbox und Kommentator.
 
 ```js
 {
-  id: string,
-  label: string,
-  description: string,
-  defaultStake: number,
-
-  // Logik-Funktionen
-  makeDefaultForm: (players) => formState,
-  calcSpielwert: (formState) => number,
-  resolveGame: (formState) => { changes, spielwert },
-  calcBalances: (history, players) => { [name]: number },
-
-  // React-Komponenten
-  FormComponent,
-  HistoryCardComponent,
-  RulesComponent,
+  id: "schafkopf",
+  label: "Schafkopf",
+  makeDefaultForm, calcSpielwert, resolveGame, calcBalances,
+  FormComponent, HistoryCardComponent, RulesComponent,
 }
 ```
 
-`SessionView` und `SessionList` arbeiten ausschließlich gegen diese Plugin-Schnittstelle und kennen kein spielspezifisches Detail.
+### Wizard-Plugin
+
+Schlankes Plugin — die Spiellogik liegt im Backend (`server/routes/wizard/rounds.js`) und in `ScoreSheet.jsx`. Das Plugin liefert hauptsächlich Metadaten:
+
+```js
+{
+  id: "wizard",
+  label: "Wizard",
+  description: "...",
+  defaultStake: 0,
+  // Keine FormComponent, HistoryCardComponent — UI liegt in ScoreSheet.jsx
+}
+```
+
+`SessionView.jsx` erkennt `game_type === "wizard"` und rendert statt der Schafkopf-UI direkt `<WizardScoreSheet>`.
 
 ---
 
@@ -171,24 +244,24 @@ Die App verwendet keinen URL-Router, sondern einfaches State-basiertes Routing i
 
 ```
 view === "sessions"  → SessionList
-view === "session"   → SessionView
+view === "session"   → SessionView (Schafkopf) oder WizardScoreSheet
 view === "players"   → PlayerManager
 view === "archive"   → ArchiveView
 ```
-
-Navigiert wird durch Callbacks (`onManagePlayers`, `onBack`, etc.), die den `view`-State in `App.jsx` setzen.
 
 ---
 
 ## Styling
 
-Alle Styles sind in `src/components/styles.js` als einzelnes JavaScript-Objekt definiert und werden als Inline-Styles über `style={styles.xyz}` angewendet. Es gibt kein CSS-Framework und keine CSS-Dateien (abgesehen von einer minimalen `index.css` für box-sizing/reset).
+Alle Styles sind in `src/components/styles.js` als einzelnes JavaScript-Objekt definiert und werden als Inline-Styles angewendet. Kein CSS-Framework, keine CSS-Dateien (abgesehen von einer minimalen `index.css`).
 
 **Farbpalette:**
-| Variable | Wert | Verwendung |
+
+| Farbe | Wert | Verwendung |
 |---|---|---|
 | Creme | `#fdf6e3` | Hintergrund |
 | Dunkelbraun | `#2c1810` | Text, primäre Buttons |
 | Gold | `#8b6914` | Akzente, Überschriften |
 | Grün | `#2d6a4f` | Gewonnen, Bestätigung |
 | Rot | `#9d0208` | Verloren, Löschen |
+| Blau | `#1976d2` | Wizard-Aktionen (Starten) |

@@ -1,18 +1,169 @@
 import { useState, useEffect } from "react";
 import styles from "../../components/styles.js";
-import RoundForm from "./RoundForm.jsx";
-import HistoryCard from "./HistoryCard.jsx";
 import RulesBox from "./RulesBox.jsx";
+import { buildWizardCommentary, PERSONALITIES } from "./commentary.js";
+import CommentaryOverlay from "../../components/CommentaryOverlay.jsx";
+import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
+
+const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
+
+function VoicePickerInline({ value, onChange }) {
+  const [voices, setVoices] = useState([]);
+  useEffect(() => {
+    if (!hasSpeech) return;
+    const load = () => setVoices(window.speechSynthesis.getVoices());
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+  if (!hasSpeech || voices.length === 0) return null;
+  return (
+    <select style={styles.voiceSelect} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
+      <option value="">— Standard (System) —</option>
+      {voices.map((v) => (
+        <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
+      ))}
+    </select>
+  );
+}
 
 export default function ScoreSheet({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
-  const [showForm, setShowForm] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showCommentatorSettings, setShowCommentatorSettings] = useState(false);
+  const [pendingCommentary, setPendingCommentary] = useState(null);
   const [editingRound, setEditingRound] = useState(null);
+  const { personality, voice, enabled, setPersonality, setVoice, setEnabled } = useCommentatorSettings();
   const [predictions, setPredictions] = useState({});
   const [tricks, setTricks] = useState({});
   const [showEndSession, setShowEndSession] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
 
-  const { players, history = [], game_type } = session;
+  // State für alle Runden-Zwischenstände
+  const [roundsData, setRoundsData] = useState({});
+  
+  // State für Runden-Phasen: 'prediction', 'tricks', 'completed'
+  const [roundPhases, setRoundPhases] = useState({});
+
+  // Hilfsfunktionen für Workflow
+  const startPredictionPhase = (roundNum) => {
+    setRoundPhases(prev => ({ ...prev, [roundNum]: 'prediction' }));
+    setRoundsData(prev => ({
+      ...prev,
+      [roundNum]: {
+        predictions: {},
+        tricks: {},
+      }
+    }));
+    setEditingRound({ id: `temp-${roundNum}`, round_number: roundNum, predictions: {}, tricks: {} });
+    setPredictions({});
+    setTricks({});
+  };
+
+  const finishPredictionPhase = (roundNum) => {
+    setRoundPhases(prev => ({ ...prev, [roundNum]: 'tricks' }));
+  };
+
+  const finishTricksPhase = async (roundNum) => {
+    const data = roundsData[roundNum];
+    if (!data) return;
+
+    const { predictions, tricks } = data;
+    
+    // Prüfen ob Runde bereits existiert
+    const existingRound = history.find(r => r.round_number === roundNum);
+    
+    if (existingRound) {
+      // Bearbeitete Runde aktualisieren
+      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${existingRound.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ predictions, tricks }),
+      });
+      
+      if (res.ok) {
+        const updated = await res.json();
+        onSessionUpdated({
+          ...session,
+          history: history.map((r) => (r.id === updated.id ? updated : r)),
+        });
+      }
+    } else {
+      // Neue Runde speichern
+      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ predictions, tricks }),
+      });
+      
+      if (res.ok) {
+        const newRound = await res.json();
+        onSessionUpdated({
+          ...session,
+          history: [...history, newRound],
+        });
+        if (enabled) setPendingCommentary(newRound);
+      }
+    }
+
+    // State zurücksetzen
+    setRoundPhases(prev => ({ ...prev, [roundNum]: 'completed' }));
+    setRoundsData(prev => {
+      const newData = { ...prev };
+      delete newData[roundNum];
+      return newData;
+    });
+    setPredictions({});
+    setTricks({});
+    setEditingRound(null);
+  };
+
+  const editSavedRound = (roundNum) => {
+    const round = history.find(r => r.round_number === roundNum);
+    if (!round) return;
+
+    setRoundPhases(prev => ({ ...prev, [roundNum]: 'prediction' }));
+    setRoundsData(prev => ({
+      ...prev,
+      [roundNum]: {
+        predictions: round.predictions,
+        tricks: round.tricks,
+        id: round.id,
+      }
+    }));
+    setEditingRound({ id: `edit-${roundNum}`, round_number: roundNum, predictions: round.predictions, tricks: round.tricks });
+    setPredictions(round.predictions);
+    setTricks(round.tricks);
+  };
+
+  const cancelRound = (roundNum) => {
+    setRoundPhases(prev => {
+      const newPhases = { ...prev };
+      delete newPhases[roundNum];
+      return newPhases;
+    });
+    setRoundsData(prev => {
+      const newData = { ...prev };
+      delete newData[roundNum];
+      return newData;
+    });
+    setPredictions({});
+    setTricks({});
+    setEditingRound(null);
+  };
+
+  // Wizard-Runden beim Start laden (sessions-Endpoint liefert nur Schafkopf-Games)
+  useEffect(() => {
+    fetch(`/api/sessions/${session.id}/wizard-rounds`)
+      .then((r) => r.json())
+      .then((rounds) => {
+        if (rounds.length > 0) {
+          onSessionUpdated({ ...session, history: rounds });
+        }
+      })
+      .catch(() => {});
+  }, [session.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { players, history = [] } = session;
   const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
 
   // Aktive Runden (kein Archiv bei Wizard)
@@ -50,10 +201,10 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
         ...session,
         history: [...history, newRound],
       });
-      setShowForm(false);
       setPredictions({});
       setTricks({});
       setEditingRound(null);
+      setRoundsData({});
     }
   };
 
@@ -74,51 +225,6 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
     }
   };
 
-  const handleEdit = (round) => {
-    setEditingRound(round);
-    setPredictions({ ...round.predictions });
-    setTricks({ ...round.tricks });
-    setShowForm(true);
-  };
-
-  const handleArchive = async (roundId) => {
-    if (!confirm("Runde ins Archiv verschieben?")) return;
-    
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${roundId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ archived_at: new Date().toISOString() }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: activeRounds.map((r) => (r.id === roundId ? updated : r)),
-      });
-    }
-  };
-
-  const handleUpdate = async (roundData) => {
-    if (!editingRound) return;
-    
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${editingRound.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roundData),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: activeRounds.map((r) => (r.id === updated.id ? updated : r)),
-      });
-      setShowForm(false);
-      setPredictions({});
-      setTricks({});
-      setEditingRound(null);
-    }
-  };
-
   const handleEndSession = async () => {
     const res = await fetch(`/api/sessions/${session.id}`, {
       method: "PATCH",
@@ -134,57 +240,19 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
     }
   };
 
-  const handleSubmit = () => {
-    const roundData = {
-      predictions,
-      tricks,
-    };
-
-    if (editingRound) {
-      handleUpdate(roundData);
-    } else {
-      handleRoundSaved(roundData);
-    }
-  };
-
-  // Live-Score-Berechnung
-  const liveScores = {};
-  players.forEach(p => {
-    const pred = predictions[p] ?? 0;
-    const act = tricks[p] ?? 0;
-    const diff = pred - act;
-    
-    if (diff === 0) {
-      liveScores[p] = 20 + (act * 10);
-    } else {
-      liveScores[p] = -(Math.abs(diff) * 10);
-    }
-  });
-
   return (
     <div style={styles.container}>
-      <div style={styles.sessionHeader}>
-        <button style={styles.backBtn} onClick={onBack}>← Runden</button>
-        <div style={{ flex: 1 }}>
-          <div style={styles.sessionTitle}>{session.name}</div>
-          <div style={styles.sessionSubtitle}>
-            Wizard · {players.join(", ")} · {isSessionActive ? `Runde ${currentRound}/${maxRounds} (${activeRounds.length}/${maxRounds})` : `✓ Beendet (${activeRounds.length}/${maxRounds})`}
-          </div>
-        </div>
-        {isSessionActive && (
-          <button
-            style={{
-              ...styles.btnSecondary,
-              padding: "8px 12px",
-              marginRight: 8,
-            }}
-            onClick={() => setShowEndSession(true)}
-            title="Session beenden"
-          >
-            🏁 Beenden
-          </button>
-        )}
-      </div>
+      {/* Commentary overlay */}
+      {pendingCommentary && (
+        <CommentaryOverlay
+          game={pendingCommentary}
+          buildFn={buildWizardCommentary}
+          registeredPlayers={registeredPlayers}
+          commentatorPersonality={personality}
+          commentatorVoice={voice}
+          onClose={() => setPendingCommentary(null)}
+        />
+      )}
 
       {/* Session-Status Badge */}
       {!isSessionActive && (
@@ -224,75 +292,350 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
       </div>
 
       {/* Aktionen */}
-      {!isSessionActive && (
-        <div style={styles.actions}>
-          <button style={styles.btnPrimary} onClick={() => {
-            if (showForm) {
-              setShowForm(false);
-              setPredictions({});
-              setTricks({});
-              setEditingRound(null);
-            } else {
-              setShowForm(true);
-            }
-          }}>
-            {showForm ? "✕ Abbrechen" : "＋ Neue Runde"}
-          </button>
-          {activeRounds.length > 0 && !showForm && (
-            <button style={styles.btnUndo} onClick={handleUndo}>↩ Rückgängig</button>
+      <div style={styles.actions}>
+        {isSessionActive && activeRounds.length > 0 && (
+          <button style={styles.btnUndo} onClick={handleUndo}>↩ Rückgängig</button>
+        )}
+        <button
+          style={{ ...styles.btnSecondary, padding: "8px 12px" }}
+          onClick={() => setShowRules(!showRules)}
+        >
+          {showRules ? "✕ Regeln ausblenden" : "📜 Regeln"}
+        </button>
+        <button
+          style={{ ...styles.btnGear, ...(showCommentatorSettings ? { background: "#2c1810", color: "#fdf6e3" } : {}) }}
+          onClick={() => setShowCommentatorSettings((v) => !v)}
+          title="Kommentator einstellen"
+        >
+          🎙️
+        </button>
+      </div>
+
+      {/* Commentator settings panel */}
+      {showCommentatorSettings && (
+        <div style={styles.commentatorSettingsPanel}>
+          <div style={styles.commentatorSettingsTitle}>Kommentator</div>
+
+          <div style={{ ...styles.commentatorToggleRow, marginBottom: 10 }}>
+            <span>Kommentator aktiv</span>
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
+              style={{ width: 18, height: 18, cursor: "pointer" }}
+            />
+          </div>
+
+          {enabled && (
+            <>
+              <label style={{ ...styles.label, marginTop: 0 }}>Persönlichkeit</label>
+              <div style={styles.personalityChipRow}>
+                {Object.entries(PERSONALITIES).map(([key, p]) => (
+                  <button
+                    key={key}
+                    style={{ ...styles.personalityChip, ...(personality === key ? styles.personalityChipActive : {}) }}
+                    onClick={() => setPersonality(key)}
+                  >
+                    {p.icon} {p.label}
+                  </button>
+                ))}
+              </div>
+
+              <label style={styles.label}>Stimme des Kommentators</label>
+              <VoicePickerInline value={voice} onChange={setVoice} />
+            </>
           )}
-          <button
-            style={{
-              ...styles.btnSecondary,
-              padding: "8px 12px",
-            }}
-            onClick={() => setShowRules(!showRules)}
-          >
-            {showRules ? "✕ Regeln ausblenden" : "📜 Regeln"}
-          </button>
         </div>
       )}
 
-      {/* Runden-Formular */}
-      {isSessionActive && showForm && (
-        <RoundForm
-          round={editingRound}
-          players={players}
-          currentRound={currentRound}
-          maxRounds={maxRounds}
-          predictions={predictions}
-          tricks={tricks}
-          onPredictionChange={setPredictions}
-          onTricksChange={setTricks}
-          onSave={handleSubmit}
-          onCancel={() => {
-            setShowForm(false);
-            setPredictions({});
-            setTricks({});
-            setEditingRound(null);
-          }}
-        />
+      {/* Regeln (modal) */}
+      {showRules && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: "#fdf6e3",
+            padding: 24,
+            borderRadius: 12,
+            maxWidth: 500,
+            width: "80%", minWidth: 0,
+            border: "2px solid #8b6914",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+              <button
+                style={styles.btnSecondary}
+                onClick={() => setShowRules(false)}
+              >
+                ✕ Schließen
+              </button>
+            </div>
+            <RulesBox />
+          </div>
+        </div>
       )}
 
-      {/* Regeln */}
-      {showRules && <RulesBox />}
-
-      {/* Runden-Liste (immer alle Runden sichtbar) */}
+      {/* Runden-Tabelle */}
       <div style={styles.historySection}>
-        <h3 style={styles.historyTitle}>Score Sheet</h3>
-        {activeRounds.length === 0 && (
-          <p style={styles.emptyMsg}>Noch keine Runden eingetragen.</p>
-        )}
-        {[...activeRounds].reverse().map((r) => (
-          <HistoryCard
-            key={r.id}
-            round={r}
-            players={players}
-            avatarMap={avatarMap}
-            onEdit={handleEdit}
-            onArchive={handleArchive}
-          />
-        ))}
+        <div style={{ marginBottom: 12 }}>
+          <h3 style={styles.historyTitle}>Score Sheet</h3>
+          {Object.keys(roundPhases).length > 0 && (
+            <div style={{
+              background: "#e3f2fd",
+              color: "#1976d2",
+              padding: "8px 12px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: "bold",
+              display: "inline-block",
+              marginTop: 8,
+            }}>
+              Bearbeite Runde {Object.keys(roundPhases).join(", ")}
+            </div>
+          )}
+        </div>
+          <div style={{
+            background: "#fdf6e3",
+            border: "1.5px solid #8b6914",
+            borderRadius: 12,
+            padding: 12,
+            maxWidth: "100%",
+            overflow: "hidden",
+          }}>
+          {/* Header */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: `28px repeat(${players.length}, 1fr) 76px`,
+            gap: "3px",
+            marginBottom: "6px",
+            fontWeight: "bold",
+            color: "#2c1810",
+            fontSize: 10,
+          }}>
+            <div style={{ textAlign: "center", padding: "3px" }}>R</div>
+            {players.map(p => (
+              <div key={p} style={{ textAlign: "center", padding: "3px", fontSize: 10, lineHeight: 1.3 }}>
+                <div>{avatarMap[p] || "🃏"}</div>
+                <div style={{ fontSize: 9, fontWeight: "normal", marginTop: 1 }}>{p}</div>
+              </div>
+            ))}
+            <div style={{ textAlign: "center", padding: "3px", fontSize: 9, color: "#8b6914" }}></div>
+          </div>
+
+          {Array.from({ length: maxRounds }, (_, i) => {
+            const roundNum = i + 1;
+            const round = history.find(r => r.round_number === roundNum);
+            const isSaved = !!round;
+
+            const phase = roundPhases[roundNum];
+            const isEditing = !!roundsData[roundNum];
+
+            const roundData = roundsData[roundNum] || round;
+            const currentPredictions = roundData?.predictions || {};
+            const currentTricks = roundData?.tricks || {};
+
+            // Live scores berechnen
+            const liveScores = {};
+            players.forEach(p => {
+              const pred = currentPredictions[p];
+              const trick = currentTricks[p];
+              if (pred !== undefined && trick !== undefined && pred !== "" && trick !== "") {
+                const predNum = parseInt(pred) || 0;
+                const trickNum = parseInt(trick) || 0;
+                const diff = predNum - trickNum;
+                liveScores[p] = diff === 0 ? 20 + (trickNum * 10) : -(Math.abs(diff) * 10);
+              } else {
+                liveScores[p] = round?.scores?.[p] ?? null;
+              }
+            });
+
+            const handlePredictionChange = (player, value) => {
+              const predNum = parseInt(value) || 0;
+              setRoundsData(prev => ({
+                ...prev,
+                [roundNum]: {
+                  ...prev[roundNum],
+                  predictions: { ...(prev[roundNum]?.predictions || {}), [player]: predNum },
+                  tricks: prev[roundNum]?.tricks || {},
+                }
+              }));
+            };
+
+            const handleTricksChange = (player, value) => {
+              const trickNum = parseInt(value) || 0;
+              setRoundsData(prev => ({
+                ...prev,
+                [roundNum]: {
+                  ...prev[roundNum],
+                  predictions: prev[roundNum]?.predictions || {},
+                  tricks: { ...(prev[roundNum]?.tricks || {}), [player]: trickNum }
+                }
+              }));
+            };
+
+            const predictionsEnabled = phase === 'prediction';
+            const tricksEnabled = phase === 'tricks';
+            const showSavedValues = isSaved && !isEditing;
+
+            // Dropdown-Stil
+            const dropdownStyle = (active) => ({
+              ...styles.input,
+              width: "80%", minWidth: 0,
+              padding: "2px 1px",
+              fontSize: 11,
+              textAlign: "center",
+              background: active ? "#fff" : "#f0f0f0",
+              border: active ? "1px solid #8b6914" : "1px solid #ddd",
+              fontWeight: "bold",
+              color: active ? "#2c1810" : "#bbb",
+              cursor: active ? "pointer" : "default",
+              borderRadius: 3,
+            });
+
+            return (
+              <div
+                key={roundNum}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `28px repeat(${players.length}, 1fr) 76px`,
+                  gap: "3px",
+                  padding: "5px 0",
+                  borderBottom: roundNum < maxRounds ? "1px solid #e8ddb5" : "none",
+                  backgroundColor: phase === 'prediction' ? "#e8f4fd" : phase === 'tricks' ? "#fff8e1" : "transparent",
+                  borderRadius: phase ? 4 : 0,
+                }}
+              >
+                {/* Rundennummer */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "#8b6914", fontSize: 11 }}>
+                  {roundNum}
+                </div>
+
+                {/* Spieler-Zellen */}
+                {players.map(p => {
+                  const currentPred = currentPredictions[p] ?? "";
+                  const currentTrick = currentTricks[p] ?? "";
+                  const displayScore = liveScores[p];
+                  const scoreColor = displayScore !== null ? (displayScore >= 0 ? "#2d6a4f" : "#9d0208") : "#ccc";
+
+                  return (
+                    <div key={p} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                      {showSavedValues ? (
+                        // Gespeichert: kompakte "Vorhersage/Stiche" Anzeige
+                        <>
+                          <div style={{ fontSize: 10, color: "#555", letterSpacing: 0 }}>
+                            <span style={{ fontWeight: "bold", color: "#2c1810" }}>{currentPred !== "" ? currentPred : "–"}</span>
+                            <span style={{ color: "#bbb", margin: "0 1px" }}>/</span>
+                            <span style={{ fontWeight: "bold", color: "#2c1810" }}>{currentTrick !== "" ? currentTrick : "–"}</span>
+                          </div>
+                          <div style={{ fontSize: 10, fontWeight: "bold", color: scoreColor }}>
+                            {displayScore !== null ? (displayScore >= 0 ? "+" : "") + displayScore : "–"}
+                          </div>
+                        </>
+                      ) : phase ? (
+                        // Bearbeitungsmodus: gestapelte Dropdowns
+                        <>
+                          <select
+                            value={currentPred}
+                            onChange={(e) => handlePredictionChange(p, e.target.value)}
+                            disabled={!predictionsEnabled}
+                            style={dropdownStyle(predictionsEnabled)}
+                          >
+                            <option value="">–</option>
+                            {Array.from({ length: roundNum + 1 }, (_, j) => j).map(val => (
+                              <option key={val} value={val}>{val}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={currentTrick}
+                            onChange={(e) => handleTricksChange(p, e.target.value)}
+                            disabled={!tricksEnabled}
+                            style={dropdownStyle(tricksEnabled)}
+                          >
+                            <option value="">–</option>
+                            {Array.from({ length: roundNum + 1 }, (_, j) => j).map(val => (
+                              <option key={val} value={val}>{val}</option>
+                            ))}
+                          </select>
+                          {displayScore !== null && (
+                            <div style={{ fontSize: 10, fontWeight: "bold", color: scoreColor }}>
+                              {(displayScore >= 0 ? "+" : "") + displayScore}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        // Noch nicht gestartet
+                        <div style={{ fontSize: 11, color: "#ccc" }}>–</div>
+                      )}
+                    </div>
+                  );
+                })}
+                {/* Aktionen */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, alignItems: "center", justifyContent: "center", padding: "2px 4px" }}>
+                  {!phase && !isSaved && roundNum === currentRound && (
+                    <button
+                      style={{ ...styles.btnPrimary, width: "80%", minWidth: 0, fontSize: 10, padding: "5px 4px", background: "#1976d2", fontWeight: "bold" }}
+                      onClick={() => startPredictionPhase(roundNum)}
+                    >
+                      Starten
+                    </button>
+                  )}
+                  {phase === 'prediction' && (
+                    <>
+                      <div style={{ fontSize: 8, color: "#1976d2", fontWeight: "bold", textAlign: "center" }}>Vorhersage</div>
+                      <button
+                        style={{ ...styles.btnPrimary, width: "80%", minWidth: 0, fontSize: 10, padding: "4px", background: "#2d6a4f" }}
+                        onClick={() => finishPredictionPhase(roundNum)}
+                      >
+                        Weiter →
+                      </button>
+                      <button
+                        style={{ ...styles.btnSecondary, width: "80%", minWidth: 0, fontSize: 9, padding: "3px 4px" }}
+                        onClick={() => cancelRound(roundNum)}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
+                  {phase === 'tricks' && (
+                    <>
+                      <div style={{ fontSize: 8, color: "#b45309", fontWeight: "bold", textAlign: "center" }}>Stiche</div>
+                      <button
+                        style={{ ...styles.btnPrimary, width: "80%", minWidth: 0, fontSize: 10, padding: "4px", background: "#2d6a4f" }}
+                        onClick={() => finishTricksPhase(roundNum)}
+                      >
+                        ✓ Speichern
+                      </button>
+                      <button
+                        style={{ ...styles.btnSecondary, width: "80%", minWidth: 0, fontSize: 9, padding: "3px 4px" }}
+                        onClick={() => cancelRound(roundNum)}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
+                  {isSaved && !phase && (
+                    <button
+                      style={{ ...styles.btnSecondary, width: "80%", minWidth: 0, fontSize: 9, padding: "3px 4px", color: "#8b6914", borderColor: "#8b6914" }}
+                      onClick={() => editSavedRound(roundNum)}
+                    >
+                      ✎ Edit
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Session beenden Modal */}
@@ -314,7 +657,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
             padding: 24,
             borderRadius: 12,
             maxWidth: 400,
-            width: "100%",
+            width: "80%", minWidth: 0,
             border: "2px solid #8b6914",
           }}>
             <h3 style={{ ...styles.formTitle, marginBottom: 12 }}>Session beenden?</h3>

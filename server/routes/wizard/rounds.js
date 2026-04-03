@@ -74,9 +74,9 @@ router.post('/', (req, res) => {
   const { maxRound } = db.prepare(
     'SELECT MAX(round_number) as maxRound FROM wizard_rounds WHERE session_id = ?'
   ).get(id);
-  const nextRound = (maxRound?.maxRound || 0) + 1;
+  const nextRound = (maxRound || 0) + 1;
 
-  db.prepare(`
+  const insert = db.prepare(`
     INSERT INTO wizard_rounds
       (session_id, round_number, predictions, tricks, scores, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -91,7 +91,7 @@ router.post('/', (req, res) => {
 
   const round = db.prepare(
     'SELECT * FROM wizard_rounds WHERE id = ?'
-  ).get(this.lastInsertRowid);
+  ).get(insert.lastInsertRowid);
 
   res.status(201).json(parseRound(round));
 });

@@ -1,339 +1,227 @@
 # Frontend-Komponenten
 
-## Komponenten-Übersicht
-
-Das Frontend ist in funktionale React-Komponenten unterteilt, die alle über Inline-Styles aus `styles.js` gestaltet werden. Die Anwendung verwendet keinen URL-Router, sondern state-basiertes Routing in `App.jsx`.
+Das Frontend besteht aus funktionalen React-Komponenten mit Inline-Styles aus `styles.js`. Kein URL-Router — state-basiertes Routing in `App.jsx`.
 
 ---
 
 ## App.jsx
 
-### Rolle
+**Rolle:** Hauptkomponente und zentraler View-Router.
 
-Hauptkomponente und zentraler View-Router.
-
-### Zustands-Management
-
-```javascript
+**State:**
+```js
 {
   sessions: [],           // Alle aktiven Runden
   registeredPlayers: [],  // Alle registrierten Spieler
-  activeSession: null,   // Aktuell angezeigte Runde
+  activeSession: null,    // Aktuell angezeigte Runde
   view: "sessions"        // "sessions" | "session" | "players" | "archive"
 }
 ```
 
-### View-Logik
+**Views:**
 
-| View-State | Komponente | Beschreibung |
+| State | Komponente | Beschreibung |
 |---|---|---|
 | `"sessions"` | `SessionList` | Rundenübersicht, neue Runde erstellen |
-| `"session"` | `SessionView` | Spielansicht einer Runde |
-| `"players"` | `PlayerManager` | Spieler-Registry verwalten |
+| `"session"` | `SessionView` | Schafkopf-Spielansicht |
+| `"players"` | `PlayerManager` | Spieler-Registry |
 | `"archive"` | `ArchiveView` | Archivierte Runden und Spiele |
 
-### Callbacks
-
-- `handleSessionSelect(id)` – Runde öffnen
-- `handleSessionCreated(session)` – Neue Runde zur Liste hinzufügen
-- `handleSessionDeleted(id)` – Runde aus Liste entfernen
-- `handleSessionUpdated(updated)` – Runde aktualisieren
-- `handleSessionRestored()` – Runden nach Archiv-Wiederherstellung neu laden
+Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreSheet` delegiert.
 
 ---
 
 ## SessionList.jsx
 
-### Rolle
+**Rolle:** Rundenübersicht + Formular für neue Runden.
 
-Übersicht über alle aktiven Runden + Formular für neue Runden.
-
-### Unterkomponenten
-
-- `QuickAddPlayer` – Schneller Player-Add im Runden-Erstellungs-Formular
-- `NewSessionForm` – Formular für neue Runden
-
-### Features
-
-- Rundenliste mit Metadaten (Name, Spiel, Spieler, Spielanzahl)
-- Runde direkt ins Archiv verschieben (📦-Button)
+**Features:**
+- Rundenliste mit Metadaten (Name, Spieltyp, Spieler, Spielanzahl)
+- Runde direkt ins Archiv verschieben (📦)
 - Neue Runde erstellen:
   - Namen eingeben
-  - Spieltyp auswählen (Plugin-basiert)
-  - Spieler aus Registry auswählen
-  - Schnellen Player-Add direkt im Formular
-  - Einsatz definieren
+  - Spieltyp aus Plugin-Registry wählen (Schafkopf oder Wizard)
+  - Spieler aus Registry auswählen (Quick-Add direkt im Formular)
+  - Einsatz festlegen (für Schafkopf)
 
-### API-Calls
-
-- `GET /api/sessions` – Runden laden (in App.jsx)
-- `POST /api/sessions` – Neue Runde erstellen
-- `PATCH /api/sessions/:id` – Runde archivieren
+**API-Calls:** `GET /api/sessions`, `POST /api/sessions`, `PATCH /api/sessions/:id`
 
 ---
 
 ## SessionView.jsx
 
-### Rolle
+**Rolle:** Spielansicht für eine aktive Session. Unterscheidet intern zwischen Schafkopf und Wizard.
 
-Hauptansicht für eine aktive Spielsession.
+**Schafkopf-Modus** (`game_type !== "wizard"`):
+- `BockBar` — Bock-Multiplikator
+- `Scoreboard` — Kontostände
+- Plugin-`FormComponent`, -`HistoryCardComponent`, -`RulesComponent`
+- Kommentator-Overlay + 🎙️-Settings-Button
 
-### Unterkomponenten
+**Wizard-Modus** (`game_type === "wizard"`):
+- Rendert direkt `<WizardScoreSheet>` (das komplette Wizard-UI)
+- Keine eigene Scoreboard/Form-Logik in SessionView
 
-- `BockBar` – Bock-Multiplikator anzeigen/ändern
-- `Scoreboard` – Kontostände aller Spieler
-- `CommentaryOverlay` – Kommentator-Overlay (bedingt angezeigt)
-- Plugin-Komponenten: `FormComponent`, `HistoryCardComponent`, `RulesComponent`
+**Gemeinsam:** ← Runden-Button, Session-Name, Kommentator-Settings (Schafkopf-only)
 
-### Zustands-Management
-
-```javascript
+**State (Schafkopf):**
+```js
 {
-  showForm: false,              // Formular anzeigen?
-  showRules: false,             // Regeln anzeigen?
-  form: null,                   // Aktueller Form-State
-  editingGame: null,            // Spiel wird bearbeitet?
-  pendingCommentary: null,     // Kommentar-Overlay anzeigen?
-  showCommentatorSettings: false, // Kommentator-Settings anzeigen?
+  showForm: false,
+  showRules: false,
+  form: null,
+  editingGame: null,
+  pendingCommentary: null,
+  showCommentatorSettings: false,
 }
 ```
 
-### Haupt-Features
-
-1. **Spielspiel eintragen**
-   - Formular öffnen/schließen
-   - Spieltyp, Spieler, Ergebnis auswählen
-   - Live-Vorschau des Spielwerts
-   - Spiel eintragen → API-Aufruf
-
-2. **Spiel bearbeiten**
-   - Klick auf Spiel in History
-   - Formular mit vorhandenen Daten öffnen
-   - Änderungen speichern
-
-3. **Spiel archivieren**
-   - Einzeln aus der History entfernen
-   - Bleibt im Archiv einsehbar
-
-4. **Rückgängig (Undo)**
-   - Löscht das letzte aktive Spiel
-
-5. **Bock ändern**
-   - Direkt über die BockBar
-
-6. **Kommentator-Settings**
-   - Aktivieren/Deaktivieren
-   - Persönlichkeit auswählen
-   - Stimme auswählen
-
-### API-Calls
-
-- `PATCH /api/sessions/:id` – Bock ändern
-- `POST /api/sessions/:id/games` – Spiel eintragen
-- `PATCH /api/sessions/:id/games/:gameId` – Spiel bearbeiten/archivieren
-- `DELETE /api/sessions/:id/games/last` – Rückgängig
+**API-Calls (Schafkopf):**
+- `PATCH /api/sessions/:id` — Bock ändern
+- `POST /api/sessions/:id/games` — Spiel eintragen
+- `PATCH /api/sessions/:id/games/:gameId` — bearbeiten/archivieren
+- `DELETE /api/sessions/:id/games/last` — Undo
 
 ---
 
-## Scoreboard.jsx
+## WizardScoreSheet.jsx (`src/games/wizard/ScoreSheet.jsx`)
 
-### Rolle
+**Rolle:** Vollständige Wizard-Spielansicht — Scoreboard, Score-Tabelle, Eingabe-Workflow, Kommentator.
 
-Anzeige der Kontostände aller Spieler.
+### Scoreboard
 
-### Features
+Zeigt alle Spieler mit Avatar, Name und Gesamtpunkten (Summe aller `scores`-Werte aus `history`). Führender Spieler bekommt 👑.
 
-- Spieler-Karten mit Avatar, Name, Kontostand, Spielanzahl
-- Farbige Kontostände (grün = positiv, rot = negativ)
-- Kronen-Badge für führenden Spieler (bei positivem Kontostand)
+### Score-Tabelle
 
-### Daten-Fluss
+Kompaktes Grid-Layout: `28px (R) + N × 1fr (Spieler) + 76px (Aktionen)`.
 
-```javascript
-const balances = plugin.calcBalances(activeHistory, players);
+- **Gespeicherte Runden:** `Vorhersage/Stiche` (z.B. `2/1`) + farbiger Punktestand
+- **Prediction-Phase:** Dropdown für Vorhersage (aktiv), Dropdown für Stiche (deaktiviert)
+- **Tricks-Phase:** Dropdown für Vorhersage (deaktiviert), Dropdown für Stiche (aktiv)
+- **Noch nicht gestartet:** `–`
 
-// Für jeden Spieler:
-<playerCard>
-  <crownBadge if isLeader>👑</crownBadge>
-  <avatar>{avatar}</avatar>
-  <name>{name}</name>
-  <balance color={val > 0 ? green : val < 0 ? red : gray}>
-    {val >= 0 ? "+" : ""}{val.toFixed(2)} €
-  </balance>
-  <games>{gameCount} Spiele</games>
-</playerCard>
+### Phasen-Workflow
+
+```js
+roundPhases: { [roundNum]: 'prediction' | 'tricks' | 'completed' }
+roundsData:  { [roundNum]: { predictions, tricks } }
 ```
 
----
+Nur die nächste ausstehende Runde (`roundNum === currentRound`) zeigt den "Starten"-Button.
 
-## BockBar.jsx
+### State
+```js
+{
+  showRules: false,
+  showCommentatorSettings: false,
+  pendingCommentary: null,
+  editingRound: null,
+  predictions: {},      // Legacy, wird durch roundsData ersetzt
+  tricks: {},           // Legacy
+  roundsData: {},       // { [roundNum]: { predictions, tricks } }
+  roundPhases: {},      // { [roundNum]: phase }
+}
+```
 
-### Rolle
+### Synchronisation beim Mount
 
-Anzeige und Änderung des Bock-Multiplikators.
+```js
+useEffect(() => {
+  fetch(`/api/sessions/${session.id}/wizard-rounds`)
+    .then(r => r.json())
+    .then(rounds => {
+      if (rounds.length > 0) onSessionUpdated({ ...session, history: rounds });
+    });
+}, [session.id]);
+```
 
-### Features
-
-- Visualisierung der aktuellen Bock-Stufe
-- Buttons zum Erhöhen/Verringern
-- Direkter API-Aufruf bei Änderung
-
----
-
-## PlayerManager.jsx
-
-### Rolle
-
-Verwaltung der Spieler-Registry.
-
-### Unterkomponenten
-
-- `PlayerForm` – Spieler anlegen/bearbeiten
-- `VoicePicker` – System-Stimmen auswählen
-
-### Features
-
-1. **Spielerliste**
-   - Alle Spieler mit Avatar, Name, Charakter, Stimme
-   - Bearbeiten (✏️) und Löschen (🗑️)
-
-2. **Neuen Spieler anlegen**
-   - Name eingeben
-   - Avatar auswählen
-   - Charakter-Typ wählen (für Reaktionen)
-   - Stimme auswählen (für TTS)
-
-3. **Spieler bearbeiten**
-   - Alle Felder editieren
-   - Name muss eindeutig bleiben
+Notwendig, da `GET /api/sessions/:id` keine Wizard-Runden zurückgibt.
 
 ### API-Calls
-
-- `GET /api/players` – Spieler laden
-- `POST /api/players` – Spieler anlegen
-- `PATCH /api/players/:id` – Spieler bearbeiten
-- `DELETE /api/players/:id` – Spieler löschen
-
----
-
-## ArchiveView.jsx
-
-### Rolle
-
-Verwaltung von archivierten Runden und Spielen.
-
-### Unterkomponenten
-
-- `ArchivedSessionCard` – Archivierte Runde
-- `ArchivedGameCard` – Archiviertes Spiel
-
-### Features
-
-1. **Archivierte Runden**
-   - Gesamte Rundenarchiv-Übersicht
-   - Wiederherstellen (↩) oder endgültig löschen (🗑)
-
-2. **Archivierte Spiele**
-   - Gruppen nach Session
-   - Einzelne Spiele wiederherstellen oder löschen
-
-3. **Laden**
-   - Paralleles Laden von Sessions und Games
-
-### API-Calls
-
-- `GET /api/sessions/archived` – Archivierte Runden laden
-- `GET /api/sessions/archived/games` – Archivierte Spiele laden
-- `PATCH /api/sessions/:id` – Runde wiederherstellen (archived_at = null)
-- `DELETE /api/sessions/:id` – Runde endgültig löschen
-- `PATCH /api/sessions/:id/games/:gameId` – Spiel wiederherstellen/löschen
+- `GET /api/sessions/:id/wizard-rounds` — beim Mount
+- `POST /api/sessions/:id/wizard-rounds` — neue Runde
+- `PATCH /api/sessions/:id/wizard-rounds/:id` — Runde bearbeiten
+- `DELETE /api/sessions/:id/wizard-rounds/last` — Undo
 
 ---
 
 ## CommentaryOverlay.jsx
 
-### Rolle
+**Rolle:** Overlay nach einem Spiel/einer Runde mit Kommentar-Text und TTS.
 
-Overlay für den automatischen Kommentar nach einem Spiel.
-
-### Features
-
-- Kompletter Kommentar mit allen Segmenten
-- Kommentator-Avatar und -Label
-- Spieler-Reaktionen (optional) mit Avataren
-- Automatisches TTS-Playback
-- Schließen via Button, Klick außerhalb, oder nach Playback-Ende
-
-### TTS-Integration
-
-```javascript
-useEffect(() => {
-  const utter = new SpeechSynthesisUtterance(spokenText);
-  utter.voice = selectedVoice;
-  utter.pitch = personality.pitch;
-  utter.rate = personality.rate;
-  utter.lang = "de-DE";
-  utter.onend = onClose;
-  window.speechSynthesis.speak(utter);
-
-  return () => { window.speechSynthesis.cancel(); };
-}, []);
+**Props:**
+```js
+{
+  game,                    // Spiel- oder Runden-Objekt
+  registeredPlayers,       // für Avatar/Charakter-Lookup
+  commentatorPersonality,  // "dramatic" | "tagesschau" | "bavarian" | "fan"
+  commentatorVoice,        // Stimmenname oder null
+  onClose,                 // Callback
+  buildFn,                 // optional: buildWizardCommentary oder default buildFullCommentary
+}
 ```
+
+**Rendering:**
+- Kommentator-Header mit Icon + Label
+- Segment 0 (Kommentator): kursiv, etwas größer
+- Segment 1+ (Spieler): Avatar links, normaler Text
+- "✕ Schließen"-Button
+
+**TTS:** Alle Segmente als ein einziger Utterance via `speechSynthesis.speak()`.
 
 ---
 
-## Game-Komponenten (Plugin-basiert)
+## Scoreboard.jsx
 
-### GameForm.jsx (Schafkopf)
+**Rolle:** Kontostand-Anzeige (Schafkopf).
 
-**Rolle:** Formular zur Spieleingabe.
+- Spieler-Karten: Avatar, Name, Kontostand (±€), Spielanzahl
+- Grün = positiv, Rot = negativ
+- 👑 für führenden Spieler (wenn Kontostand > 0)
+
+---
+
+## BockBar.jsx
+
+**Rolle:** Bock-Multiplikator anzeigen und ändern (Schafkopf).
+
+- Visualisierung der Bock-Stufe
+- Buttons +/−, sofortiger API-Aufruf
+
+---
+
+## PlayerManager.jsx
+
+**Rolle:** Spieler-Registry verwalten.
 
 **Features:**
-- Spieltyp auswählen (Sauspiel, Solo, Wenz, Touts)
-- Spieler auswählen
-- Gewinn/Verlust toggeln
-- Flags setzen (Schneider, Schwarz)
-- Laufende angeben
-- Klopfer auswählen
-- Live-Vorschau des Spielwerts
+- Spielerliste mit Avatar, Name, Charakter-Typ, Stimme
+- Neuen Spieler anlegen: Name, Avatar-Picker, Charakter-Chips, Stimmen-Dropdown
+- Bestehende Spieler bearbeiten oder löschen
 
-### HistoryCard.jsx (Schafkopf)
+**API-Calls:** `GET /api/players`, `POST /api/players`, `PATCH /api/players/:id`, `DELETE /api/players/:id`
 
-**Rolle:** Anzeige eines Spiels im Verlauf.
+---
 
-**Features:**
-- Spiel-Round, Typ, Ergebnis
-- Spieler, Partner (bei Sauspiel)
-- Spielwert-Badge
-- Bearbeiten (✏️) und Archivieren (📦)
+## ArchiveView.jsx
+
+**Rolle:** Archivierte Schafkopf-Runden und Einzelspiele verwalten.
+
+- Archivierte Runden: Wiederherstellen (↩) oder endgültig löschen (🗑)
+- Archivierte Einzelspiele: nach Session gruppiert, einzeln wiederherstellen oder löschen
+
+**API-Calls:**
+- `GET /api/sessions/archived`
+- `GET /api/sessions/archived/games`
+- `PATCH /api/sessions/:id` — Wiederherstellen
+- `DELETE /api/sessions/:id` — Endgültig löschen
 
 ---
 
 ## AvatarPicker.jsx
 
-### Rolle
-
-Emoji-Auswahl für Avatare.
-
-### Features
-
-- Grid mit 40+ Emojis
-- Hover-Effekte
-- Direkte Auswahl
-
----
-
-## RulesBox.jsx
-
-### Rolle
-
-Anzeige der Spielregeln (Plugin-basiert).
-
-### Features
-
-- Klappbare Regel-Referenz
-- Fokus auf aktuelle Session (Schafkopf)
-- Tabelle mit Spieltypen und Multiplikatoren
+Emoji-Grid mit 40+ Emojis zur Avatar-Auswahl.
 
 ---
 
@@ -341,86 +229,40 @@ Anzeige der Spielregeln (Plugin-basiert).
 
 ### useCommentatorSettings()
 
-**Rolle:** localStorage-basierte Persistenz der Kommentator-Einstellungen.
+localStorage-Persistenz der Kommentator-Einstellungen. Wird in `SessionView.jsx` (Schafkopf) und `ScoreSheet.jsx` (Wizard) verwendet — gleiche Keys, geteilte Einstellungen.
 
-**Rückgabe:**
-```javascript
-{
-  personality: "dramatic",
-  voice: "Anna",
-  enabled: true,
-  setPersonality,
-  setVoice,
-  setEnabled
-}
+```js
+const { personality, voice, enabled, setPersonality, setVoice, setEnabled }
+  = useCommentatorSettings();
 ```
 
-**Keys:**
-- `schafkopf-commentary-personality`
-- `schafkopf-commentary-voice`
-- `schafkopf-commentary-enabled`
+**localStorage-Keys:** `sk_commentator_personality`, `sk_commentator_voice`, `sk_commentator_enabled`
 
 ---
 
 ## Styling (styles.js)
 
-Alle Styles sind in einem zentralen JavaScript-Objekt definiert:
+Zentrale Inline-Style-Definitionen. Wichtige Kategorien:
 
-```javascript
-export default {
-  // Layout
-  container: { maxWidth: 480, margin: "0 auto", ... },
-  header: { padding: "20px 0", ... },
+| Kategorie | Keys (Beispiele) |
+|---|---|
+| Layout | `container`, `header`, `actions` |
+| Scoreboard | `scoreboard`, `playerCard`, `leaderCard`, `crownBadge` |
+| Buttons | `btnPrimary`, `btnSecondary`, `btnUndo`, `btnGear` |
+| Formulare | `formCard`, `formTitle`, `label`, `input` |
+| History | `historySection`, `historyTitle`, `historyCard` |
+| Commentary | `commentaryOverlay`, `commentaryCard`, `commentaryBubble` |
+| Kommentator-Settings | `commentatorSettingsPanel`, `personalityChip`, `personalityChipActive`, `voiceSelect` |
 
-  // Typography
-  title: { fontSize: 32, fontWeight: 800, color: "#2c1810", ... },
-  subtitle: { fontSize: 14, color: "#7a6840", ... },
+> **Hinweis:** `btnPrimary` und `btnSecondary` haben `minWidth: 130`. Für kleine Kontexte (z.B. Score-Tabellen-Buttons) muss `minWidth: 0` überschrieben werden.
 
-  // Buttons
-  btnPrimary: { background: "#2c1810", color: "#fdf6e3", ... },
-  btnSecondary: { background: "#e8dcc4", ... },
-  btnUndo: { background: "#9d0208", color: "#fdf6e3", ... },
-
-  // ... viele weitere
-};
-```
-
-### Farbpalette
+**Farbpalette:**
 
 | Farbe | Wert | Verwendung |
 |---|---|---|
 | Creme | `#fdf6e3` | Hintergrund |
 | Dunkelbraun | `#2c1810` | Text, primäre Buttons |
-| Gold | `#8b6914` | Akzente, Überschriften |
+| Gold | `#8b6914` | Akzente, Überschriften, Rahmen |
 | Grün | `#2d6a4f` | Gewonnen, Bestätigung |
-| Rot | `#9d0208` | Verloren, Löschen |
-
----
-
-## Datenfluss-Beispiel: Spiel eintragen
-
-```
-1. User klickt auf "＋ Neues Spiel"
-   → setShowForm(true)
-
-2. User füllt Formular aus
-   → setForm(formState)
-   → Live-Berechnung: calcSpielwert(formState)
-
-3. User klickt auf Submit
-   → resolveGame(formState)
-   → API: POST /api/sessions/:id/games
-
-4. Response kommt zurück
-   → onSessionUpdated({ ...session, history: [...history, newGame] })
-   → setShowForm(false)
-
-5. Wenn Kommentator aktiv:
-   → setPendingCommentary(newGame)
-   → CommentaryOverlay wird angezeigt
-   → TTS-Playback startet
-
-6. Nach Playback-Ende:
-   → setPendingCommentary(null)
-   → Overlay verschwindet
-```
+| Rot | `#9d0208` | Verloren, Löschen, Undo |
+| Blau | `#1976d2` | Wizard-Aktionen |

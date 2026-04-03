@@ -1,260 +1,196 @@
 # Spiellogik
 
-## Schafkopf-Regeln und Wertberechnung
-
-Die Spiellogik ist komplett in `src/games/schafkopf/logic.js` gekapselt und wird sowohl vom Frontend (Live-Berechnung im Formular) als auch vom Backend (Bestätigung) verwendet.
-
 ---
 
-## Spieltypen
+## Schafkopf
 
-| Typ | Multiplikator | Beschreibung |
+### Spieltypen
+
+| Typ | Basiswert | Beschreibung |
 |---|---|---|
-| **Sauspiel** | ×1 | Normales Sauspiel mit Farbensau |
-| **Solo** | ×4 | Farbensolo |
-| **Wenz** | ×4 | Wenz (nur Unter Trumpf) |
+| **Sauspiel** | ×1 | Normales Sauspiel mit Farbensau, 2 gegen 2 |
+| **Solo** | ×4 | Farbensolo, 1 gegen 3 |
+| **Wenz** | ×4 | Wenz (nur Unter Trumpf), 1 gegen 3 |
 | **Solo Tout** | ×8 | Solo mit Tout-Ansage |
 | **Wenz Tout** | ×8 | Wenz mit Tout-Ansage |
 
----
+### Spielwert-Berechnung
 
-## Spielwert-Berechnung
-
-### Grundformel
-
+**Grundformel:**
 ```
-spielwert = stake × multiplikator × bock × 2^klopfer
+spielwert = stake × multiplikator × bock × 2^(anzahl_klopfer)
 ```
 
-### Aufbau des Multiplikators
-
-Der Multiplikator setzt sich aus mehreren Komponenten zusammen:
-
-```javascript
-mult = spieltyp.multiplikator
+**Multiplikator-Zusammensetzung:**
+```
+mult = spieltyp_basis
      + (schneider ? 1 : 0)
      + (schwarz ? 2 : 0)
      + laufende
 ```
 
-**Beispiel:**
-- Solo (×4) mit Schneider (+1) und 3 Laufenden (+3)
-- Bei 50 Cent Einsatz und Bock 1
-- `0.50 × (4 + 1 + 3) × 1 = 0.50 × 8 = 4.00 €`
-
-### Klopfer
-
-Jeder Klopfer verdoppelt den Spielwert:
-
+**Beispiel:** Solo (×4) mit Schneider (+1), 3 Laufenden (+3), Einsatz 0,50 €, kein Bock:
 ```
-0 Klopfer: ×1
-1 Klopfer: ×2
-2 Klopfer: ×4
-3 Klopfer: ×8
+0.50 × (4 + 1 + 3) × 1 = 4.00 €
 ```
 
-### Bock-Runde
-
-Der aktuelle Bock-Multiplikator wird auf den gesamten Spielwert angewendet:
-
+**Klopfer:** jeder verdoppelt den Gesamtwert:
 ```
-Normal: ×1
-Erster Bock: ×2
-Doppel-Bock: ×4
+0 Klopfer: ×1  |  1 Klopfer: ×2  |  2 Klopfer: ×4  |  3 Klopfer: ×8
 ```
 
-**Vollständiges Beispiel:**
-- Solo (×4) mit Schneider (+1) und 2 Laufenden (+2) → 7
-- Einsatz 50 Cent, 2 Klopfer (×4), Bock 2
-- `0.50 × 7 × 4 × 2 = 28.00 €`
+**Bock-Runden:**
+```
+Normal: ×1  |  Bock: ×2  |  Doppel-Bock: ×4
+```
 
----
+### Gewinnaufteilung
 
-## Gewinnaufteilung
+**Sauspiel (2 gegen 2):**
+```js
+// Gewonnen
+changes[player]   = +amount × 2
+changes[partner]  = +amount × 2
+changes[opponent1] = -amount × 2
+changes[opponent2] = -amount × 2
+```
 
-### Solo-Spiele
-
-Der Alleinspieler spielt gegen alle Gegner:
-
-```javascript
-// Solo gewonnen
-changes[player] = amount × 3
+**Solo/Wenz (1 gegen 3):**
+```js
+// Gewonnen
+changes[player]    = +amount × 3
 changes[opponent1] = -amount
 changes[opponent2] = -amount
 changes[opponent3] = -amount
-
-// Solo verloren
-changes[player] = -amount × 3
-changes[opponent1] = +amount
-changes[opponent2] = +amount
-changes[opponent3] = +amount
 ```
 
-### Sauspiele
+Bei Verlust werden alle Vorzeichen umgekehrt.
 
-Das Spielpaar spielt gegen die Gegenpartei:
+### API-Funktionen (src/games/schafkopf/logic.js)
 
-```javascript
-// Sauspiel gewonnen
-changes[player] = amount × 2
-changes[partner] = amount × 2
-changes[opponent1] = -amount × 2
-changes[opponent2] = -amount × 2
+#### `calcSpielwert(formState)`
+Berechnet den reinen Spielwert ohne Kontostand-Änderungen. Wird im Formular live aufgerufen.
 
-// Sauspiel verloren
-changes[player] = -amount × 2
-changes[partner] = -amount × 2
-changes[opponent1] = +amount × 2
-changes[opponent2] = +amount × 2
-```
-
----
-
-## API-Funktionen
-
-### `calcSpielwert(formState)`
-
-Berechnet den reinen Spielwert (ohne Kontostand-Änderungen).
-
-**Parameter:**
-- `type` – Spieltyp (string)
-- `schneider` – Schneider-Flag (boolean)
-- `schwarz` – Schwarz-Flag (boolean)
-- `laufende` – Anzahl der Laufenden (number)
-- `bock` – Bock-Multiplikator (number)
-- `klopfer` – Array von Klopfer-Namen (string[])
-- `stake` – Grundeinsatz (number)
-
+**Parameter:** `type`, `schneider`, `schwarz`, `laufende`, `bock`, `klopfer[]`, `stake`  
 **Rückgabe:** Spielwert in Euro (number)
 
----
-
-### `resolveGame(formState)`
-
+#### `resolveGame(formState)`
 Berechnet die vollständigen Änderungen für alle Spieler.
 
-**Zusätzliche Parameter:**
-- `player` – Ansagender Spieler (string)
-- `partner` – Partner (string, nur bei Sauspiel)
-- `won` – Gewinn-Flag (boolean)
-- `players` – Array aller Spielernamen (string[])
-
 **Rückgabe:**
-```javascript
+```js
 {
   changes: { "Müller": 4.00, "Huber": 4.00, "Schmidt": -4.00, "Wagner": -4.00 },
   spielwert: 2.00
 }
 ```
 
----
-
-### `calcBalances(history, players)`
-
-Berechnet die Kontostände für alle Spieler anhand der Historie.
-
-**Parameter:**
-- `history` – Array von Spiel-Objekten (nur aktive Spiele)
-- `players` – Array aller Spielernamen
+#### `calcBalances(history, players)`
+Berechnet Kontostände aus der gesamten aktiven Historie.
 
 **Rückgabe:**
-```javascript
-{
-  "Müller": 12.50,
-  "Huber": -5.00,
-  "Schmidt": 3.00,
-  "Wagner": -10.50
-}
+```js
+{ "Müller": 12.50, "Huber": -5.00, "Schmidt": 3.00, "Wagner": -10.50 }
 ```
 
 ---
 
-## Plugin-Architektur
+## Wizard
 
-### Plugin-Schnittstelle
+### Spielübersicht
 
-Jedes Spiel-Plugin muss folgende Felder exportieren:
+Wizard ist ein Stichvorhersage-Spiel für 3–6 Spieler. In jeder Runde muss jeder Spieler vorhersagen, wie viele Stiche er machen wird.
 
-```javascript
+**Rundenanzahl je nach Spieleranzahl:**
+
+| Spieler | Runden |
+|---|---|
+| 3 | 20 |
+| 4 | 15 |
+| 5 | 12 |
+| 6 | 10 |
+
+In Runde *n* werden *n* Karten ausgeteilt, also steigen Anzahl der Karten und mögliche Stiche pro Runde.
+
+### Punkteberechnung
+
+Die Berechnung erfolgt **serverseitig** in `server/routes/wizard/rounds.js`:
+
+```js
+if (pred === actual) {
+  scores[p] = 20 + actual × 10   // Korrekte Vorhersage
+} else {
+  scores[p] = -(Math.abs(pred - actual) × 10)   // Falsche Vorhersage
+}
+```
+
+**Beispiele:**
+
+| Vorhersage | Tatsächlich | Punkte |
+|---|---|---|
+| 2 | 2 | +40 (20 + 2×10) |
+| 0 | 0 | +20 (20 + 0×10) |
+| 3 | 1 | −20 (−2×10) |
+| 1 | 4 | −30 (−3×10) |
+
+### Score Sheet UI-Workflow
+
+Das Wizard Score Sheet hat einen zweiphasigen Workflow pro Runde:
+
+```
+[Starten] → Phase: prediction
+  User trägt Vorhersagen ein
+[Weiter →] → Phase: tricks
+  User trägt tatsächliche Stiche ein
+[✓ Speichern] → POST /wizard-rounds
+  Scores berechnet, Runde gespeichert
+  CommentaryOverlay erscheint (falls aktiviert)
+```
+
+Gespeicherte Runden zeigen `Vorhersage/Stiche` kompakt an (z.B. `2/1`) mit farbigem Score darunter (grün = korrekt/positiv, rot = falsch/negativ).
+
+Nur die jeweils nächste ausstehende Runde hat einen "Starten"-Button — bereits gespeicherte Runden können über "✎ Edit" bearbeitet werden.
+
+### Undo
+
+Über den "↩ Rückgängig"-Button wird `DELETE /api/sessions/:id/wizard-rounds/last` aufgerufen, was die Runde mit der höchsten `round_number` löscht.
+
+---
+
+## Plugin-Schnittstelle
+
+Jedes Spiel-Plugin wird in `src/games/index.js` registriert:
+
+```js
+export const GAME_PLUGINS = {
+  schafkopf: schafkopfPlugin,
+  wizard: wizardPlugin,
+};
+```
+
+### Pflichtfelder
+
+```js
 {
-  id: string,                    // Eindeutige ID (z. B. "schafkopf")
-  label: string,                 // Anzeigename (z. B. "Schafkopf")
-  description: string,          // Kurzbeschreibung
-  defaultStake: number,          // Standard-Einsatz
+  id: string,          // z.B. "schafkopf"
+  label: string,       // z.B. "Schafkopf"
+  description: string,
+  defaultStake: number,
+}
+```
 
-  // Logik-Funktionen
+### Optionale Felder (Schafkopf-Plugin)
+
+```js
+{
   makeDefaultForm: (players) => formState,
   calcSpielwert: (formState) => number,
   resolveGame: (formState) => { changes, spielwert },
   calcBalances: (history, players) => { [name]: number },
-
-  // React-Komponenten
   FormComponent,
   HistoryCardComponent,
   RulesComponent,
 }
 ```
 
-### Form-State-Struktur
-
-Das Formular für einen Spieleintrag hat folgende Struktur:
-
-```javascript
-{
-  type: "Sauspiel",      // Spieltyp
-  player: "Müller",       // Ansagender Spieler
-  partner: "Wagner",     // Partner (nur bei Sauspiel)
-  won: true,             // Gewinn-Flag
-  schneider: false,      // Schneider?
-  schwarz: false,        // Schwarz?
-  laufende: 0,           // Anzahl Laufende
-  klopfer: [],           // Klopfer-Namen
-}
-```
-
-### Plugin-Registry
-
-Alle Plugins werden in `src/games/index.js` registriert:
-
-```javascript
-export const GAME_PLUGINS = {
-  schafkopf: schafkopfPlugin,
-  // zukünftige Spiele hier ergänzen...
-};
-```
-
----
-
-## Integration in UI
-
-### Live-Berechnung
-
-Das Formular berechnet den Spielwert in Echtzeit:
-
-```javascript
-// In GameForm.jsx
-const spielwert = plugin.calcSpielwert({ ...form, bock, stake, klopfer });
-```
-
-### Spiel eintragen
-
-Beim Absenden werden Änderungen berechnet und an die API gesendet:
-
-```javascript
-const { changes, spielwert } = plugin.resolveGame({ ...form, bock, players, stake });
-
-await fetch(`/api/sessions/${sessionId}/games`, {
-  method: "POST",
-  body: JSON.stringify({ type, player, partner, won, schneider, schwarz,
-                         laufende, bock, klopfer, spielwert, changes }),
-});
-```
-
-### Kontostand-Berechnung
-
-Die Scoreboard-Komponente berechnet Kontostände aus der Historie:
-
-```javascript
-const activeHistory = history.filter(g => !g.archived_at);
-const balances = plugin.calcBalances(activeHistory, players);
-```
+Das **Wizard-Plugin** implementiert diese Felder nicht — die gesamte UI-Logik liegt in `ScoreSheet.jsx`, die Backend-Logik in `server/routes/wizard/rounds.js`. `SessionView.jsx` erkennt `game_type === "wizard"` und rendert direkt `<WizardScoreSheet>` statt der Plugin-Komponenten.

@@ -73,7 +73,7 @@ Löscht einen Spieler aus dem Registry. Bestehende Runden sind nicht betroffen (
 
 ## Runden (`/api/sessions`)
 
-> **Wichtig:** Die statischen Routen `/archived` und `/archived/games` müssen vor `/:id` registriert sein — das ist im Code bereits sichergestellt.
+> **Wichtig:** Die statischen Routen `/archived` und `/archived/games` müssen vor `/:id` registriert sein — das ist im Code sichergestellt.
 
 ---
 
@@ -109,7 +109,7 @@ Listet alle archivierten Runden.
 ---
 
 ### `GET /api/sessions/archived/games`
-Listet alle individuell archivierten Spiele aus noch aktiven Runden (gruppierbar nach `session_id`).
+Listet alle individuell archivierten Schafkopf-Spiele aus noch aktiven Runden.
 
 **Response `200`**
 ```json
@@ -144,6 +144,8 @@ Erstellt eine neue Runde.
 }
 ```
 
+Für Wizard-Runden `game_type: "wizard"` setzen. `stake` kann `0` sein.
+
 **Response `201`** — Runden-Objekt (ohne `history`)
 
 ---
@@ -151,11 +153,15 @@ Erstellt eine neue Runde.
 ### `GET /api/sessions/:id`
 Gibt eine Runde mit vollständiger Spielhistorie zurück.
 
+Für **Schafkopf** enthält `history` die `games`-Objekte.  
+Für **Wizard** ist `history` ein leeres Array — Wizard-Runden werden separat über `/wizard-rounds` geladen (siehe unten).
+
 **Response `200`**
 ```json
 {
   "id": "uuid",
   "name": "Freitagsrunde",
+  "game_type": "schafkopf",
   "players": ["Müller", "Huber", "Schmidt", "Wagner"],
   "stake": 0.50,
   "bock": 1,
@@ -191,11 +197,9 @@ Aktualisiert eine Runde. Unterstützte Felder:
 | Feld | Zweck |
 |---|---|
 | `archived_at` | Archivieren (`ISO-String`) oder Wiederherstellen (`null`) |
-| `bock` | Bock-Multiplikator ändern |
+| `bock` | Bock-Multiplikator ändern (nur Schafkopf) |
 | `name` | Rundennamen ändern |
 | `stake` | Einsatz ändern |
-
-Hinweis: Änderungen an `players` sind nach dem ersten Spiel gesperrt. Editieren einer archivierten Runde ist nur für `archived_at` erlaubt.
 
 **Response `200`** — aktualisiertes Runden-Objekt  
 **Response `404`** — Runde nicht gefunden  
@@ -210,12 +214,12 @@ Löscht eine Runde endgültig (inkl. aller Spiele via CASCADE). Nur aus dem Arch
 
 ---
 
-## Spiele (`/api/sessions/:id/games`)
+## Schafkopf-Spiele (`/api/sessions/:id/games`)
 
 ---
 
 ### `POST /api/sessions/:id/games`
-Trägt ein neues Spiel ein.
+Trägt ein neues Schafkopf-Spiel ein.
 
 **Body**
 ```json
@@ -260,15 +264,10 @@ Bearbeitet ein Spiel nachträglich **oder** archiviert/stellt es wieder her.
 
 **Zum Bearbeiten** (alle Spielfelder, wie beim POST):
 ```json
-{
-  "type": "Wenz",
-  "player": "Huber",
-  "won": false,
-  ...
-}
+{ "type": "Wenz", "player": "Huber", "won": false, "..." : "..." }
 ```
 
-Archivierte Spiele können nicht inhaltlich bearbeitet werden (nur `archived_at` darf geändert werden).
+Archivierte Spiele können nicht inhaltlich bearbeitet werden.
 
 **Response `200`** — aktualisiertes Spiel-Objekt  
 **Response `404`** — Spiel nicht gefunden  
@@ -277,7 +276,7 @@ Archivierte Spiele können nicht inhaltlich bearbeitet werden (nur `archived_at`
 ---
 
 ### `DELETE /api/sessions/:id/games/last`
-Macht das zuletzt eingetragene **aktive** Spiel rückgängig (Undo). Archivierte Spiele werden übersprungen.
+Macht das zuletzt eingetragene **aktive** Spiel rückgängig (Undo).
 
 **Response `204`**  
 **Response `404`** — Kein aktives Spiel gefunden
@@ -289,3 +288,95 @@ Löscht ein Spiel endgültig. Nur aus dem Archiv heraus verwenden.
 
 **Response `204`**  
 **Response `404`** — Spiel nicht gefunden
+
+---
+
+## Wizard-Runden (`/api/sessions/:id/wizard-rounds`)
+
+---
+
+### `GET /api/sessions/:id/wizard-rounds`
+Gibt alle aktiven (nicht archivierten) Wizard-Runden einer Session zurück, sortiert nach `round_number`.
+
+**Response `200`**
+```json
+[
+  {
+    "id": 1,
+    "session_id": "uuid",
+    "round_number": 1,
+    "predictions": { "Müller": 1, "Huber": 0, "Schmidt": 2, "Wagner": 1 },
+    "tricks":      { "Müller": 1, "Huber": 1, "Schmidt": 1, "Wagner": 1 },
+    "scores":      { "Müller": 30, "Huber": -10, "Schmidt": -10, "Wagner": -10 },
+    "created_at": "2025-04-03T10:00:00.000Z",
+    "archived_at": null
+  }
+]
+```
+
+---
+
+### `GET /api/sessions/:id/wizard-rounds/archived`
+Gibt alle archivierten Wizard-Runden zurück (derzeit nicht im UI genutzt).
+
+---
+
+### `POST /api/sessions/:id/wizard-rounds`
+Speichert eine neue Wizard-Runde. Der Server berechnet `scores` und `round_number` automatisch.
+
+**Body**
+```json
+{
+  "predictions": { "Müller": 2, "Huber": 0, "Schmidt": 1, "Wagner": 1 },
+  "tricks":      { "Müller": 1, "Huber": 0, "Schmidt": 2, "Wagner": 1 }
+}
+```
+
+**Score-Berechnung (serverseitig):**
+```
+Vorhersage korrekt (pred == actual): 20 + actual × 10
+Vorhersage falsch  (pred != actual): −|pred − actual| × 10
+```
+
+**Response `201`** — vollständiges Round-Objekt inkl. `scores` und `round_number`  
+**Response `400`** — `predictions` oder `tricks` fehlt
+
+---
+
+### `PATCH /api/sessions/:id/wizard-rounds/:roundId`
+Bearbeitet eine bestehende Runde (neu berechnet Scores) **oder** archiviert/stellt sie wieder her.
+
+**Zum Bearbeiten:**
+```json
+{
+  "predictions": { "Müller": 1, "..." : "..." },
+  "tricks":      { "Müller": 1, "..." : "..." }
+}
+```
+
+Archivierte Runden können nicht bearbeitet werden.
+
+**Zum Archivieren:**
+```json
+{ "archived_at": "2025-04-03T10:00:00.000Z" }
+```
+
+**Response `200`** — aktualisiertes Round-Objekt  
+**Response `404`** — Runde nicht gefunden  
+**Response `409`** — Archivierte Runde kann nicht bearbeitet werden
+
+---
+
+### `DELETE /api/sessions/:id/wizard-rounds/last`
+Löscht die letzte aktive Wizard-Runde (Undo).
+
+**Response `204`**  
+**Response `404`** — Keine Runde zum Löschen
+
+---
+
+### `DELETE /api/sessions/:id/wizard-rounds/:roundId`
+Löscht eine Wizard-Runde endgültig.
+
+**Response `204`**  
+**Response `404`** — Runde nicht gefunden

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { GAME_PLUGINS } from "../games/index.js";
 import { PERSONALITIES } from "../games/schafkopf/commentary.js";
 import BockBar from "./BockBar.jsx";
@@ -6,12 +6,8 @@ import Scoreboard from "./Scoreboard.jsx";
 import CommentaryOverlay from "./CommentaryOverlay.jsx";
 import useCommentatorSettings from "../hooks/useCommentatorSettings.js";
 import styles from "./styles.js";
-
-// Dynamische Import für Wizard-Komponenten
-const WizardScoreSheet = lazy(() => import("../games/wizard/ScoreSheet.jsx"));
-const WizardRoundForm = lazy(() => import("../games/wizard/RoundForm.jsx"));
-const WizardHistoryCard = lazy(() => import("../games/wizard/HistoryCard.jsx"));
-const WizardRulesBox = lazy(() => import("../games/wizard/RulesBox.jsx"));
+import WizardScoreSheet from "../games/wizard/ScoreSheet.jsx";
+import WizardRulesBox from "../games/wizard/RulesBox.jsx";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -42,40 +38,23 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
   const [editingGame, setEditingGame] = useState(null);
   const [pendingCommentary, setPendingCommentary] = useState(null);
   const [showCommentatorSettings, setShowCommentatorSettings] = useState(false);
-  const [showEndSession, setShowEndSession] = useState(false);
-  const [editingRound, setEditingRound] = useState(null);
-  const [predictions, setPredictions] = useState({});
-  const [tricks, setTricks] = useState({});
 
   const { personality, voice, enabled, setPersonality, setVoice, setEnabled } = useCommentatorSettings();
 
   const plugin = GAME_PLUGINS[session.game_type];
   const { players, history, bock, stake } = session;
-  
-  // Wizard-spezifische State-Initialisierung
-  useEffect(() => {
-    if (session.game_type === "wizard") {
-      setPredictions({});
-      setTricks({});
-      setEditingRound(null);
-    } else {
-      setForm(null);
-      setEditingGame(null);
-    }
-  }, [session.game_type, players]);
 
   const isWizard = session.game_type === "wizard";
   
   // Active History bestimmen (Wizard hat kein Archiv)
   const activeHistory = history.filter((g) => !g.archived_at);
-  const activeRounds = isWizard ? history : activeHistory;
   
   // Balances berechnen
   let balances = {};
   if (isWizard) {
     // Wizard: Punkte berechnen
     players.forEach((p) => (balances[p] = 0));
-    activeRounds.forEach((r) => {
+    history.forEach((r) => {
       players.forEach((p) => {
         balances[p] += r.scores[p] || 0;
       });
@@ -90,11 +69,6 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
   const leader = maxScore > 0 
     ? players.reduce((a, b) => (balances[a] >= balances[b] ? a : b))
     : null;
-
-  // Wizard-spezifische Werte
-  const maxRounds = isWizard ? plugin.getRoundCount(players.length) : null;
-  const currentRound = activeRounds.length + 1;
-  const isSessionActive = isWizard ? currentRound <= maxRounds : true;
 
   // Schafkopf-spezifische Funktionen
   const getForm = () => form ?? plugin.makeDefaultForm(players);
@@ -206,96 +180,16 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
     }
   };
 
-  // Wizard-spezifische Funktionen
-  const handleRoundSaved = async (roundData) => {
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roundData),
-    });
-    if (res.ok) {
-      const newRound = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: [...history, newRound],
-      });
-      setShowForm(false);
-      setPredictions({});
-      setTricks({});
-      setEditingRound(null);
-    }
-  };
-
-  const handleEditRound = (round) => {
-    setEditingRound(round);
-    setPredictions({ ...round.predictions });
-    setTricks({ ...round.tricks });
-    setShowForm(true);
-  };
-
-  const handleUpdateRound = async () => {
-    const roundData = {
-      predictions,
-      tricks,
-    };
-
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${editingRound.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roundData),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: activeRounds.map((r) => (r.id === updated.id ? updated : r)),
-      });
-      setShowForm(false);
-      setPredictions({});
-      setTricks({});
-      setEditingRound(null);
-    }
-  };
-
-  const handleArchiveRound = async (roundId) => {
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${roundId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ archived_at: new Date().toISOString() }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: activeRounds.map((r) => (r.id === roundId ? updated : r)),
-      });
-    }
-  };
-
-  const handleEndSession = async () => {
-    const res = await fetch(`/api/sessions/${session.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        wizard_status: isSessionActive ? "completed" : "completed"
-      }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      onSessionUpdated(updated);
-      setShowEndSession(false);
-    }
-  };
-
   // Gemeinsame Funktionen
   const handleUndo = async () => {
     const endpoint = isWizard 
       ? `/api/sessions/${session.id}/wizard-rounds/last`
       : `/api/sessions/${session.id}/games/last`;
-      
+        
     const res = await fetch(endpoint, { method: "DELETE" });
     if (res.ok) {
-      const lastActive = [...activeRounds].pop();
+      const historyToUse = isWizard ? history : activeHistory;
+      const lastActive = [...historyToUse].pop();
       if (lastActive) {
         onSessionUpdated({
           ...session,
@@ -348,10 +242,7 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
   let submitLabel;
   
   if (isWizard) {
-    FormComponent = WizardRoundForm;
-    HistoryCardComponent = WizardHistoryCard;
     RulesComponent = WizardRulesBox;
-    submitLabel = editingRound ? "✓ Änderungen speichern" : undefined;
   } else {
     FormComponent = plugin.FormComponent;
     HistoryCardComponent = plugin.HistoryCardComponent;
@@ -372,31 +263,14 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
         />
       )}
 
-      <div style={styles.sessionHeader}>
+       <div style={styles.sessionHeader}>
         <button style={styles.backBtn} onClick={onBack}>← Runden</button>
         <div style={{ flex: 1 }}>
           <div style={styles.sessionTitle}>{session.name}</div>
           <div style={styles.sessionSubtitle}>
-            {plugin.label} · {players.join(", ")} · 
-            {isWizard 
-              ? (isSessionActive ? `Runde ${currentRound}/${maxRounds}` : `✓ Beendet (${activeRounds.length}/${maxRounds})`)
-              : `${stake.toFixed(2)} € Einsatz`
-            }
+            {plugin.label} · {players.join(", ")}
           </div>
         </div>
-        {isWizard && isSessionActive && (
-          <button
-            style={{
-              ...styles.btnSecondary,
-              padding: "8px 12px",
-              marginRight: 8,
-            }}
-            onClick={() => setShowEndSession(true)}
-            title="Session beenden"
-          >
-            🏁 Beenden
-          </button>
-        )}
         {!isWizard && (
           <button
             style={{ ...styles.btnGear, ...(showCommentatorSettings ? { background: "#2c1810", color: "#fdf6e3" } : {}) }}
@@ -445,21 +319,6 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
         </div>
       )}
 
-      {/* Session Status für Wizard */}
-      {!isSessionActive && isWizard && (
-        <div style={{
-          background: "#9d0208",
-          color: "#fdf6e3",
-          padding: "12px 16px",
-          borderRadius: 8,
-          marginBottom: 16,
-          textAlign: "center",
-          fontWeight: "bold",
-        }}>
-          Session beendet
-        </div>
-      )}
-
       {/* Schafkopf-spezifische UI */}
       {!isWizard && (
         <>
@@ -476,32 +335,30 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
 
       {/* Wizard-spezifische UI */}
       {isWizard && (
-        <Suspense fallback={<div style={{ padding: 20, textAlign: "center" }}>Laden...</div>}>
-          <WizardScoreSheet
-            session={session}
-            registeredPlayers={registeredPlayers}
-            onBack={onBack}
-            onSessionUpdated={onSessionUpdated}
-          />
-        </Suspense>
+        <WizardScoreSheet
+          session={session}
+          registeredPlayers={registeredPlayers}
+          onBack={onBack}
+          onSessionUpdated={onSessionUpdated}
+        />
       )}
 
       {/* Gemeinsame Aktionen */}
-      {!isWizard || isSessionActive ? (
+      {!isWizard && (
         <div style={styles.actions}>
           <button style={styles.btnPrimary} onClick={toggleForm}>
-            {showForm ? "✕ Abbrechen" : (isWizard ? "＋ Neue Runde" : "＋ Neues Spiel")}
+            {showForm ? "✕ Abbrechen" : "＋ Neues Spiel"}
           </button>
           {RulesComponent && (
             <button style={styles.btnSecondary} onClick={() => setShowRules(!showRules)}>
               {showRules ? "✕ Regeln ausblenden" : "📜 Regeln"}
             </button>
           )}
-          {activeRounds.length > 0 && !showForm && (
+          {activeHistory.length > 0 && !showForm && (
             <button style={styles.btnUndo} onClick={handleUndo}>↩ Rückgängig</button>
           )}
         </div>
-      ) : null}
+      )}
 
       {showRules && (
         <Suspense fallback={<div style={{ padding: 20, textAlign: "center" }}>Laden...</div>}>
@@ -510,33 +367,18 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
       )}
 
       {/* Formular */}
-      {showForm && (
+      {showForm && !isWizard && (
         <Suspense fallback={<div style={{ padding: 20, textAlign: "center" }}>Laden...</div>}>
-          {isWizard ? (
-            <FormComponent
-              round={editingRound}
-              players={players}
-              currentRound={currentRound}
-              maxRounds={maxRounds}
-              predictions={predictions}
-              tricks={tricks}
-              onPredictionChange={setPredictions}
-              onTricksChange={setTricks}
-              onSave={handleSubmit}
-              onCancel={handleCancel}
-            />
-          ) : (
-            <FormComponent
-              form={getForm()}
-              onFormChange={setForm}
-              players={players}
-              stake={stake}
-              bock={editingGame ? editingGame.bock : bock}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              submitLabel={submitLabel}
-            />
-          )}
+          <FormComponent
+            form={getForm()}
+            onFormChange={setForm}
+            players={players}
+            stake={stake}
+            bock={editingGame ? editingGame.bock : bock}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            submitLabel={submitLabel}
+          />
         </Suspense>
       )}
 
@@ -557,56 +399,7 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
                 onEdit={handleEditGame}
                 onArchive={handleArchiveGame}
               />
-            ))}
-        </div>
-      )}
-
-      {/* Session beenden Modal */}
-      {showEndSession && isWizard && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0, 0, 0, 0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}>
-          <div style={{
-            background: "#fdf6e3",
-            padding: 24,
-            borderRadius: 12,
-            maxWidth: 400,
-            width: "100%",
-            border: "2px solid #8b6914",
-          }}>
-            <h3 style={{ ...styles.formTitle, marginBottom: 12 }}>Session beenden?</h3>
-            <p style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.5 }}>
-              {isSessionActive 
-                ? `Alle ${maxRounds} Runden wurden gespielt. Sollen die Session wirklich beendet werden?`
-                : "Diese Session ist bereits beendet."
-              }
-            </p>
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button
-                style={{ ...styles.btnSecondary, flex: 1 }}
-                onClick={() => setShowEndSession(false)}
-              >
-                Abbrechen
-              </button>
-              {isSessionActive && (
-                <button
-                  style={{ ...styles.btnPrimary, flex: 1, background: "#9d0208" }}
-                  onClick={handleEndSession}
-                >
-                  ✓ Beenden
-                </button>
-              )}
-            </div>
-          </div>
+             ))}
         </div>
       )}
     </div>

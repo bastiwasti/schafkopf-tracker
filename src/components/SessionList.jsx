@@ -159,15 +159,25 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
         </p>
       )}
 
-      <label style={{ ...styles.label, marginTop: 14 }}>Einsatz (€)</label>
-      <input
-        style={{ ...styles.input, width: 100 }}
-        type="number"
-        min="0.01"
-        step="0.01"
-        value={stake}
-        onChange={(e) => setStake(parseFloat(e.target.value) || 0.50)}
-      />
+      {GAME_PLUGINS[gameType]?.defaultStake !== 0 && (
+        <>
+          <label style={{ ...styles.label, marginTop: 14 }}>Einsatz (€)</label>
+          <input
+            style={{ ...styles.input, width: 100 }}
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={stake}
+            onChange={(e) => setStake(parseFloat(e.target.value) || 0.50)}
+          />
+        </>
+      )}
+
+      {gameType === "wizard" && selectedNames.length >= 2 && (
+        <div style={{ fontSize: 13, color: "#9d6b00", margin: "14px 0 8px" }}>
+          {GAME_PLUGINS.wizard.getRoundCount(selectedNames.length)} Runden
+        </div>
+      )}
 
       <button
         style={{ ...styles.btnConfirm, opacity: canSubmit ? 1 : 0.5, cursor: canSubmit ? "pointer" : "not-allowed" }}

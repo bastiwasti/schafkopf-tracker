@@ -4,10 +4,11 @@ import styles from "./styles.js";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
-export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose }) {
+export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose, buildFn }) {
   const personality = PERSONALITIES[commentatorPersonality] ?? PERSONALITIES.dramatic;
+  const fn = buildFn ?? buildFullCommentary;
   const { segments, spokenText } = useRef(
-    buildFullCommentary(game, registeredPlayers, commentatorPersonality)
+    fn(game, registeredPlayers, commentatorPersonality)
   ).current;
 
   useEffect(() => {

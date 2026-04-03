@@ -95,6 +95,7 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
           <div>Spieler</div>
           <div>Vorhersage</div>
           <div>Tatsächlich</div>
+          <div style={{ textAlign: "center" }}>Punkte</div>
         </div>
 
         {players.map((p, idx) => {
@@ -135,7 +136,7 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
                   onChange={(e) => handlePredictionChange(p, e.target.value)}
                   style={{
                     ...styles.input,
-                    width: "80px",
+                    width: "70px",
                     padding: "8px 12px",
                     fontSize: 16,
                     fontWeight: "bold",
@@ -152,7 +153,7 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
                   onChange={(e) => handleTricksChange(p, e.target.value)}
                   style={{
                     ...styles.input,
-                    width: "80px",
+                    width: "70px",
                     padding: "8px 12px",
                     fontSize: 16,
                     fontWeight: "bold",
@@ -160,24 +161,32 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
                 />
               </div>
 
-              {idx === players.length - 1 && (
-                <div style={{
-                  gridColumn: "1 / -1",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginTop: 16,
-                  paddingTop: 16,
-                  borderTop: "2px solid #8b6914",
-                }}>
-                  <div style={{ fontWeight: "bold", fontSize: 14 }}>
-                    Punkte: {score >= 0 ? "+" : ""}{score}
-                  </div>
-                </div>
-              )}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                color: score >= 0 ? "#2d6a4f" : "#9d0208",
+                fontSize: 16,
+              }}>
+                {score >= 0 ? "+" : ""}{score}
+              </div>
             </div>
           );
         })}
+
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 16,
+          paddingTop: 16,
+          borderTop: "2px solid #8b6914",
+        }}>
+          <div style={{ fontWeight: "bold", fontSize: 14 }}>
+            Gesamtpunkte: {Object.values(scores).reduce((sum, s) => sum + s, 0)}
+          </div>
+        </div>
       </div>
 
       {/* Buttons */}

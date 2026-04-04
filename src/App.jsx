@@ -47,7 +47,7 @@ export default function App() {
     setSessions((prev) =>
       prev.map((s) =>
         s.id === updated.id
-          ? { ...s, bock: updated.bock, game_count: updated.history.filter((g) => !g.archived_at).length }
+          ? { ...s, bock: updated.bock, game_count: updated.game_count, wizard_status: updated.wizard_status }
           : s
       )
     );

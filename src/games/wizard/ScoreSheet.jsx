@@ -5,6 +5,7 @@ import { buildWizardCommentary } from "./commentary.js";
 import CommentaryOverlay from "../../components/CommentaryOverlay.jsx";
 import CommentarySettingsPanel from "../../components/CommentarySettingsPanel.jsx";
 import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
+import ErrorBoundary from "../../components/ErrorBoundary.jsx";
 
 export default function ScoreSheet({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
   const [showRules, setShowRules] = useState(false);
@@ -33,7 +34,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
         tricks: {},
       }
     }));
-    setEditingRound({ id: `temp-${roundNum}`, round_number: roundNum, predictions: {}, tricks: {} });
+    setEditingRound({ id: `new-${Date.now()}-${roundNum}`, round_number: roundNum, predictions: {}, tricks: {} });
     setPredictions({});
     setTricks({});
   };
@@ -44,64 +45,96 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
 
   const finishTricksPhase = async (roundNum) => {
     const data = roundsData[roundNum];
-    if (!data) return;
-
-    const { predictions, tricks } = data;
-    
-    // Prüfen ob Runde bereits existiert
-    const existingRound = history.find(r => r.round_number === roundNum);
-    
-    if (existingRound) {
-      // Bearbeitete Runde aktualisieren
-      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${existingRound.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ predictions, tricks }),
-      });
-      
-      if (res.ok) {
-        const updated = await res.json();
-        onSessionUpdated({
-          ...session,
-          history: history.map((r) => (r.id === updated.id ? updated : r)),
-        });
-      }
-    } else {
-      // Neue Runde speichern
-      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ predictions, tricks }),
-      });
-      
-      if (res.ok) {
-        const newRound = await res.json();
-        onSessionUpdated({
-          ...session,
-          history: [...history, newRound],
-        });
-        if (enabled) setPendingCommentary(newRound);
-      }
+    if (!data) {
+      console.error('No data found for round:', roundNum);
+      return;
     }
 
-    // State zurücksetzen
-    setRoundPhases(prev => {
-      const newPhases = { ...prev };
-      delete newPhases[roundNum];
-      return newPhases;
-    });
-    setRoundsData(prev => {
-      const newData = { ...prev };
-      delete newData[roundNum];
-      return newData;
-    });
-    setPredictions({});
-    setTricks({});
-    setEditingRound(null);
+    const { predictions, tricks } = data;
+    const currentHistory = Array.isArray(history) ? history : [];
+    
+    // Prüfen ob Runde bereits existiert
+    const existingRound = currentHistory.find(r => r.round_number === roundNum);
+    
+    try {
+      if (existingRound) {
+        // Bearbeitete Runde aktualisieren
+        const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/${existingRound.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ predictions, tricks }),
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Failed to update round:', res.status, errorText);
+          alert('Fehler beim Aktualisieren der Runde: ' + errorText);
+          return;
+        }
+        
+        const updated = await res.json();
+        console.log('Updated round:', updated);
+        onSessionUpdated({
+          ...session,
+          history: currentHistory.map((r) => (r.id === updated.id ? updated : r)),
+        });
+      } else {
+        // Neue Runde speichern
+        const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ predictions, tricks }),
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Failed to save round:', res.status, errorText);
+          alert('Fehler beim Speichern der Runde: ' + errorText);
+          return;
+        }
+        
+        const newRound = await res.json();
+        console.log('Saved new round:', newRound);
+        
+        try {
+          onSessionUpdated({
+            ...session,
+            history: [...currentHistory, newRound],
+          });
+          
+          if (enabled && newRound) {
+            console.log('[ScoreSheet] Setting pending commentary for round:', newRound);
+            setPendingCommentary(newRound);
+          }
+        } catch (error) {
+          console.error('[ScoreSheet] Error updating session or setting commentary:', error);
+          alert('Fehler beim Aktualisieren der Session: ' + error.message);
+          return;
+        }
+      }
+
+      // State zurücksetzen
+      setRoundPhases(prev => {
+        const newPhases = { ...prev };
+        delete newPhases[roundNum];
+        return newPhases;
+      });
+      setRoundsData(prev => {
+        const newData = { ...prev };
+        delete newData[roundNum];
+        return newData;
+      });
+      setPredictions({});
+      setTricks({});
+      setEditingRound(null);
+    } catch (error) {
+      console.error('Error saving round:', error);
+      alert('Fehler beim Speichern der Runde: ' + error.message);
+    }
   };
 
   const editSavedRound = (roundNum) => {
-    const round = history.find(r => r.round_number === roundNum);
+    const round = (history || []).find(r => r.round_number === roundNum);
     if (!round) return;
 
     setRoundPhases(prev => ({ ...prev, [roundNum]: 'prediction' }));
@@ -136,29 +169,37 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
 
   // Wizard-Runden beim Start laden (sessions-Endpoint liefert nur Schafkopf-Games)
   useEffect(() => {
-    fetch(`/api/sessions/${session.id}/wizard-rounds`)
-      .then((r) => r.json())
-      .then((rounds) => {
-        if (rounds.length > 0) {
-          onSessionUpdated({ ...session, history: rounds });
+    const loadRounds = async () => {
+      try {
+        const r = await fetch(`/api/sessions/${session.id}/wizard-rounds`);
+        if (r.ok) {
+          const rounds = await r.json();
+          if (Array.isArray(rounds) && rounds.length > 0) {
+            onSessionUpdated({ ...session, history: rounds });
+          }
         }
-      })
-      .catch(() => {});
+      } catch (error) {
+        console.error('Error loading wizard rounds:', error);
+      }
+    };
+    loadRounds();
   }, [session.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { players, history = [] } = session;
   const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
 
   // Aktive Runden (kein Archiv bei Wizard)
-  const activeRounds = history;
+  const activeRounds = Array.isArray(history) ? history : [];
   
   // Gesamtpunkte berechnen
   const balances = {};
   players.forEach((p) => (balances[p] = 0));
   activeRounds.forEach((r) => {
-    players.forEach((p) => {
-      balances[p] += r.scores[p] || 0;
-    });
+    if (r && r.scores && typeof r.scores === 'object') {
+      players.forEach((p) => {
+        balances[p] += r.scores[p] || 0;
+      });
+    }
   });
 
   // Führender Spieler bestimmen
@@ -173,38 +214,53 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
   const isSessionActive = currentRound <= maxRounds;
 
   const handleRoundSaved = async (roundData) => {
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(roundData),
-    });
-    if (res.ok) {
-      const newRound = await res.json();
-      onSessionUpdated({
-        ...session,
-        history: [...history, newRound],
+    const currentHistory = Array.isArray(history) ? history : [];
+    try {
+      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(roundData),
       });
-      setPredictions({});
-      setTricks({});
-      setEditingRound(null);
-      setRoundsData({});
+      if (res.ok) {
+        const newRound = await res.json();
+        onSessionUpdated({
+          ...session,
+          history: [...currentHistory, newRound],
+        });
+        setPredictions({});
+        setTricks({});
+        setEditingRound(null);
+        setRoundsData({});
+      } else {
+        console.error('Failed to save round:', await res.text());
+        alert('Fehler beim Speichern der Runde');
+      }
+    } catch (error) {
+      console.error('Error saving round:', error);
+      alert('Fehler beim Speichern der Runde: ' + error.message);
     }
   };
 
   const handleUndo = async () => {
     if (!confirm("Letzte Runde rückgängig machen?")) return;
     
-    const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/last`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      const lastActive = [...activeRounds].pop();
-      if (lastActive) {
+    try {
+      const res = await fetch(`/api/sessions/${session.id}/wizard-rounds/last`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        const updatedHistory = activeRounds.slice(0, -1);
         onSessionUpdated({
           ...session,
-          history: [...activeRounds],
+          history: updatedHistory,
         });
+      } else {
+        console.error('Failed to undo:', await res.text());
+        alert('Fehler beim Rückgängig machen');
       }
+    } catch (error) {
+      console.error('Error undoing round:', error);
+      alert('Fehler beim Rückgängig machen');
     }
   };
 
@@ -227,14 +283,19 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
     <>
       {/* Commentary overlay */}
       {pendingCommentary && (
-        <CommentaryOverlay
-          game={pendingCommentary}
-          buildFn={buildWizardCommentary}
-          registeredPlayers={registeredPlayers}
-          commentatorPersonality={personality}
-          commentatorVoice={voice}
-          onClose={() => setPendingCommentary(null)}
-        />
+        <ErrorBoundary>
+          <CommentaryOverlay
+            game={pendingCommentary}
+            buildFn={buildWizardCommentary}
+            registeredPlayers={registeredPlayers}
+            commentatorPersonality={personality}
+            commentatorVoice={voice}
+            onClose={() => {
+              console.log('[ScoreSheet] Commentary overlay closing');
+              setPendingCommentary(null);
+            }}
+          />
+        </ErrorBoundary>
       )}
 
       {/* Session-Status Badge */}
@@ -387,7 +448,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
 
           {Array.from({ length: maxRounds }, (_, i) => {
             const roundNum = i + 1;
-            const round = history.find(r => r.round_number === roundNum);
+            const round = (history || []).find(r => r.round_number === roundNum);
             const isSaved = !!round;
 
             const phase = roundPhases[roundNum];

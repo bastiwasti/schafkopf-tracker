@@ -144,75 +144,107 @@ export function reactionChance(round, players, totalRounds) {
  * @param {string} personality  - commentator personality key
  */
 export function buildWizardCommentary(round, regPlayers = [], personality = "dramatic") {
-  const pers = PERSONALITIES[personality] ?? PERSONALITIES.dramatic;
-  const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
-  const players = Object.keys(round.predictions ?? {});
-  const totalRounds = getTotalRounds(players.length);
+  try {
+    console.log('[buildWizardCommentary] Building commentary for round:', round);
+    
+    if (!round || typeof round !== 'object') {
+      console.error('[buildWizardCommentary] Invalid round data:', round);
+      return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Ungültige Rundendaten" }] };
+    }
 
-  const { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore } =
-    analyzeRound(round, players);
+    const pers = PERSONALITIES[personality] ?? PERSONALITIES.dramatic;
+    const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
+    const players = Object.keys(round.predictions ?? {});
+    const totalRounds = getTotalRounds(players.length);
 
-  const scenario = analyzeRoundScenario(round, players, totalRounds);
-  const templates = (COMMENTATOR_TEMPLATES[personality] ?? COMMENTATOR_TEMPLATES.dramatic)[scenario];
+    const { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore } =
+      analyzeRound(round, players);
 
-  const vars = {
-    roundNum: round.round_number,
-    topPlayer,
-    topScore,
-    bottomPlayer,
-    correctCount,
-    totalPlayers: players.length,
-    bigMissPlayer: bigMissPlayer ?? "",
-    bigMissDiff,
-  };
+    const scenario = analyzeRoundScenario(round, players, totalRounds);
+    const templates = (COMMENTATOR_TEMPLATES[personality] ?? COMMENTATOR_TEMPLATES.dramatic)[scenario];
 
-  const segments = [
-    {
-      avatar: pers.icon,
-      name: "Kommentator",
-      label: pers.label,
-      text: fill(pickRandom(templates), vars),
-    },
-  ];
+    if (!templates || !Array.isArray(templates) || templates.length === 0) {
+      console.error('[buildWizardCommentary] No templates found for scenario:', scenario);
+      return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentare verfügbar" }] };
+    }
 
-  const chance = reactionChance(round, players, totalRounds);
+    const vars = {
+      roundNum: round.round_number ?? 1,
+      topPlayer: topPlayer ?? "Unbekannt",
+      topScore: topScore ?? 0,
+      bottomPlayer: bottomPlayer ?? "Unbekannt",
+      correctCount: correctCount ?? 0,
+      totalPlayers: players.length ?? 0,
+      bigMissPlayer: bigMissPlayer ?? "",
+      bigMissDiff: bigMissDiff ?? 0,
+    };
 
-  // Best scorer reaction
-  if (Math.random() < chance) {
-    const reg = regMap[topPlayer];
-    const charType = reg?.character_type ?? "optimist";
-    const topPlayerCorrect = (round.scores?.[topPlayer] ?? 0) >= 0;
-    const fallbackScenario = topPlayerCorrect ? "routine_win" : "routine_loss";
-    const pool = PLAYER_REACTIONS[charType]?.[scenario]
-              ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
-              ?? PLAYER_REACTIONS.optimist?.[scenario]
-              ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
-    segments.push({
-      avatar: reg?.avatar ?? "🃏",
-      name: topPlayer,
-      label: PLAYER_PERSONALITIES[charType]?.label ?? "",
-      text: pickRandom(pool),
-    });
+    const segments = [
+      {
+        avatar: pers.icon,
+        name: "Kommentator",
+        label: pers.label,
+        text: fill(pickRandom(templates), vars),
+      },
+    ];
+
+    const chance = reactionChance(round, players, totalRounds);
+
+    // Best scorer reaction
+    if (Math.random() < chance && topPlayer) {
+      const reg = regMap[topPlayer];
+      const charType = reg?.character_type ?? "optimist";
+      const topPlayerCorrect = (round.scores?.[topPlayer] ?? 0) >= 0;
+      const fallbackScenario = topPlayerCorrect ? "routine_win" : "routine_loss";
+      const pool = PLAYER_REACTIONS[charType]?.[scenario]
+                ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
+                ?? PLAYER_REACTIONS.optimist?.[scenario]
+                ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
+      
+      if (pool && pool.length > 0) {
+        segments.push({
+          avatar: reg?.avatar ?? "🃏",
+          name: topPlayer,
+          label: PLAYER_PERSONALITIES[charType]?.label ?? "",
+          text: pickRandom(pool),
+        });
+      }
+    }
+
+    // Worst scorer reaction (slightly lower chance)
+    if (bottomPlayer && bottomPlayer !== topPlayer && Math.random() < chance * 0.75) {
+      const reg = regMap[bottomPlayer];
+      const charType = reg?.character_type ?? "optimist";
+      const bottomPlayerCorrect = (round.scores?.[bottomPlayer] ?? 0) >= 0;
+      const fallbackScenario = bottomPlayerCorrect ? "routine_win" : "routine_loss";
+      const pool = PLAYER_REACTIONS[charType]?.[scenario]
+                ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
+                ?? PLAYER_REACTIONS.optimist?.[scenario]
+                ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
+      
+      if (pool && pool.length > 0) {
+        segments.push({
+          avatar: reg?.avatar ?? "🃏",
+          name: bottomPlayer,
+          label: PLAYER_PERSONALITIES[charType]?.label ?? "",
+          text: pickRandom(pool),
+        });
+      }
+    }
+
+    const spokenText = segments.map((s) => s.text).join(" — ");
+    console.log('[buildWizardCommentary] Commentary built successfully:', { segmentsCount: segments.length, spokenText });
+    return { segments, spokenText };
+  } catch (error) {
+    console.error('[buildWizardCommentary] Error building commentary:', error);
+    return { 
+      segments: [{ 
+        avatar: "⚠️", 
+        name: "System", 
+        label: "Fehler", 
+        text: "Fehler beim Erstellen des Kommentars: " + error.message 
+      }], 
+      spokenText: "Fehler" 
+    };
   }
-
-  // Worst scorer reaction (slightly lower chance)
-  if (bottomPlayer !== topPlayer && Math.random() < chance * 0.75) {
-    const reg = regMap[bottomPlayer];
-    const charType = reg?.character_type ?? "optimist";
-    const bottomPlayerCorrect = (round.scores?.[bottomPlayer] ?? 0) >= 0;
-    const fallbackScenario = bottomPlayerCorrect ? "routine_win" : "routine_loss";
-    const pool = PLAYER_REACTIONS[charType]?.[scenario]
-              ?? PLAYER_REACTIONS[charType]?.[fallbackScenario]
-              ?? PLAYER_REACTIONS.optimist?.[scenario]
-              ?? PLAYER_REACTIONS.optimist?.[fallbackScenario];
-    segments.push({
-      avatar: reg?.avatar ?? "🃏",
-      name: bottomPlayer,
-      label: PLAYER_PERSONALITIES[charType]?.label ?? "",
-      text: pickRandom(pool),
-    });
-  }
-
-  const spokenText = segments.map((s) => s.text).join(" — ");
-  return { segments, spokenText };
 }

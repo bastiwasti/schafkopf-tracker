@@ -1,16 +1,38 @@
 import { useEffect, useRef } from "react";
 import { PERSONALITIES } from "../games/shared/commentary.js";
-import { buildFullCommentary } from "../games/schafkopf/commentary.js";
 import styles from "./styles.js";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
 export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose, buildFn }) {
   const personality = PERSONALITIES[commentatorPersonality] ?? PERSONALITIES.dramatic;
-  const fn = buildFn ?? buildFullCommentary;
-  const { segments } = useRef(
-    fn(game, registeredPlayers, commentatorPersonality)
-  ).current;
+  
+  const { segments } = useRef(() => {
+    try {
+      if (!game) {
+        console.error('[CommentaryOverlay] No game data provided');
+        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Spieldaten vorhanden" }] };
+      }
+      
+      if (!buildFn || typeof buildFn !== 'function') {
+        console.error('[CommentaryOverlay] buildFn is not a function:', buildFn);
+        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentarfunktion verfügbar" }] };
+      }
+      
+      console.log('[CommentaryOverlay] Building commentary for game:', game);
+      const result = buildFn(game, registeredPlayers, commentatorPersonality);
+      
+      if (!result || !result.segments || !Array.isArray(result.segments)) {
+        console.error('[CommentaryOverlay] Invalid commentary result:', result);
+        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars" }] };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('[CommentaryOverlay] Error building commentary:', error);
+      return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars: " + error.message }] };
+    }
+  }()).current;
 
   useEffect(() => {
     if (!hasSpeech) return;

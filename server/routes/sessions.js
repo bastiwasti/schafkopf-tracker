@@ -101,7 +101,7 @@ router.use('/:id/skat', skatGamesRouter);
 
 router.patch('/:id', (req, res) => {
   const { id } = req.params;
-  const { name, bock, archived_at, wizard_status } = req.body;
+  const { name, bock, archived_at, wizard_status, players } = req.body;
 
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
   if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -123,8 +123,12 @@ router.patch('/:id', (req, res) => {
     db.prepare('UPDATE sessions SET wizard_status = ? WHERE id = ?').run(wizard_status, id);
   }
 
+  if (players !== undefined) {
+    db.prepare('UPDATE sessions SET players = ? WHERE id = ?').run(JSON.stringify(players), id);
+  }
+
   const updated = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
-  res.json(updated);
+  res.json({ ...updated, players: JSON.parse(updated.players) });
 });
 
 router.delete('/:id', (req, res) => {

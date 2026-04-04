@@ -24,6 +24,10 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
   // State für Runden-Phasen: 'prediction', 'tricks', 'completed'
   const [roundPhases, setRoundPhases] = useState({});
 
+  // State für Sitzreihenfolge-Editor
+  const [reordering, setReordering] = useState(false);
+  const [reorderPlayers, setReorderPlayers] = useState([]);
+
   // Hilfsfunktionen für Workflow
   const startPredictionPhase = (roundNum) => {
     setRoundPhases(prev => ({ ...prev, [roundNum]: 'prediction' }));
@@ -243,6 +247,31 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
     }
   };
 
+  const startReorder = () => {
+    setReorderPlayers([...players]);
+    setReordering(true);
+  };
+
+  const movePlayer = (index, dir) => {
+    setReorderPlayers(prev => {
+      const next = [...prev];
+      const swap = index + dir;
+      if (swap < 0 || swap >= next.length) return next;
+      [next[index], next[swap]] = [next[swap], next[index]];
+      return next;
+    });
+  };
+
+  const saveReorder = async () => {
+    await fetch(`/api/sessions/${session.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ players: reorderPlayers }),
+    });
+    onSessionUpdated({ ...session, players: reorderPlayers });
+    setReordering(false);
+  };
+
   const handleUndo = async () => {
     if (!confirm("Letzte Runde rückgängig machen?")) return;
     
@@ -315,32 +344,54 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
         </div>
       )}
 
-      {/* Scoreboard */}
-      <div style={styles.scoreboard}>
-        {players.map((p) => {
-          const score = balances[p] ?? 0;
-          const isLeader = p === leader && score > 0;
-          const avatar = avatarMap[p] ?? "❓";
-          return (
-            <div key={p} style={{ ...styles.playerCard, ...(isLeader ? styles.leaderCard : {}) }}>
-              {isLeader && <div style={styles.crownBadge}>👑</div>}
-              <div style={styles.playerCardAvatar}>{avatar}</div>
-              <div style={styles.playerName}>{p}</div>
-              <div style={{
-                ...styles.playerBalance,
-                color: score > 0 ? "#2d6a4f" : score < 0 ? "#9d0208" : "#555",
-              }}>
-                {score >= 0 ? "+" : ""}{score.toFixed(0)}
-              </div>
+      {/* Scoreboard / Sitzordnung-Editor */}
+      {reordering ? (
+        <div style={{ padding: "12px 16px", background: "#fdf6e3", borderRadius: 10, marginBottom: 12, border: "1px solid #e8d5a3" }}>
+          <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 13, color: "#8b6914" }}>⇅ Sitzreihenfolge</div>
+          {reorderPlayers.map((p, i) => (
+            <div key={p} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ flex: 1, fontSize: 14 }}>{avatarMap[p] ?? "🃏"} {p}</span>
+              <button onClick={() => movePlayer(i, -1)} disabled={i === 0} style={{ ...styles.btnSecondary, padding: "4px 10px" }}>▲</button>
+              <button onClick={() => movePlayer(i, 1)} disabled={i === reorderPlayers.length - 1} style={{ ...styles.btnSecondary, padding: "4px 10px" }}>▼</button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button style={styles.btnConfirm} onClick={saveReorder}>Speichern</button>
+            <button style={styles.btnSecondary} onClick={() => setReordering(false)}>Abbrechen</button>
+          </div>
+        </div>
+      ) : (
+        <div style={styles.scoreboard}>
+          {players.map((p) => {
+            const score = balances[p] ?? 0;
+            const isLeader = p === leader && score > 0;
+            const avatar = avatarMap[p] ?? "❓";
+            return (
+              <div key={p} style={{ ...styles.playerCard, ...(isLeader ? styles.leaderCard : {}) }}>
+                {isLeader && <div style={styles.crownBadge}>👑</div>}
+                <div style={styles.playerCardAvatar}>{avatar}</div>
+                <div style={styles.playerName}>{p}</div>
+                <div style={{
+                  ...styles.playerBalance,
+                  color: score > 0 ? "#2d6a4f" : score < 0 ? "#9d0208" : "#555",
+                }}>
+                  {score >= 0 ? "+" : ""}{score.toFixed(0)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Aktionen */}
       <div style={styles.actions}>
         {isSessionActive && activeRounds.length > 0 && (
           <button style={styles.btnUndo} onClick={handleUndo}>↩ Rückgängig</button>
+        )}
+        {isSessionActive && (
+          <button style={{ ...styles.btnSecondary, padding: "8px 12px" }} onClick={startReorder}>
+            ⇅ Sitzordnung
+          </button>
         )}
         <button
           style={{ ...styles.btnSecondary, padding: "8px 12px" }}
@@ -431,7 +482,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
           {/* Header */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: `28px repeat(${playerCount}, 1fr) 76px`,
+            gridTemplateColumns: `28px 24px repeat(${playerCount}, 1fr) 76px`,
             gap: "3px",
             marginBottom: "6px",
             fontWeight: "bold",
@@ -439,6 +490,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
             fontSize: 10,
           }}>
             <div style={{ textAlign: "center", padding: "3px" }}>R</div>
+            <div style={{ textAlign: "center", padding: "3px", fontSize: 11, color: "#8b6914" }}>Σ</div>
             {(players || []).map(p => (
               <div key={p} style={{ textAlign: "center", padding: "3px", fontSize: 10, lineHeight: 1.3 }}>
                 <div>{avatarMap[p] || "🃏"}</div>
@@ -531,7 +583,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
                 key={roundNum}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: `28px repeat(${playerCount}, 1fr) 76px`,
+                  gridTemplateColumns: `28px 24px repeat(${playerCount}, 1fr) 76px`,
                   gap: "3px",
                   padding: "5px 0",
                   borderBottom: roundNum < maxRounds ? "1px solid #e8ddb5" : "none",
@@ -543,6 +595,28 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "#8b6914", fontSize: 11 }}>
                   {roundNum}
                 </div>
+
+                {/* Summe der vorhergesagten Stiche (sichtbar in Vorhersage-, Stiche-Phase und nach Speichern) */}
+                {phase === 'prediction' || phase === 'tricks' || isSaved ? (() => {
+                  const sum = Object.values(currentPredictions).reduce((s, val) => s + (parseInt(val) || 0), 0);
+                  let color;
+                  if (sum === roundNum) {
+                    color = "#2d6a4f";
+                  } else if (sum < roundNum) {
+                    color = "#1976d2";
+                  } else {
+                    color = "#9d0208";
+                  }
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color, fontSize: 11 }}>
+                      {sum}
+                    </div>
+                  );
+                })() : (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#ccc" }}>
+                    –
+                  </div>
+                )}
 
                 {/* Spieler-Zellen */}
                 {players.map(p => {

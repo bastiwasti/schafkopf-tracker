@@ -57,19 +57,41 @@ router.get('/', (_req, res) => {
     ...s,
     players: JSON.parse(s.players),
     game_count: Number(s.game_count),
+    watten_team1_players: s.watten_team1_players ? JSON.parse(s.watten_team1_players) : null,
+    watten_team2_players: s.watten_team2_players ? JSON.parse(s.watten_team2_players) : null,
   })));
 });
 
 router.post('/', (req, res) => {
-  const { id, name, game_type = 'schafkopf', players, stake = 0.50 } = req.body;
+  const { id, name, game_type = 'schafkopf', players, stake = 0.50, target_score, team1_players, team2_players } = req.body;
   if (!id || !name || !Array.isArray(players)) {
     return res.status(400).json({ error: 'id, name and players are required' });
   }
 
-  db.prepare(`
-    INSERT INTO sessions (id, name, game_type, players, stake, bock, created_at)
-    VALUES (?, ?, ?, ?, ?, 1, ?)
-  `).run(id, name, game_type, JSON.stringify(players), stake, new Date().toISOString());
+  if (game_type === 'watten') {
+    if (players.length !== 4) {
+      return res.status(400).json({ error: 'Watten requires exactly 4 players' });
+    }
+    db.prepare(`
+      INSERT INTO sessions (id, name, game_type, players, stake, bock, watten_target_score, watten_team1_players, watten_team2_players, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+    `).run(
+      id,
+      name,
+      game_type,
+      JSON.stringify(players),
+      stake,
+      target_score || 15,
+      JSON.stringify(team1_players || players.slice(0, 2)),
+      JSON.stringify(team2_players || players.slice(2, 4)),
+      new Date().toISOString()
+    );
+  } else {
+    db.prepare(`
+      INSERT INTO sessions (id, name, game_type, players, stake, bock, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, ?)
+    `).run(id, name, game_type, JSON.stringify(players), stake, new Date().toISOString());
+  }
 
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
   res.status(201).json({ ...session, players: JSON.parse(session.players) });
@@ -86,6 +108,8 @@ router.get('/:id', (req, res) => {
   res.json({
     ...session,
     players: JSON.parse(session.players),
+    watten_team1_players: session.watten_team1_players ? JSON.parse(session.watten_team1_players) : null,
+    watten_team2_players: session.watten_team2_players ? JSON.parse(session.watten_team2_players) : null,
     history: games.map(g => ({
       ...g,
       won: Boolean(g.won),
@@ -128,7 +152,12 @@ router.patch('/:id', (req, res) => {
   }
 
   const updated = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
-  res.json({ ...updated, players: JSON.parse(updated.players) });
+  res.json({
+    ...updated,
+    players: JSON.parse(updated.players),
+    watten_team1_players: updated.watten_team1_players ? JSON.parse(updated.watten_team1_players) : null,
+    watten_team2_players: updated.watten_team2_players ? JSON.parse(updated.watten_team2_players) : null,
+  });
 });
 
 router.delete('/:id', (req, res) => {

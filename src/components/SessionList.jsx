@@ -70,6 +70,7 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [skatVariant, setSkatVariant] = useState("skat");
   const [localPlayers, setLocalPlayers] = useState(registeredPlayers);
+  const [targetScore, setTargetScore] = useState(15);
 
   // Sync if parent registry changes (e.g. quick-add)
   const allPlayers = localPlayers.length >= registeredPlayers.length ? localPlayers : registeredPlayers;
@@ -105,13 +106,27 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
       return;
     }
     const id = generateId();
-    
-    console.log("Sending request", { id, name: name.trim(), gameType, players: selectedNames, stake });
+
+    const body = {
+      id,
+      name: name.trim(),
+      game_type: gameType,
+      players: selectedNames,
+      stake,
+    };
+
+    if (gameType === "watten") {
+      body.target_score = targetScore;
+      body.team1_players = selectedNames.slice(0, 2);
+      body.team2_players = selectedNames.slice(2, 4);
+    }
+
+    console.log("Sending request", body);
     try {
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, name: name.trim(), game_type: gameType, players: selectedNames, stake }),
+        body: JSON.stringify(body),
       });
       console.log("Response status", res.status);
       if (res.ok) {
@@ -127,7 +142,7 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   };
 
   const pluginEntries = Object.values(GAME_PLUGINS);
-  const canSubmit = name.trim().length > 0 && selectedNames.length >= 2;
+  const canSubmit = name.trim().length > 0 && selectedNames.length >= 2 && (gameType !== 'watten' || selectedNames.length === 4);
 
   return (
     <div style={styles.newSessionForm}>
@@ -187,6 +202,47 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
         <p style={{ fontSize: 11, color: "#9d6b00", margin: "8px 0 0", fontStyle: "italic" }}>
           Mindestens 2 Spieler erforderlich.
         </p>
+      )}
+
+      {gameType === "watten" && selectedNames.length > 0 && selectedNames.length !== 4 && (
+        <p style={{ fontSize: 11, color: "#9d6b00", margin: "8px 0 0", fontStyle: "italic" }}>
+          Watten benötigt genau 4 Spieler.
+        </p>
+      )}
+
+      {gameType === "watten" && selectedNames.length === 4 && (
+        <>
+          <label style={styles.label}>Teams</label>
+          <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ fontSize: 12, fontWeight: "bold", color: "#2c1810", marginBottom: 8 }}>Team 1</h4>
+              <div style={{ background: "#e8dcc5", padding: 8, borderRadius: 8 }}>
+                {selectedNames.slice(0, 2).map(name => (
+                  <div key={name} style={{ fontSize: 12, color: "#2c1810" }}>{name}</div>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ fontSize: 12, fontWeight: "bold", color: "#2c1810", marginBottom: 8 }}>Team 2</h4>
+              <div style={{ background: "#e8dcc5", padding: 8, borderRadius: 8 }}>
+                {selectedNames.slice(2, 4).map(name => (
+                  <div key={name} style={{ fontSize: 12, color: "#2c1810" }}>{name}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <label style={styles.label}>Zielpunktzahl</label>
+          <div style={styles.chipRow}>
+            {[13, 15].map(score => (
+              <button
+                key={score}
+                style={{ ...styles.chip, ...(targetScore === score ? styles.chipActive : {}) }}
+                onClick={() => setTargetScore(score)}
+              >{score} Punkte</button>
+            ))}
+          </div>
+        </>
       )}
 
       {GAME_PLUGINS[gameType]?.defaultStake !== 0 && (
@@ -289,7 +345,11 @@ export default function SessionList({ sessions, registeredPlayers, onSessionSele
           const plugin = GAME_PLUGINS[s.game_type];
           const metaText = plugin?.getSessionMeta?.(s) ?? `${s.game_count} Spiele`;
           const isCompletedWizard = s.game_type === "wizard" && s.wizard_status === "completed";
-          
+
+          const playerText = s.game_type === 'watten'
+            ? `T1: ${s.watten_team1_players?.join("+")} | T2: ${s.watten_team2_players?.join("+")}`
+            : s.players.join(", ");
+
           return (
             <div key={s.id} style={{ ...styles.sessionCard, ...(isCompletedWizard ? { opacity: 0.7 } : {}) }} onClick={() => onSessionSelect(s.id)}>
               <div style={styles.sessionCardLeft}>
@@ -298,7 +358,7 @@ export default function SessionList({ sessions, registeredPlayers, onSessionSele
                 <span style={styles.sessionMeta}>
                   {plugin?.label ?? s.game_type}
                   {" · "}
-                  {s.players.join(", ")}
+                  {playerText}
                   {" · "}
                   {metaText}
                 </span>

@@ -3,6 +3,7 @@ import sessionsRouter from './routes/sessions.js';
 import gamesRouter from './routes/games.js';
 import playersRouter from './routes/players.js';
 import wizardRoundsRouter from './routes/wizard/rounds.js';
+import wattenGamesRouter from './routes/watten/games.js';
 
 const app = express();
 app.use(express.json());
@@ -10,6 +11,7 @@ app.use(express.json());
 app.use('/api/players', playersRouter);
 app.use('/api/sessions/:id/games', gamesRouter);
 app.use('/api/sessions/:id/wizard-rounds', wizardRoundsRouter);
+app.use('/api/sessions/:id/watten', wattenGamesRouter);
 app.use('/api/sessions', sessionsRouter);
 
 const PORT = process.env.PORT ?? 3001;

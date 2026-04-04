@@ -5,7 +5,11 @@ import styles from "./styles.js";
 export default function SessionView({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
   const plugin = GAME_PLUGINS[session.game_type];
   const { SessionComponent } = plugin;
-  const { players } = session;
+  const { players, game_type } = session;
+
+  const subtitle = game_type === 'watten'
+    ? `${plugin.label} · Team 1: ${session.watten_team1_players?.join(" + ")} | Team 2: ${session.watten_team2_players?.join(" + ")}`
+    : `${plugin.label} · ${players.join(", ")}`;
 
   return (
     <div style={styles.container}>
@@ -13,7 +17,7 @@ export default function SessionView({ session, registeredPlayers = [], onBack, o
         <button style={styles.backBtn} onClick={onBack}>← Runden</button>
         <div style={{ flex: 1 }}>
           <div style={styles.sessionTitle}>{session.name}</div>
-          <div style={styles.sessionSubtitle}>{plugin.label} · {players.join(", ")}</div>
+          <div style={styles.sessionSubtitle}>{subtitle}</div>
         </div>
       </div>
       <SessionComponent

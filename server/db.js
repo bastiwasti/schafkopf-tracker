@@ -116,4 +116,43 @@ try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
   db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_session ON skat_games(session_id);');
   db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_created ON skat_games(created_at);');
 
+  // Watten tables
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS watten_games (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+      game_number INTEGER NOT NULL,
+      winner_team TEXT NOT NULL,
+      final_score_team1 INTEGER NOT NULL,
+      final_score_team2 INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      archived_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS watten_rounds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+      game_id INTEGER REFERENCES watten_games(id) ON DELETE CASCADE,
+      round_number INTEGER NOT NULL,
+      winning_team TEXT NOT NULL,
+      points INTEGER NOT NULL DEFAULT 2,
+      is_machine BOOLEAN DEFAULT 0,
+      is_spannt_played BOOLEAN DEFAULT 0,
+      tricks_team1 INTEGER DEFAULT 0,
+      tricks_team2 INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      archived_at TEXT
+    );
+  `);
+
+  // Create indexes for watten
+  db.exec('CREATE INDEX IF NOT EXISTS idx_watten_games_session ON watten_games(session_id);');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_watten_rounds_session ON watten_rounds(session_id);');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_watten_rounds_game ON watten_rounds(game_id);');
+
+  // Watten migrations for existing databases
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_target_score INTEGER DEFAULT 15'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team1_players TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team2_players TEXT'); } catch (e) {}
+
   export default db;

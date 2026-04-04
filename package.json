@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development PORT=3001 concurrently \"vite\" \"node server/index.js\"",
     "dev:clean": "rm -f data/tracker-dev.db* && npm run dev",
-    "dev:test": "NODE_ENV=test PORT=3001 concurrently \"vite\" \"node server/index.js\"",
+    "dev:test": "NODE_ENV=test PORT=3003 VITE_API_PORT=3003 concurrently \"vite\" \"node server/index.js\"",
     "server": "NODE_ENV=production PORT=3002 node server/index.js",
     "server:dev": "NODE_ENV=development PORT=3001 node server/index.js",
     "server:prod": "NODE_ENV=production PORT=3002 node server/index.js",

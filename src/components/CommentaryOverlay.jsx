@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { PERSONALITIES } from "../games/shared/commentary.js";
 import styles from "./styles.js";
 
@@ -7,16 +7,16 @@ const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose, buildFn }) {
   const personality = PERSONALITIES[commentatorPersonality] ?? PERSONALITIES.dramatic;
   
-  const { segments } = useRef(() => {
+  const segments = useMemo(() => {
     try {
       if (!game) {
         console.error('[CommentaryOverlay] No game data provided');
-        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Spieldaten vorhanden" }] };
+        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Spieldaten vorhanden" }];
       }
       
       if (!buildFn || typeof buildFn !== 'function') {
         console.error('[CommentaryOverlay] buildFn is not a function:', buildFn);
-        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentarfunktion verfügbar" }] };
+        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentarfunktion verfügbar" }];
       }
       
       console.log('[CommentaryOverlay] Building commentary for game:', game);
@@ -24,18 +24,20 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
       
       if (!result || !result.segments || !Array.isArray(result.segments)) {
         console.error('[CommentaryOverlay] Invalid commentary result:', result);
-        return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars" }] };
+        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars" }];
       }
       
-      return result;
+      return result.segments;
     } catch (error) {
       console.error('[CommentaryOverlay] Error building commentary:', error);
-      return { segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars: " + error.message }] };
+      return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars: " + error.message }];
     }
-  }()).current;
+  }, [game, registeredPlayers, commentatorPersonality, buildFn]);
 
   useEffect(() => {
     if (!hasSpeech) return;
+    if (!segments || !Array.isArray(segments)) return;
+    
     window.speechSynthesis.cancel();
 
     const playerVoiceMap = Object.fromEntries(
@@ -51,6 +53,11 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
       }
 
       const seg = segments[index];
+      if (!seg) {
+        onClose();
+        return;
+      }
+
       const isPlayer = index > 0;
 
       const utter = new SpeechSynthesisUtterance(seg.text);
@@ -83,7 +90,7 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
     speakSegment(0);
 
     return () => { window.speechSynthesis.cancel(); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [segments, registeredPlayers, commentatorVoice, personality, onClose]);
 
   const handleClose = () => {
     if (hasSpeech) window.speechSynthesis.cancel();
@@ -106,13 +113,37 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
 
         {/* Segments */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {segments.map((seg, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-              {/* Avatar — only shown for player segments (index > 0) */}
-              {i > 0 && (
-                <div style={{ fontSize: 28, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>
-                  {seg.avatar}
+          {segments && Array.isArray(segments) ? (
+            segments.map((seg, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                {/* Avatar — only shown for player segments (index > 0) */}
+                {i > 0 && (
+                  <div style={{ fontSize: 28, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>
+                    {seg.avatar}
+                  </div>
+                )}
+                <div
+                  style={{
+                    ...styles.commentaryBubble,
+                    fontSize: i === 0 ? 16 : 14,
+                    fontStyle: i === 0 ? "italic" : "normal",
+                    flex: "1 1 0%",
+                    minHeight: "unset",
+                    padding: i === 0 ? "14px 16px" : "10px 14px",
+                    marginLeft: i > 0 ? 0 : undefined,
+                  }}
+                >
+                  {i === 0 && <div style={styles.commentaryBubbleCaret} />}
+                  {seg.text}
                 </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ padding: 20, textAlign: "center", color: "#666" }}>
+              Keine Kommentare verfügbar
+            </div>
+          )}
+        </div>
               )}
               <div
                 style={{

@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Read(//etc/nginx/sites-available/**)",
+      "Bash(pm2 list:*)",
+      "Bash(ps -p 2392832 -p 2382024 -o pid,cmd)",
+      "Bash(sudo npm:*)",
+      "Bash(pm2 --version)",
+      "Bash(kill 2382024)",
+      "Bash(pm2 start:*)",
+      "Bash(curl -s http://localhost:3002/api/sessions)",
+      "Bash(sudo sed:*)",
+      "Bash(sudo nginx:*)",
+      "Bash(curl -s https://schafkopf.eventig.app/api/sessions)",
+      "Bash(kill 2392832)",
+      "Bash(curl -s http://localhost:3001/api/sessions)",
+      "Bash(sudo tee:*)",
+      "Bash(sudo ln:*)",
+      "Bash(sudo certbot:*)",
+      "Bash(pm2 save:*)",
+      "Bash(pm2 startup:*)",
+      "Bash(curl -s https://dev.schafkopf.eventig.app/api/sessions)",
+      "Bash(git rm:*)",
+      "Bash(pm2 stop:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} Sessions in Dev-DB'\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Prod: {len\\(d\\)} Sessions'\\)\")",
+      "Bash(ls -lh data/tracker*.db)",
+      "Bash(pm2 info:*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f'Dev: {len\\(d\\)} Sessions'\\)\")",
+      "Bash(grep -l -i \"deploy\\\\|prod\\\\|dev\\\\|test\\\\|staging\\\\|datenbank\\\\|database\\\\|server\" /home/vscode/schafkopf-tracker/docs/*.md)",
+      "Bash(ls /home/vscode/schafkopf-tracker/tests/specs/*debug* /home/vscode/schafkopf-tracker/tests/specs/api-player.spec.js /home/vscode/schafkopf-tracker/tests/specs/page-state.spec.js)"
+    ],
+    "additionalDirectories": [
+      "/home/vscode/schafkopf-tracker/tests/specs"
+    ]
+  }
+}

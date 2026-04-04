@@ -1,7 +1,10 @@
-import { getRoundCount, resolveRound, calcBalances, makeDefaultRound, getPredictionRange } from "./logic.js";
+import { getRoundCount, calcBalances, makeDefaultRound } from "./logic.js";
 import ScoreSheet from "./ScoreSheet.jsx";
 import RulesBox from "./RulesBox.jsx";
-import { buildWizardCommentary } from "./commentary.js";
+
+function makeDefaultForm(players) {
+  return makeDefaultRound(players);
+}
 
 const wizardPlugin = {
   id: "wizard",
@@ -9,25 +12,15 @@ const wizardPlugin = {
   description: "Stich-basiertes Kartenspiel · Vorhersage-Punkte",
   defaultStake: 0,
   showStake: false,
-
-  // Wizard-spezifische Funktionen
   getRoundCount,
-  resolveRound,
+  makeDefaultForm,
   calcBalances,
-  makeDefaultRound,
-  getPredictionRange,
-
-  // React-Komponenten
-  ScoreSheetComponent: ScoreSheet,
+  FormComponent: null,
+  HistoryCardComponent: null,
   RulesComponent: RulesBox,
   SessionComponent: ScoreSheet,
-  buildCommentary: buildWizardCommentary,
-  getSessionMeta: (s) => s.wizard_status === "completed"
-    ? "Beendet"
-    : `${s.game_count}/${s.game_count_max || "?"} Runden`,
-  getArchiveConfirm: (s) => s.wizard_status === "completed"
-    ? null
-    : "Wizard-Session ins Archiv verschieben?",
+  getSessionMeta: (s) => `${s.game_count} ${s.game_count === 1 ? "Runde" : "Runden"}`,
+  getArchiveConfirm: () => "Runde ins Archiv verschieben?",
 };
 
 export default wizardPlugin;

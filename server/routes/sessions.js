@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import db from '../db.js';
+import skatGamesRouter from './games/skat.js';
 
 const router = Router();
 
@@ -95,6 +96,8 @@ router.get('/:id', (req, res) => {
     })),
   });
 });
+
+router.use('/:id/skat', skatGamesRouter);
 
 router.patch('/:id', (req, res) => {
   const { id } = req.params;

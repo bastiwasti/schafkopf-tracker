@@ -3,6 +3,13 @@ import { GAME_PLUGINS } from "../games/index.js";
 import styles from "./styles.js";
 import AvatarPicker from "./AvatarPicker.jsx";
 
+const SKAT_VARIANTS = [
+  { id: "skat", label: "Skat", playerCount: 3 },
+  { id: "skat_4er", label: "Skat 4er", playerCount: 4 },
+  { id: "ramsch_3er", label: "Ramsch 3er", playerCount: 3 },
+  { id: "ramsch_5er", label: "Ramsch 5er", playerCount: 5 },
+];
+
 function QuickAddPlayer({ onAdded }) {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("🃏");
@@ -57,10 +64,11 @@ function QuickAddPlayer({ onAdded }) {
 
 function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   const [name, setName] = useState("");
-  const [gameType, setGameType] = useState("schafkopf");
+  const [gameType, setGameType] = useState("skat");
   const [selectedNames, setSelectedNames] = useState([]);
   const [stake, setStake] = useState(GAME_PLUGINS[gameType]?.defaultStake ?? 0.50);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [skatVariant, setSkatVariant] = useState("skat");
   const [localPlayers, setLocalPlayers] = useState(registeredPlayers);
 
   // Sync if parent registry changes (e.g. quick-add)
@@ -82,17 +90,39 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
     onPlayersChanged();
   };
 
+  const generateId = () => {
+    try {
+      return crypto.randomUUID();
+    } catch (e) {
+      return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!name.trim() || selectedNames.length < 2) return;
-    const id = crypto.randomUUID();
-    const res = await fetch("/api/sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, name: name.trim(), game_type: gameType, players: selectedNames, stake }),
-    });
-    if (res.ok) {
-      const session = await res.json();
-      onCreated(session);
+    console.log("handleSubmit called", { name, gameType, selectedNames, stake });
+    if (!name.trim() || selectedNames.length < 2) {
+      console.log("Validation failed", { name: name.trim(), selectedNamesLength: selectedNames.length });
+      return;
+    }
+    const id = generateId();
+    
+    console.log("Sending request", { id, name: name.trim(), gameType, players: selectedNames, stake });
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name: name.trim(), game_type: gameType, players: selectedNames, stake }),
+      });
+      console.log("Response status", res.status);
+      if (res.ok) {
+        const session = await res.json();
+        console.log("Session created", session);
+        onCreated(session);
+      } else {
+        console.error("Request failed", await res.text());
+      }
+    } catch (error) {
+      console.error("Fetch error", error);
     }
   };
 

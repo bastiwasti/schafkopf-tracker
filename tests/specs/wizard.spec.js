@@ -64,4 +64,36 @@ test.describe('Wizard Spiel', () => {
 
     await expect(page.locator('text=Test Wizard Session').first()).toBeVisible();
   });
+
+  test('Wizard Rundenfolge mit Game Count Check', async ({ page }) => {
+    await page.click('text=Starten');
+    await page.waitForLoadState('networkidle');
+
+    const selects = await page.locator('select').all();
+
+    for (let i = 0; i < 4; i++) {
+      if (!await selects[i].isDisabled()) {
+        await selects[i].selectOption(i === 3 ? '1' : '0');
+      }
+    }
+
+    await page.click('text=Weiter');
+    await page.waitForLoadState('networkidle');
+
+    for (let i = 4; i < 8; i++) {
+      if (!await selects[i].isDisabled()) {
+        await selects[i].selectOption(i === 7 ? '1' : '0');
+      }
+    }
+
+    await page.click('text=Speichern');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByText('Test Wizard Session')).toBeVisible();
+
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=1 Runde').first()).toBeVisible();
+  });
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "./styles.js";
 import AvatarPicker from "./AvatarPicker.jsx";
-import { PERSONALITIES } from "../games/schafkopf/commentary.js";
+import { PLAYER_PERSONALITIES } from "../games/shared/playerPersonalities.js";
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -40,7 +40,7 @@ function VoicePicker({ value, onChange }) {
 function PlayerForm({ initial, onSave, onCancel }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [avatar, setAvatar] = useState(initial?.avatar ?? "🃏");
-  const [characterType, setCharacterType] = useState(initial?.character_type ?? "dramatic");
+  const [characterType, setCharacterType] = useState(initial?.character_type ?? "optimist");
   const [voiceName, setVoiceName] = useState(initial?.voice_name ?? null);
   const [showPicker, setShowPicker] = useState(false);
   const [error, setError] = useState("");
@@ -104,7 +104,7 @@ function PlayerForm({ initial, onSave, onCancel }) {
 
       <label style={styles.label}>Charakter & Kommentar-Stil</label>
       <div style={styles.personalityChipRow}>
-        {Object.entries(PERSONALITIES).map(([key, p]) => (
+        {Object.entries(PLAYER_PERSONALITIES).map(([key, p]) => (
           <button
             key={key}
             style={{ ...styles.personalityChip, ...(characterType === key ? styles.personalityChipActive : {}) }}
@@ -207,7 +207,7 @@ export default function PlayerManager({ onBack, onPlayersChanged }) {
             <div style={styles.playerManagerInfo}>
               <span style={styles.playerManagerName}>{p.name}</span>
               <span style={styles.playerManagerMeta}>
-                {PERSONALITIES[p.character_type]?.icon ?? "🎙️"} {PERSONALITIES[p.character_type]?.label ?? "Dramatischer Stadion-Reporter"}
+                {PLAYER_PERSONALITIES[p.character_type]?.icon ?? "🌟"} {PLAYER_PERSONALITIES[p.character_type]?.label ?? "Der Optimist"}
                 {" · "}
                 {p.voice_name ? p.voice_name : "Standard-Stimme"}
               </span>

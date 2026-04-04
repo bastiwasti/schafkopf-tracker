@@ -193,23 +193,25 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
   
   // Gesamtpunkte berechnen
   const balances = {};
-  players.forEach((p) => (balances[p] = 0));
+  (players || []).forEach((p) => (balances[p] = 0));
   activeRounds.forEach((r) => {
     if (r && r.scores && typeof r.scores === 'object') {
-      players.forEach((p) => {
+      (players || []).forEach((p) => {
         balances[p] += r.scores[p] || 0;
       });
     }
   });
 
   // Führender Spieler bestimmen
-  const maxScore = Math.max(...Object.values(balances));
-  const leader = maxScore > 0 
+  const balanceValues = Object.values(balances);
+  const maxScore = balanceValues.length > 0 ? Math.max(...balanceValues) : 0;
+  const leader = maxScore > 0 && players && players.length > 0
     ? players.reduce((a, b) => (balances[a] >= balances[b] ? a : b))
     : null;
 
   // Session-Status bestimmen
-  const maxRounds = getMaxRounds(players.length);
+  const playerCount = (players && Array.isArray(players)) ? players.length : 4;
+  const maxRounds = getMaxRounds(playerCount);
   const currentRound = activeRounds.length + 1;
   const isSessionActive = currentRound <= maxRounds;
 
@@ -429,7 +431,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
           {/* Header */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: `28px repeat(${players.length}, 1fr) 76px`,
+            gridTemplateColumns: `28px repeat(${playerCount}, 1fr) 76px`,
             gap: "3px",
             marginBottom: "6px",
             fontWeight: "bold",
@@ -437,7 +439,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
             fontSize: 10,
           }}>
             <div style={{ textAlign: "center", padding: "3px" }}>R</div>
-            {players.map(p => (
+            {(players || []).map(p => (
               <div key={p} style={{ textAlign: "center", padding: "3px", fontSize: 10, lineHeight: 1.3 }}>
                 <div>{avatarMap[p] || "🃏"}</div>
                 <div style={{ fontSize: 9, fontWeight: "normal", marginTop: 1 }}>{p}</div>
@@ -529,7 +531,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
                 key={roundNum}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: `28px repeat(${players.length}, 1fr) 76px`,
+                  gridTemplateColumns: `28px repeat(${playerCount}, 1fr) 76px`,
                   gap: "3px",
                   padding: "5px 0",
                   borderBottom: roundNum < maxRounds ? "1px solid #e8ddb5" : "none",

@@ -15,6 +15,11 @@ dist-ssr
 # SQLite database
 data/
 
+# Playwright
+playwright-report/
+test-results/
+test-*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

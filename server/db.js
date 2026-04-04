@@ -8,7 +8,18 @@ const DATA_DIR = join(__dirname, '..', 'data');
 
 mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(join(DATA_DIR, 'tracker.db'));
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+const DB_FILES = {
+  production:  'tracker.db',
+  development: 'tracker-dev.db',
+  test:        'tracker-test.db',
+};
+
+const dbFile = DB_FILES[NODE_ENV] ?? 'tracker-dev.db';
+console.log(`[${NODE_ENV}] DB: ${dbFile}`);
+
+const db = new Database(join(DATA_DIR, dbFile));
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
@@ -67,8 +78,42 @@ db.exec(`
 try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
 try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch (e) {}
 try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
-try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
-try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
-try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
+  try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
+  try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
 
-export default db;
+  // Skat tables
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS skat_games (
+      id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      seq INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      archived_at TEXT,
+
+      game_type TEXT NOT NULL,
+      declarer TEXT NOT NULL,
+      partner TEXT,
+      contra TEXT,
+      won BOOLEAN,
+      schneider BOOLEAN,
+      schwarz BOOLEAN,
+      laufende INTEGER DEFAULT 0,
+      klopfer TEXT,
+      bock INTEGER DEFAULT 1,
+      kontra_multiplier INTEGER DEFAULT 1,
+      points INTEGER,
+
+      FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Skat migrations for existing databases
+  try { db.exec('ALTER TABLE sessions ADD COLUMN game_variant TEXT DEFAULT \'skat_3er\''); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN skat_bock_level INTEGER DEFAULT 1'); } catch (e) {}
+
+  // Create indexes for skat_games
+  db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_session ON skat_games(session_id);');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_created ON skat_games(created_at);');
+
+  export default db;

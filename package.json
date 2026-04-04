@@ -4,11 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"node server/index.js\"",
-    "server": "node server/index.js",
+    "dev": "NODE_ENV=development PORT=3001 concurrently \"vite\" \"node server/index.js\"",
+    "dev:clean": "rm -f data/tracker-dev.db* && npm run dev",
+    "dev:test": "NODE_ENV=test PORT=3001 concurrently \"vite\" \"node server/index.js\"",
+    "server": "NODE_ENV=production PORT=3002 node server/index.js",
+    "server:dev": "NODE_ENV=development PORT=3001 node server/index.js",
+    "server:prod": "NODE_ENV=production PORT=3002 node server/index.js",
+    "reset:dev": "rm -f data/tracker-dev.db*",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "NODE_ENV=test playwright test",
+    "test:e2e:clean": "rm -f data/tracker-test.db* && NODE_ENV=test playwright test",
+    "test:e2e:ui": "NODE_ENV=test playwright test --ui",
+    "test:e2e:debug": "NODE_ENV=test playwright test --debug"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
@@ -19,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

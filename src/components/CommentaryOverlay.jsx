@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { PERSONALITIES } from "../games/shared/commentary.js";
 import styles from "./styles.js";
 
@@ -143,24 +143,6 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
               Keine Kommentare verfügbar
             </div>
           )}
-        </div>
-              )}
-              <div
-                style={{
-                  ...styles.commentaryBubble,
-                  fontSize: i === 0 ? 16 : 14,
-                  fontStyle: i === 0 ? "italic" : "normal",
-                  flex: 1,
-                  minHeight: "unset",
-                  padding: i === 0 ? "14px 16px" : "10px 14px",
-                  marginLeft: i > 0 ? 0 : undefined,
-                }}
-              >
-                {i === 0 && <div style={styles.commentaryBubbleCaret} />}
-                {seg.text}
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Actions */}

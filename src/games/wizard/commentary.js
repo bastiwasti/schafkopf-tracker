@@ -93,7 +93,9 @@ function analyzeRound(round, players) {
   let bigMissPlayer = null;
   let bigMissDiff = 0;
 
-  players.forEach((p) => {
+  const playersArray = Array.isArray(players) ? players : [];
+
+  playersArray.forEach((p) => {
     const pred = predictions[p] ?? 0;
     const actual = tricks[p] ?? 0;
     const diff = Math.abs(pred - actual);
@@ -104,12 +106,12 @@ function analyzeRound(round, players) {
     }
   });
 
-  const sorted = [...players].sort((a, b) => (scores[b] ?? 0) - (scores[a] ?? 0));
+  const sorted = [...playersArray].sort((a, b) => (scores[b] ?? 0) - (scores[a] ?? 0));
   const topPlayer = sorted[0];
   const bottomPlayer = sorted[sorted.length - 1];
   const topScore = scores[topPlayer] ?? 0;
 
-  const allCorrect = correctCount === players.length;
+  const allCorrect = correctCount === playersArray.length;
   const allWrong = correctCount === 0;
 
   return { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore, allCorrect, allWrong };
@@ -154,7 +156,8 @@ export function buildWizardCommentary(round, regPlayers = [], personality = "dra
 
     const pers = PERSONALITIES[personality] ?? PERSONALITIES.dramatic;
     const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
-    const players = Object.keys(round.predictions ?? {});
+    const playersArray = Object.keys(round.predictions ?? {});
+    const players = Array.isArray(playersArray) ? playersArray : [];
     const totalRounds = getTotalRounds(players.length);
 
     const { correctCount, bigMissPlayer, bigMissDiff, topPlayer, bottomPlayer, topScore } =

@@ -388,11 +388,9 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
         {isSessionActive && activeRounds.length > 0 && (
           <button style={styles.btnUndo} onClick={handleUndo}>↩ Rückgängig</button>
         )}
-        {isSessionActive && (
-          <button style={{ ...styles.btnSecondary, padding: "8px 12px" }} onClick={startReorder}>
-            ⇅ Sitzordnung
-          </button>
-        )}
+        <button style={{ ...styles.btnSecondary, padding: "8px 12px" }} onClick={startReorder}>
+          ⇅ Sitzordnung
+        </button>
         <button
           style={{ ...styles.btnSecondary, padding: "8px 12px" }}
           onClick={() => setShowRules(!showRules)}

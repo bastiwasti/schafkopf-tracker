@@ -1,43 +1,39 @@
-# Dev/Prod Separation Plan
+# Dev/Prod Separation
 
 ## 📋 Übersicht
 
-Dieses Dokument beschreibt die Implementierung einer klaren Trennung zwischen Development- und Production-Umgebung für den Schafkopf Tracker mit zwei separaten Express-Prozessen.
+> **Wichtigste Regel:** Neue Features werden ausschließlich auf **Dev** (`dev.schafkopf.eventig.app`) entwickelt und getestet. Auf **Prod** (`schafkopf.eventig.app`) kommen nur Dinge, die auf Dev funktioniert haben. Prod enthält ausschließlich echte Spielstände — nie Testdaten eintragen.
+
+Dieses Dokument beschreibt die implementierte Trennung zwischen Development- und Production-Umgebung mit zwei separaten Express-Prozessen (PM2).
 
 ---
 
-## 🏗 Architektur
-
-### Zielzustand
+## 🏗 Architektur (implementiert)
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Nginx                            │
-│  ┌───────────────────────────────────────────┐   │
-│  │ dev.schafkopf.eventig.app             │   │
-│  │ → /api-dev → Express Dev (Port 3001)    │   │
-│  │ → / → Static Files (Frontend Build)   │   │
-│  └───────────────────────────────────────────┘   │
-│  ┌───────────────────────────────────────────┐   │
-│  │ schafkopf.eventig.app                │   │
-│  │ → /api → Express Prod (Port 3002)      │   │
-│  │ → / → Static Files (Frontend Build)   │   │
-│  └───────────────────────────────────────────┘   │
-└─────────────────────────────────────────────┘
-              │                    │
-              ▼                    ▼
-┌──────────────────┐   ┌──────────────────┐
-│ Express Dev      │   │ Express Prod     │
-│ Port 3001       │   │ Port 3002       │
-│ NODE_ENV=dev     │   │ NODE_ENV=prod    │
-└──────────────────┘   └──────────────────┘
-      │                        │
-      ▼                        ▼
-┌──────────────────┐   ┌──────────────────┐
-│ tracker-dev.db   │   │ tracker.db       │
-│ (Volatile)      │   │ (Persistent)      │
-└──────────────────┘   └──────────────────┘
+                    Nginx
+        ┌──────────────────────────────┐      ┌──────────────────────────────┐
+        │ dev.schafkopf.eventig.app    │      │ schafkopf.eventig.app        │
+        │ /api → Express Dev (3001)    │      │ /api → Express Prod (3002)   │
+        │ /    → dist/ (statisch)      │      │ /    → dist/ (statisch)      │
+        └──────────────────────────────┘      └──────────────────────────────┘
+                      │                                      │
+                      ▼                                      ▼
+        ┌──────────────────────┐              ┌──────────────────────┐
+        │ schafkopf-dev (PM2)  │              │ schafkopf-prod (PM2) │
+        │ Port 3001            │              │ Port 3002            │
+        │ NODE_ENV=development │              │ NODE_ENV=production  │
+        └──────────────────────┘              └──────────────────────┘
+                      │                                      │
+                      ▼                                      ▼
+        ┌──────────────────────┐              ┌──────────────────────┐
+        │ tracker-dev.db       │              │ tracker.db           │
+        │ (Test-/Entwicklungs- │              │ (echte Spielstände,  │
+        │  daten)              │              │  frisch gestartet)   │
+        └──────────────────────┘              └──────────────────────┘
 ```
+
+Beide Server laufen aus demselben Verzeichnis (`/home/vscode/schafkopf-tracker`) und teilen denselben `dist/`-Ordner. Beide verwenden `/api` als Pfad — die Subdomain unterscheidet sie, kein Pfadwechsel nötig.
 
 ---
 

@@ -8,13 +8,23 @@ Der Schafkopf Tracker ist eine klassische Client-Server-Architektur:
 Browser (React + Vite)
         │  fetch() über HTTP
         ▼
-Express-Server (Port 3001)
+Express-Server
         │  better-sqlite3
         ▼
-SQLite-Datenbank (data/tracker.db)
+SQLite-Datenbank
 ```
 
-Im Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Express-Server. Im Produktionsbetrieb liefert Nginx die gebauten Vite-Assets aus (`dist/`) und proxied `/api` an den Express-Server.
+Es gibt drei Umgebungen:
+
+| | Lokal | Dev (VM) | Prod (VM) |
+|---|---|---|---|
+| Frontend | Vite :5173 | Nginx → dist/ | Nginx → dist/ |
+| Backend | Express :3001 | Express :3001 (PM2) | Express :3002 (PM2) |
+| Datenbank | tracker-dev.db | tracker-dev.db | tracker.db |
+
+Im lokalen Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an den Express-Server auf Port 3001. Im Produktionsbetrieb liefert Nginx die gebauten Vite-Assets aus (`dist/`) und proxied `/api` an den jeweiligen Express-Server.
+
+> **Regel:** Neue Features werden ausschließlich auf Dev entwickelt und getestet. Prod enthält nur echte Spielstände.
 
 ---
 

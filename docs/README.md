@@ -16,6 +16,18 @@ Schafkopf Tracker ist eine Web-App zum Erfassen und Auswerten von Kartenspielrun
 
 ---
 
+## Umgebungen
+
+| | Lokal (dev) | Dev | Prod |
+|---|---|---|---|
+| URL | localhost:5173 | dev.schafkopf.eventig.app | schafkopf.eventig.app |
+| DB | `tracker-dev.db` | `tracker-dev.db` | `tracker.db` |
+| Zweck | Entwicklung | Feature-Tests | Echte Spielstände |
+
+> **Regel:** Neue Features werden ausschließlich auf Dev getestet. Prod enthält nur echte Spielstände — nie Testdaten eintragen.
+
+---
+
 ## Schnellstart
 
 ```bash
@@ -23,7 +35,7 @@ npm install
 npm run dev
 ```
 
-Die App öffnet sich unter `http://localhost:5173`, der API-Server läuft auf Port `3001`.
+Die App öffnet sich unter `http://localhost:5173`, der API-Server läuft auf Port `3001` mit `tracker-dev.db`.
 
 ---
 
@@ -81,7 +93,9 @@ schafkopf-tracker/
 │   └── hooks/
 │       └── useCommentatorSettings.js # localStorage-Hook
 ├── data/
-│   └── tracker.db            # SQLite-Datenbank (auto-erstellt)
+│   ├── tracker.db            # Prod-Datenbank (echte Spielstände)
+│   ├── tracker-dev.db        # Dev-Datenbank (Test-/Entwicklungsdaten)
+│   └── tracker-test.db       # Test-Datenbank (Playwright, auto-reset)
 └── docs/                     # Diese Dokumentation
 ```
 

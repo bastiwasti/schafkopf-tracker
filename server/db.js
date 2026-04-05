@@ -74,13 +74,14 @@ db.exec(`
   );
 `);
 
-// Migrations for existing databases
-try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
-try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch (e) {}
-try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
-  try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
-  try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
+  // Migrations for existing databases
+  try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
+    try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
+    try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
+    try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
+    try { db.exec('ALTER TABLE sessions ADD COLUMN game_count INTEGER DEFAULT 0'); } catch (e) {}
 
   // Skat tables
   db.exec(`
@@ -123,8 +124,10 @@ try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
       session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
       game_number INTEGER NOT NULL,
       winner_team TEXT NOT NULL,
-      final_score_team1 INTEGER NOT NULL,
-      final_score_team2 INTEGER NOT NULL,
+      final_score_team1 INTEGER NOT NULL DEFAULT 0,
+      final_score_team2 INTEGER NOT NULL DEFAULT 0,
+      is_completed BOOLEAN DEFAULT 0,
+      bommerl_team TEXT,
       created_at TEXT NOT NULL,
       archived_at TEXT
     );
@@ -138,6 +141,7 @@ try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
       points INTEGER NOT NULL DEFAULT 2,
       is_machine BOOLEAN DEFAULT 0,
       is_spannt_played BOOLEAN DEFAULT 0,
+      is_gegangen BOOLEAN DEFAULT 0,
       tricks_team1 INTEGER DEFAULT 0,
       tricks_team2 INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
@@ -154,5 +158,8 @@ try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
   try { db.exec('ALTER TABLE sessions ADD COLUMN watten_target_score INTEGER DEFAULT 15'); } catch (e) {}
   try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team1_players TEXT'); } catch (e) {}
   try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team2_players TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE watten_games ADD COLUMN is_completed BOOLEAN DEFAULT 0'); } catch (e) {}
+  try { db.exec('ALTER TABLE watten_games ADD COLUMN bommerl_team TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE watten_rounds ADD COLUMN is_gegangen BOOLEAN DEFAULT 0'); } catch (e) {}
 
   export default db;

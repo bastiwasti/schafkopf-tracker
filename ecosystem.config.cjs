@@ -1,26 +1,33 @@
+// PM2 Ecosystem Config — Single Source of Truth für alle Prozesse
+// Starten: pm2 start ecosystem.config.js
+// Stoppen:  pm2 stop ecosystem.config.js
+// Neustart: pm2 restart ecosystem.config.js
+
 module.exports = {
   apps: [
     {
-      name: 'schafkopf-prod',
-      script: './server/index.js',
-      env: { NODE_ENV: 'production', PORT: 3002 },
+      name: 'schafkopf-dev',
+      script: 'server/index.js',
+      cwd: '/home/vscode/schafkopf-tracker',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3001,
+      },
+      // Automatisch neustarten wenn der Prozess crashed
       autorestart: true,
-      max_restarts: 10,
-      min_uptime: '10s',
-      max_memory_restart: '500M',
-      error_file: './logs/prod-error.log',
-      out_file: './logs/prod-out.log',
+      // Max. Memory bevor Neustart
+      max_memory_restart: '300M',
     },
     {
-      name: 'schafkopf-dev',
-      script: './server/index.js',
-      env: { NODE_ENV: 'development', PORT: 3001 },
+      name: 'schafkopf-prod',
+      script: 'server/index.js',
+      cwd: '/home/vscode/schafkopf-tracker',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3002,
+      },
       autorestart: true,
-      max_restarts: 10,
-      min_uptime: '10s',
-      max_memory_restart: '500M',
-      error_file: './logs/dev-error.log',
-      out_file: './logs/dev-out.log',
+      max_memory_restart: '300M',
     },
   ],
 };

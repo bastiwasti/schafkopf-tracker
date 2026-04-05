@@ -3,6 +3,17 @@ import db from '../../db.js';
 
 const router = Router({ mergeParams: true });
 
+// Punkteberechnung für eine Wizard-Runde
+function calculateWizardScores(predictions, tricks) {
+  const scores = {};
+  Object.keys(predictions).forEach((p) => {
+    const pred = predictions[p] ?? 0;
+    const actual = tricks[p] ?? 0;
+    scores[p] = pred === actual ? 20 + actual * 10 : -(Math.abs(pred - actual) * 10);
+  });
+  return scores;
+}
+
 const parseRound = (r) => ({
   ...r,
   round_number: Number(r.round_number),
@@ -60,22 +71,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'predictions and tricks are required' });
     }
 
-    // Scores berechnen
-    const players = Object.keys(predictions);
-    const scores = {};
-    players.forEach(p => {
-      const pred = predictions[p] ?? 0;
-      const actual = tricks[p] ?? 0;
-      const diff = pred - actual;
-      
-      if (diff === 0) {
-        // Korrekte Vorhersage
-        scores[p] = 20 + (actual * 10);
-      } else {
-        // Falsche Vorhersage
-        scores[p] = -(Math.abs(diff) * 10);
-      }
-    });
+    const scores = calculateWizardScores(predictions, tricks);
 
     // Nächste Rundennummer bestimmen
     const { maxRound } = db.prepare(
@@ -126,20 +122,7 @@ router.patch('/:roundId', (req, res) => {
     }
 
     if (isFullEdit) {
-      // Scores neu berechnen
-      const players = Object.keys(predictions);
-      const scores = {};
-      players.forEach(p => {
-        const pred = predictions[p] ?? 0;
-        const actual = tricks[p] ?? 0;
-        const diff = pred - actual;
-        
-        if (diff === 0) {
-          scores[p] = 20 + (actual * 10);
-        } else {
-          scores[p] = -(Math.abs(diff) * 10);
-        }
-      });
+      const scores = calculateWizardScores(predictions, tricks);
 
       db.prepare(`
         UPDATE wizard_rounds SET

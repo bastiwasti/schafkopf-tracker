@@ -1,5 +1,3 @@
-import styles from "../../components/styles.js";
-
 export const GAME_TYPES = [
   { name: "Grand", multiplier: 24 },
   { name: "Kreuz", multiplier: 12 },
@@ -159,4 +157,3 @@ export function resolveGame(form) {
   };
 }
 
-export default styles;

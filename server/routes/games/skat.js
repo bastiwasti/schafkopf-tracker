@@ -4,6 +4,26 @@ import db from '../../db.js';
 
 const router = express.Router();
 
+// Punkteberechnung für ein Skat-Spiel
+function calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock) {
+  const CARD_VALUES = { grand: 24, kreuz: 12, pik: 11, herz: 10, null: 23 };
+
+  const baseValue = game_type === 'grand'
+    ? CARD_VALUES['grand'] + laufende + 4
+    : CARD_VALUES[game_type] !== undefined
+      ? (game_type !== 'null' ? CARD_VALUES[game_type] + laufende : CARD_VALUES['null'])
+      : CARD_VALUES['grand'] + laufende + 4; // fallback für "kontra"
+
+  const schneiderMult = schwarz ? 3 : schneider ? 2 : 1;
+  const bockMult = Math.pow(2, (bock ?? 1) - 1);
+
+  if (game_type === 'kontra') {
+    const grandBase = CARD_VALUES['grand'] + laufende + 4;
+    return grandBase * schneiderMult * (kontra_multiplier ?? 1) * bockMult;
+  }
+  return baseValue * schneiderMult * bockMult;
+}
+
 // Helper: Nächste Sequenz
 function getNextSeq(sessionId) {
   const result = db.prepare(`
@@ -17,61 +37,10 @@ function getNextSeq(sessionId) {
 // Spiel erstellen
 router.post('/', async (req, res) => {
   try {
-    console.log('POST /skat called');
-    console.log('req.params:', req.params);
-    console.log('req.body:', req.body);
     const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, bock } = req.body;
     const sessionId = req.params.id;
-    console.log('sessionId:', sessionId);
 
-  // Grundwerte
-  const CARD_VALUES = {
-    grand: 24,
-    kreuz: 12,
-    pik: 11,
-    herz: 10,
-    null: 23,
-  };
-
-  const getTrumpfCount = (gameType, laufende) => {
-    if (gameType !== "grand") return laufende;
-    return laufende + 4;
-  };
-
-  const calculateBasePoints = (gameType, laufende) => {
-    let baseValue = CARD_VALUES[gameType];
-    
-    if (gameType === "grand") {
-      const trumpfCount = getTrumpfCount(gameType, laufende);
-      baseValue += trumpfCount;
-    } else if (gameType !== "null") {
-      baseValue += laufende;
-    }
-    
-    return baseValue;
-  };
-
-  const getSchneiderMultiplier = (schneider, schwarz) => {
-    if (schwarz) return 3;
-    if (schneider) return 2;
-    return 1;
-  };
-
-  // Spielwert berechnen
-  let points;
-  
-  if (game_type === "kontra") {
-    const baseValue = calculateBasePoints("grand", laufende);
-    const schneiderMultiplier = getSchneiderMultiplier(schneider, schwarz);
-    const kontraMult = kontra_multiplier ?? 1;
-    const bockMult = Math.pow(2, (bock ?? 1) - 1);
-    points = baseValue * schneiderMultiplier * kontraMult * bockMult;
-  } else {
-    const baseValue = calculateBasePoints(game_type, laufende);
-    const schneiderMultiplier = getSchneiderMultiplier(schneider, schwarz);
-    const bockMult = Math.pow(2, (bock ?? 1) - 1);
-    points = baseValue * schneiderMultiplier * bockMult;
-  }
+  const points = calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock);
 
   const game = {
     id: randomUUID(),
@@ -147,55 +116,7 @@ router.patch('/:gameId', async (req, res) => {
     }
 
     const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, bock } = req.body;
-
-  // Grundwerte
-  const CARD_VALUES = {
-    grand: 24,
-    kreuz: 12,
-    pik: 11,
-    herz: 10,
-    null: 23,
-  };
-
-  const getTrumpfCount = (gameType, laufende) => {
-    if (gameType !== "grand") return laufende;
-    return laufende + 4;
-  };
-
-  const calculateBasePoints = (gameType, laufende) => {
-    let baseValue = CARD_VALUES[gameType];
-    
-    if (gameType === "grand") {
-      const trumpfCount = getTrumpfCount(gameType, laufende);
-      baseValue += trumpfCount;
-    } else if (gameType !== "null") {
-      baseValue += laufende;
-    }
-    
-    return baseValue;
-  };
-
-  const getSchneiderMultiplier = (schneider, schwarz) => {
-    if (schwarz) return 3;
-    if (schneider) return 2;
-    return 1;
-  };
-
-  // Spielwert neu berechnen
-  let points;
-  
-  if (game_type === "kontra") {
-    const baseValue = calculateBasePoints("grand", laufende);
-    const schneiderMultiplier = getSchneiderMultiplier(schneider, schwarz);
-    const kontraMult = kontra_multiplier ?? 1;
-    const bockMult = Math.pow(2, (bock ?? 1) - 1);
-    points = baseValue * schneiderMultiplier * kontraMult * bockMult;
-  } else {
-    const baseValue = calculateBasePoints(game_type, laufende);
-    const schneiderMultiplier = getSchneiderMultiplier(schneider, schwarz);
-    const bockMult = Math.pow(2, (bock ?? 1) - 1);
-    points = baseValue * schneiderMultiplier * bockMult;
-  }
+    const points = calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock);
 
     db.prepare(`
       UPDATE skat_games SET

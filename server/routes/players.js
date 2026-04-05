@@ -9,13 +9,13 @@ router.get('/', (_req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { id, name, avatar = '🃏' } = req.body;
+  const { id, name, avatar = '🃏', character_type = 'optimist', voice_name = null } = req.body;
   if (!id || !name?.trim()) {
     return res.status(400).json({ error: 'id and name are required' });
   }
   try {
-    db.prepare('INSERT INTO players (id, name, avatar, created_at) VALUES (?, ?, ?, ?)').run(
-      id, name.trim(), avatar, new Date().toISOString()
+    db.prepare('INSERT INTO players (id, name, avatar, character_type, voice_name, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+      id, name.trim(), avatar, character_type, voice_name, new Date().toISOString()
     );
   } catch (e) {
     if (e.message?.includes('UNIQUE constraint failed')) {

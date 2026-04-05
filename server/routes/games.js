@@ -8,8 +8,11 @@ const parseGame = (g) => ({
   won: Boolean(g.won),
   schneider: Boolean(g.schneider),
   schwarz: Boolean(g.schwarz),
+  kontra: Boolean(g.kontra),
   klopfer: JSON.parse(g.klopfer),
   changes: JSON.parse(g.changes),
+  re_sonderpunkte: JSON.parse(g.re_sonderpunkte || '{}'),
+  kontra_sonderpunkte: JSON.parse(g.kontra_sonderpunkte || '{}'),
 });
 
 router.post('/', (req, res) => {
@@ -19,6 +22,7 @@ router.post('/', (req, res) => {
   const {
     type, player, partner, won, schneider, schwarz,
     laufende, bock, klopfer, spielwert, changes,
+    kontra, ansage, re_sonderpunkte, kontra_sonderpunkte,
   } = req.body;
 
   const { maxSeq } = db.prepare(
@@ -29,8 +33,9 @@ router.post('/', (req, res) => {
   db.prepare(`
     INSERT INTO games
       (session_id, seq, type, player, partner, won, schneider, schwarz,
-       laufende, bock, klopfer, spielwert, changes, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       laufende, bock, klopfer, spielwert, changes,
+       kontra, ansage, re_sonderpunkte, kontra_sonderpunkte, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     req.params.id, seq, type, player, partner ?? null,
     won ? 1 : 0, schneider ? 1 : 0, schwarz ? 1 : 0,
@@ -38,6 +43,9 @@ router.post('/', (req, res) => {
     JSON.stringify(klopfer ?? []),
     spielwert,
     JSON.stringify(changes),
+    kontra ? 1 : 0, ansage ?? null,
+    JSON.stringify(re_sonderpunkte ?? {}),
+    JSON.stringify(kontra_sonderpunkte ?? {}),
     new Date().toISOString(),
   );
 
@@ -68,7 +76,8 @@ router.patch('/:gameId', (req, res) => {
   ).get(req.params.gameId, req.params.id);
   if (!game) return res.status(404).json({ error: 'Game not found' });
 
-  const { type, player, partner, won, schneider, schwarz, laufende, bock, klopfer, spielwert, changes, archived_at } = req.body;
+  const { type, player, partner, won, schneider, schwarz, laufende, bock, klopfer, spielwert, changes, archived_at,
+          kontra, ansage, re_sonderpunkte, kontra_sonderpunkte } = req.body;
 
   // Full edit — only allowed on non-archived games
   const isFullEdit = type !== undefined;
@@ -80,7 +89,8 @@ router.patch('/:gameId', (req, res) => {
     db.prepare(`
       UPDATE games SET
         type = ?, player = ?, partner = ?, won = ?, schneider = ?, schwarz = ?,
-        laufende = ?, bock = ?, klopfer = ?, spielwert = ?, changes = ?
+        laufende = ?, bock = ?, klopfer = ?, spielwert = ?, changes = ?,
+        kontra = ?, ansage = ?, re_sonderpunkte = ?, kontra_sonderpunkte = ?
       WHERE id = ?
     `).run(
       type, player, partner ?? null,
@@ -89,6 +99,9 @@ router.patch('/:gameId', (req, res) => {
       JSON.stringify(klopfer ?? []),
       spielwert,
       JSON.stringify(changes),
+      kontra ? 1 : 0, ansage ?? null,
+      JSON.stringify(re_sonderpunkte ?? {}),
+      JSON.stringify(kontra_sonderpunkte ?? {}),
       req.params.gameId,
     );
   }

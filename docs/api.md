@@ -34,7 +34,9 @@ Legt einen neuen Spieler an.
 {
   "id": "uuid",
   "name": "Müller",
-  "avatar": "🦊"
+  "avatar": "🦊",
+  "character_type": "optimist",
+  "voice_name": "Anna"
 }
 ```
 
@@ -146,6 +148,15 @@ Erstellt eine neue Runde.
 
 Für Wizard-Runden `game_type: "wizard"` setzen. `stake` kann `0` sein.
 
+Für **Doppelkopf**-Runden (`game_type: "doppelkopf"`) kann optional `doppelkopf_options` mitgegeben werden:
+```json
+{
+  "game_type": "doppelkopf",
+  "doppelkopf_options": { "solo_value": 3 }
+}
+```
+`solo_value` ist der Basiswert für Solo-Spiele in Euro (Default: `3`). Wird als JSON-String in der DB gespeichert.
+
 **Response `201`** — Runden-Objekt (ohne `history`)
 
 ---
@@ -221,7 +232,7 @@ Löscht eine Runde endgültig (inkl. aller Spiele via CASCADE). Nur aus dem Arch
 ### `POST /api/sessions/:id/games`
 Trägt ein neues Schafkopf-Spiel ein.
 
-**Body**
+**Body (Schafkopf)**
 ```json
 {
   "type": "Sauspiel",
@@ -240,6 +251,23 @@ Trägt ein neues Schafkopf-Spiel ein.
     "Huber": -1.00,
     "Schmidt": -1.00
   }
+}
+```
+
+**Zusatzfelder für Doppelkopf** (werden in denselben Endpunkt gespeichert):
+```json
+{
+  "type": "Normal",
+  "player": "Müller",
+  "partner": "Wagner",
+  "won": true,
+  "kontra": false,
+  "ansage": null,
+  "re_sonderpunkte": { "fuchs": 0, "doppelkopf": 0, "karlchen": 0 },
+  "kontra_sonderpunkte": { "fuchs": 0, "doppelkopf": 0, "karlchen": 0 },
+  "bock": 1,
+  "spielwert": 1.00,
+  "changes": { ... }
 }
 ```
 

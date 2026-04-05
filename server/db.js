@@ -162,4 +162,14 @@ db.exec(`
   try { db.exec('ALTER TABLE watten_games ADD COLUMN bommerl_team TEXT'); } catch (e) {}
   try { db.exec('ALTER TABLE watten_rounds ADD COLUMN is_gegangen BOOLEAN DEFAULT 0'); } catch (e) {}
 
+  // Schafkopf optional game modes (Geier, Farbwenz)
+  try { db.exec("ALTER TABLE sessions ADD COLUMN schafkopf_options TEXT DEFAULT '{}'"); } catch (e) {}
+
+  // Doppelkopf game fields
+  try { db.exec('ALTER TABLE games ADD COLUMN kontra INTEGER NOT NULL DEFAULT 0'); } catch (e) {}
+  try { db.exec("ALTER TABLE games ADD COLUMN ansage TEXT"); } catch (e) {}
+  try { db.exec("ALTER TABLE games ADD COLUMN re_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch (e) {}
+  try { db.exec("ALTER TABLE games ADD COLUMN kontra_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch (e) {}
+  try { db.exec("ALTER TABLE sessions ADD COLUMN doppelkopf_options TEXT DEFAULT '{}'"); } catch (e) {}
+
   export default db;

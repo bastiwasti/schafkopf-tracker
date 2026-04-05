@@ -1,10 +1,22 @@
 export const GAME_TYPES = [
-  { name: "Sauspiel", multiplier: 1 },
-  { name: "Solo", multiplier: 4 },
-  { name: "Wenz", multiplier: 4 },
-  { name: "Solo Tout", multiplier: 8 },
-  { name: "Wenz Tout", multiplier: 8 },
+  { name: "Sauspiel",      multiplier: 1 },
+  { name: "Solo",          multiplier: 4 },
+  { name: "Wenz",          multiplier: 4 },
+  { name: "Solo Tout",     multiplier: 8 },
+  { name: "Wenz Tout",     multiplier: 8 },
+  { name: "Geier",         multiplier: 4 },
+  { name: "Geier Tout",    multiplier: 8 },
+  { name: "Farbwenz",      multiplier: 4 },
+  { name: "Farbwenz Tout", multiplier: 8 },
 ];
+
+export function getEnabledGameTypes(options = {}) {
+  return GAME_TYPES.filter((gt) => {
+    if (gt.name.startsWith("Geier"))    return !!options.geier;
+    if (gt.name.startsWith("Farbwenz")) return !!options.farbwenz;
+    return true;
+  });
+}
 
 export function calcSpielwert({ type, schneider, schwarz, laufende, bock, klopfer, stake }) {
   const gt = GAME_TYPES.find((g) => g.name === type);

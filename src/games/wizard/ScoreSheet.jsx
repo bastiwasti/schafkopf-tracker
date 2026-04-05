@@ -6,6 +6,7 @@ import CommentaryOverlay from "../../components/CommentaryOverlay.jsx";
 import CommentarySettingsPanel from "../../components/CommentarySettingsPanel.jsx";
 import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
 import ErrorBoundary from "../../components/ErrorBoundary.jsx";
+import PlayerTooltip from "../../components/PlayerTooltip.jsx";
 
 export default function ScoreSheet({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
   const [showRules, setShowRules] = useState(false);
@@ -107,8 +108,21 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
           });
           
           if (enabled && newRound) {
+            // balances at this point reflects totals BEFORE newRound (state not yet updated)
+            const prevTotalScores = {};
+            const totalScores = {};
+            (players || []).forEach(p => {
+              prevTotalScores[p] = balances[p] || 0;
+              totalScores[p] = (balances[p] || 0) + (newRound.scores?.[p] || 0);
+            });
             console.log('[ScoreSheet] Setting pending commentary for round:', newRound);
-            setPendingCommentary(newRound);
+            setPendingCommentary({
+              ...newRound,
+              totalScores,
+              prevTotalScores,
+              totalRounds: maxRounds,
+              players,
+            });
           }
         } catch (error) {
           console.error('[ScoreSheet] Error updating session or setting commentary:', error);
@@ -369,7 +383,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
             return (
               <div key={p} style={{ ...styles.playerCard, ...(isLeader ? styles.leaderCard : {}) }}>
                 {isLeader && <div style={styles.crownBadge}>👑</div>}
-                <div style={styles.playerCardAvatar}>{avatar}</div>
+                <PlayerTooltip player={{ name: p, avatar }} registeredPlayers={registeredPlayers} />
                 <div style={styles.playerName}>{p}</div>
                 <div style={{
                   ...styles.playerBalance,

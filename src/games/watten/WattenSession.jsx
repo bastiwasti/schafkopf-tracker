@@ -34,6 +34,8 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
   const team2_players = parseArray(session.watten_team2_players);
   const targetScore = session.watten_target_score;
 
+  const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
+
   useEffect(() => {
     loadRounds();
     loadGames();
@@ -93,6 +95,8 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+
+    console.log('Watten Round form before send:', form);
 
     if (res.ok) {
       const newRound = await res.json();
@@ -247,6 +251,7 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
             <WattenScoreboard
               team1_players={team1_players || []}
               team2_players={team2_players || []}
+              avatarMap={avatarMap}
               team1_score={team1_score}
               team2_score={team2_score}
               targetScore={targetScore || 15}
@@ -286,7 +291,7 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
                   <div>
                     <span style={{ fontWeight: "bold" }}>#{idx + 1}</span>
                     <span style={{ marginLeft: 6 }}>
-                      {round.winning_team === 'team1' ? team1_players.join(" + ") : team2_players.join(" + ")}
+                      {round.winning_team === 'team1' ? team1_players.map(p => `${avatarMap[p] || "🃏"} ${p}`).join(" + ") : team2_players.map(p => `${avatarMap[p] || "🃏"} ${p}`).join(" + ")}
                     </span>
                     {round.is_machine && <span style={{ marginLeft: 4, color: "#8b6914" }}>🤖</span>}
                     {round.is_spannt_played && <span style={{ marginLeft: 4, color: "#8b6914" }}>🎯</span>}
@@ -325,6 +330,7 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
           onFormChange={setForm}
           team1_players={team1_players || []}
           team2_players={team2_players || []}
+          avatarMap={avatarMap}
           isGespannt={isGespannt}
           team1_score={team1_score}
           team2_score={team2_score}
@@ -340,6 +346,7 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
         roundsByGame={rounds.byGame || {}}
         team1_players={team1_players || []}
         team2_players={team2_players || []}
+        avatarMap={avatarMap}
         team1Bommel={team1Bommel}
         team2Bommel={team2Bommel}
         expandedGameId={expandedGameId}

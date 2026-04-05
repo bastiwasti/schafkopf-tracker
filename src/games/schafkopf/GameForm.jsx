@@ -1,9 +1,10 @@
-import { GAME_TYPES, calcSpielwert } from "./logic.js";
+import { getEnabledGameTypes, calcSpielwert } from "./logic.js";
 import styles from "../../components/styles.js";
 
-export default function GameForm({ form, onFormChange, players, stake, bock, onSubmit, onCancel, submitLabel }) {
+export default function GameForm({ form, onFormChange, players, stake, bock, sessionOptions = {}, onSubmit, onCancel, submitLabel }) {
   const isSolo = form.type !== "Sauspiel";
   const liveSpielwert = calcSpielwert({ ...form, stake, bock });
+  const gameTypes = getEnabledGameTypes(sessionOptions);
 
   const setForm = (patch) => onFormChange({ ...form, ...patch });
 
@@ -30,7 +31,7 @@ export default function GameForm({ form, onFormChange, players, stake, bock, onS
 
       <label style={styles.label}>Spielart</label>
       <div style={styles.chipRow}>
-        {GAME_TYPES.map((gt) => (
+        {gameTypes.map((gt) => (
           <button
             key={gt.name}
             style={{ ...styles.chip, ...(form.type === gt.name ? styles.chipActive : {}) }}

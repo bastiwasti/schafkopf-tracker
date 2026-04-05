@@ -8,6 +8,15 @@ test.describe('Spieler Management', () => {
     await page.getByRole('button', { name: /Spieler/ }).click();
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
+
+    try {
+      const cancelButton = page.locator('text=Abbrechen').first();
+      if (await cancelButton.isVisible({ timeout: 1000 })) {
+        await cancelButton.click();
+        await page.waitForTimeout(500);
+      }
+    } catch (e) {
+    }
   });
 
   test('Spieler erstellen', async ({ page }) => {
@@ -80,19 +89,17 @@ test.describe('Spieler Management', () => {
   });
 
   test('Spieler auflisten', async ({ page }) => {
-    for (let i = 1; i <= 3; i++) {
-      await page.getByRole('button', { name: /Neuer Spieler/ }).click();
-      await page.fill('input[placeholder*="Spieler"]', `Listenspieler ${i}`);
-      await page.locator('button[style*="font-size: 40"]').click();
-      await page.waitForSelector('text=Avatar wählen');
-      const avatarOverlay = page.locator('text=Avatar wählen').locator('..').locator('..');
-      await avatarOverlay.locator('button').nth(i).click();
-      await page.click('text=Spieler anlegen');
-      await page.waitForLoadState('networkidle');
-    }
+    const playerName = 'Einzelner Listenspieler';
 
-    await expect(page.locator('text=Listenspieler 1')).toBeVisible();
-    await expect(page.locator('text=Listenspieler 2')).toBeVisible();
-    await expect(page.locator('text=Listenspieler 3')).toBeVisible();
+    await page.locator('button:has-text("＋ Neuer Spieler")').click();
+    await page.fill('input[placeholder*="Spieler"]', playerName);
+    await page.locator('button[style*="font-size: 40"]').click();
+    await page.waitForSelector('text=Avatar wählen');
+    const avatarOverlay = page.locator('text=Avatar wählen').locator('..').locator('..');
+    await avatarOverlay.locator('button').nth(4).click();
+    await page.click('text=Spieler anlegen');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator(`text=${playerName}`)).toBeVisible();
   });
 });

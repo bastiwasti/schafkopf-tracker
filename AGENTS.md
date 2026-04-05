@@ -83,6 +83,16 @@ npm run test:e2e:debug        # Debug-Modus
 3. `npm run test:e2e:clean` für frische Datenbank
 4. Browser-Console auf Fehler prüfen während Tests
 
+**Neue Tests implementieren — WICHTIG:**
+- **Immer einen Test nach dem anderen.** Auch wenn 9 Tests geplant sind: erst Test 1 schreiben und grün machen, dann Test 2 usw.
+- Einzelnen Test isoliert ausführen:
+  ```bash
+  npm run test:e2e -- --grep "Testname"
+  npm run test:e2e -- tests/specs/watten.spec.js
+  ```
+- Commentary-Overlays nach jeder Runde schließen bevor der Test weiterläuft
+- Siehe `docs/testing.md` für vollständigen Implementierungs-Workflow
+
 ## Structure
 
 ```
@@ -357,6 +367,7 @@ curl http://localhost:3001/api/sessions | head  # Dev-Daten (nicht Prod!)
 - **[Game Logic](./docs/game-logic.md)** - Spielregeln, Scoring, Plugin-System
 - **[Commentary](./docs/commentary.md)** - Kommentator-System, Persönlichkeiten, TTS
 - **[Frontend](./docs/frontend.md)** - Komponentenübersicht, UI-Struktur
+- **[Testing](./docs/testing.md)** - E2E-Test-Setup, Spec-Dateien, Playwright-Konfiguration
 - **[Deployment](./docs/deployment.md)** - Hosting, Deployment-Prozess, CI/CD
 - **[Dev/Prod Separation](./docs/dev-prod-separation.md)** - Umgebungs-Setup und Trennung
 

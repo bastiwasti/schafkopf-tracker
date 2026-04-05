@@ -14,7 +14,10 @@ export default function App() {
     fetch("/api/sessions").then((r) => r.json()).then(setSessions).catch(console.error);
 
   const fetchPlayers = () =>
-    fetch("/api/players").then((r) => r.json()).then(setRegisteredPlayers).catch(console.error);
+    fetch("/api/players")
+      .then((r) => r.json())
+      .then((players) => setRegisteredPlayers(players.map((p) => ({ ...p, voice: p.voice_name }))))
+      .catch(console.error);
 
   useEffect(() => {
     fetchSessions();

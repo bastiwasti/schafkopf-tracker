@@ -25,6 +25,7 @@ const skatPlugin = createPlugin({
   defaultStake: 0.50,
   showStake: true,
   playerCount: { min: 3, max: 3 },
+  playerHint: "Genau 3 Spieler erforderlich. Einer spielt alleine, zwei spielen gemeinsam gegen ihn.",
   gameTypes: GAME_TYPES,
   makeDefaultForm,
   calcSpielwert,

@@ -9,6 +9,7 @@ const wizardPlugin = createPlugin({
   description: "Stich-basiertes Kartenspiel · Vorhersage-Punkte",
   defaultStake: 0,
   playerCount: { min: 3, max: 6 },
+  playerHint: "Wähle 3 bis 6 Spieler. Alle spielen jede Runde gleichzeitig mit.",
   getRoundCount,
   makeDefaultForm: makeDefaultRound,
   calcBalances,

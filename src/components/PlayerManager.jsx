@@ -1,7 +1,65 @@
 import { useState, useEffect } from "react";
 import styles from "./styles.js";
 import AvatarPicker from "./AvatarPicker.jsx";
-import { PLAYER_PERSONALITIES } from "../games/shared/playerPersonalities.js";
+import { PLAYER_PERSONALITIES, PLAYER_REACTIONS } from "../games/shared/playerPersonalities.js";
+import { pickRandom } from "../games/shared/commentary.js";
+
+function buildAllTexts(characterType) {
+  const pool = PLAYER_REACTIONS[characterType] ?? PLAYER_REACTIONS.optimist;
+  return [...new Set(
+    Object.values(pool)
+      .filter(Array.isArray)
+      .flat()
+      .map((t) => (typeof t === "function" ? t() : t))
+  )];
+}
+
+function PlayerTestOverlay({ name, avatar, characterType, voiceName, onClose }) {
+  const allTexts = buildAllTexts(characterType);
+  const [text, setText] = useState(() => pickRandom(allTexts));
+  const pers = PLAYER_PERSONALITIES[characterType];
+
+  const speak = (t) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = "de-DE";
+    if (voiceName) {
+      const voices = window.speechSynthesis.getVoices();
+      utter.voice = voices.find((v) => v.name === voiceName) ?? null;
+    }
+    window.speechSynthesis.speak(utter);
+  };
+
+  useEffect(() => { speak(text); return () => window.speechSynthesis?.cancel(); }, [text]);
+
+  const handleNext = () => {
+    const next = pickRandom(allTexts.filter((t) => t !== text) || allTexts);
+    setText(next);
+  };
+
+  return (
+    <div style={styles.commentaryOverlay} onClick={onClose}>
+      <div style={styles.commentaryCard} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.commentarySpeaker}>
+          <div style={{ fontSize: 32, lineHeight: 1 }}>{avatar}</div>
+          <div style={styles.commentarySpeakerInfo}>
+            <div style={styles.commentarySpeakerName}>{name || "Spieler"}</div>
+            <div style={styles.commentarySpeakerLabel}>{pers?.label ?? characterType}</div>
+          </div>
+          <div style={{ marginLeft: "auto", fontSize: 18 }}>🔊</div>
+        </div>
+        <div style={{ ...styles.commentaryBubble, fontSize: 15, marginTop: 4 }}>
+          {text}
+        </div>
+        <div style={styles.commentaryActions}>
+          <button style={styles.btnSecondary} onClick={handleNext}>🔄 Nochmal</button>
+          <button style={styles.btnCloseOverlay} onClick={onClose}>✕ Schließen</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -44,6 +102,7 @@ function PlayerForm({ initial, onSave, onCancel }) {
   const [voiceName, setVoiceName] = useState(initial?.voice_name ?? null);
   const [showPicker, setShowPicker] = useState(false);
   const [error, setError] = useState("");
+  const [testOverlay, setTestOverlay] = useState(false);
 
   const handleSubmit = async () => {
     const trimmed = name.trim();
@@ -118,6 +177,13 @@ function PlayerForm({ initial, onSave, onCancel }) {
       <label style={styles.label}>Stimme</label>
       <VoicePicker value={voiceName} onChange={setVoiceName} />
 
+      <button
+        style={{ ...styles.btnSecondary, width: "100%", marginBottom: 8 }}
+        onClick={() => setTestOverlay(true)}
+      >
+        🎙️ Charakter & Stimme testen
+      </button>
+
       <div style={{ display: "flex", gap: 8 }}>
         <button
           style={{ ...styles.btnConfirm, flex: 1, marginTop: 0, opacity: name.trim() ? 1 : 0.5 }}
@@ -130,6 +196,16 @@ function PlayerForm({ initial, onSave, onCancel }) {
           Abbrechen
         </button>
       </div>
+
+      {testOverlay && (
+        <PlayerTestOverlay
+          name={name}
+          avatar={avatar}
+          characterType={characterType}
+          voiceName={voiceName}
+          onClose={() => setTestOverlay(false)}
+        />
+      )}
     </div>
   );
 }
@@ -145,9 +221,11 @@ export default function PlayerManager({ onBack, onPlayersChanged }) {
   useEffect(() => { fetchPlayers(); }, []);
 
   const handleSave = () => {
-    fetchPlayers().then(onPlayersChanged);
-    setShowForm(false);
-    setEditingPlayer(null);
+    fetchPlayers().then(() => {
+      setShowForm(false);
+      setEditingPlayer(null);
+      onPlayersChanged();
+    });
   };
 
   const handleDelete = async (player) => {

@@ -5,7 +5,7 @@ test.describe('Skat Spiel', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const players = ['Skat1', 'Skat2', 'Skat3', 'Skat4'];
+    const players = ['Skat1', 'Skat2', 'Skat3'];
     for (const name of players) {
       await page.evaluate(async (playerName) => {
         const id = crypto.randomUUID();
@@ -40,6 +40,7 @@ test.describe('Skat Spiel', () => {
     await page.click('text=Grand');
 
     await page.click('text=Skat1');
+    await page.click('text=Skat2');
 
     await page.click('text=Gewonnen');
 

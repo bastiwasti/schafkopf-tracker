@@ -145,8 +145,7 @@ router.post('/rounds', (req, res) => {
       new Date().toISOString()
     ).lastInsertRowid;
 
-    const round = db.prepare('SELECT * FROM watten_rounds WHERE id = ?').get(roundId);
-
+     const round = db.prepare('SELECT * FROM watten_rounds WHERE id = ?').get(roundId);
     // Team-Punkte für aktuelles Game berechnen
     const { team1_score, team2_score } = db.prepare(`
       SELECT

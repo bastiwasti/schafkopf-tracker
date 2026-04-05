@@ -12,6 +12,7 @@ export function createPlugin(config) {
     // UI
     showStake: false,
     playerCount: null,           // { min, max } oder null
+    playerHint: null,            // Erklärungstext im Session-Erstellungsformular
     // Components (null = nicht vorhanden)
     FormComponent: null,
     HistoryCardComponent: null,

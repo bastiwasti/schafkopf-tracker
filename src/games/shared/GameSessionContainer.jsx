@@ -155,6 +155,7 @@ export default function GameSessionContainer({
           commentatorPersonality={personality}
           commentatorVoice={voice}
           onClose={() => setPendingCommentary(null)}
+          sessionHistory={history}
         />
       )}
 

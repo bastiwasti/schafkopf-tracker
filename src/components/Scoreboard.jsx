@@ -1,4 +1,5 @@
 import styles from "./styles.js";
+import PlayerTooltip from "./PlayerTooltip.jsx";
 
 export default function Scoreboard({ players, balances, history, registeredPlayers = [] }) {
   const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
@@ -16,7 +17,7 @@ export default function Scoreboard({ players, balances, history, registeredPlaye
         return (
           <div key={p} style={{ ...styles.playerCard, ...(isLeader ? styles.leaderCard : {}) }}>
             {isLeader && <div style={styles.crownBadge}>👑</div>}
-            <div style={styles.playerCardAvatar}>{avatar}</div>
+            <PlayerTooltip player={{ name: p, avatar }} registeredPlayers={registeredPlayers} />
             <div style={styles.playerName}>{p}</div>
             <div style={{
               ...styles.playerBalance,

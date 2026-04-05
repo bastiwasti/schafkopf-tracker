@@ -12,10 +12,16 @@ Das Frontend besteht aus funktionalen React-Komponenten mit Inline-Styles aus `s
 ```js
 {
   sessions: [],           // Alle aktiven Runden
-  registeredPlayers: [],  // Alle registrierten Spieler
+  registeredPlayers: [],  // Alle registrierten Spieler (mit voice: p.voice_name gemapped)
   activeSession: null,    // Aktuell angezeigte Runde
   view: "sessions"        // "sessions" | "session" | "players" | "archive"
 }
+```
+
+Beim Laden der Spieler wird `voice_name` auf `voice` gemapped, damit alle Komponenten einheitlich `p.voice` lesen können:
+```js
+fetch("/api/players")
+  .then(players => setRegisteredPlayers(players.map(p => ({ ...p, voice: p.voice_name }))))
 ```
 
 **Views:**
@@ -40,10 +46,12 @@ Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreShee
 - Runde direkt ins Archiv verschieben (📦)
 - Neue Runde erstellen:
   - Namen eingeben
-  - Spieltyp aus Plugin-Registry wählen (Schafkopf, Wizard oder Watten)
+  - Spieltyp aus Plugin-Registry wählen (Schafkopf, Watten, Doppelkopf, Skat, Wizard — in dieser Reihenfolge)
   - Spieler aus Registry auswählen (Quick-Add direkt im Formular)
-  - Einsatz festlegen (für Schafkopf)
+  - `playerHint` des Plugins wird als Hinweistext unter dem Spieler-Selector angezeigt
+  - Einsatz festlegen (wenn `plugin.showStake === true`)
   - Bei Watten: Team-Konfiguration (je 2 Spieler pro Team) + Zielwert (13/15)
+  - Bei Doppelkopf: Einsatz + Solo-Wert (Default 3 €, gespeichert in `doppelkopf_options`)
 
 **API-Calls:** `GET /api/sessions`, `POST /api/sessions`, `PATCH /api/sessions/:id`
 
@@ -268,11 +276,28 @@ useEffect(() => {
 
 ---
 
+## PlayerTooltip.jsx (`src/components/PlayerTooltip.jsx`)
+
+**Rolle:** Tooltip-Wrapper um einen Spieler-Avatar, erscheint bei Hover.
+
+**Props:** `{ player, registeredPlayers }`
+
+**Verhalten:**
+- Wenn Spieler nicht in `registeredPlayers` gefunden: nur Avatar anzeigen (kein Tooltip)
+- Bei Hover: `position:fixed`-Tooltip unterhalb des Avatars (verhindert Clipping durch overflow-hidden)
+- Zeigt: `PLAYER_PERSONALITIES[character_type].label` + Stimme (`p.voice`)
+
+**Verwendet in:** `Scoreboard.jsx` (Schafkopf) und `wizard/ScoreSheet.jsx` (beide Scoreboards haben jetzt Avatar-Hover-Tooltips)
+
+> Liest `PLAYER_PERSONALITIES` für den Label — **nicht** die Kommentator-`PERSONALITIES`-Map.
+
+---
+
 ## Scoreboard.jsx
 
-**Rolle:** Kontostand-Anzeige (Schafkopf).
+**Rolle:** Kontostand-Anzeige (Schafkopf/Doppelkopf).
 
-- Spieler-Karten: Avatar, Name, Kontostand (±€), Spielanzahl
+- Spieler-Karten: Avatar (mit `PlayerTooltip`), Name, Kontostand (±€), Spielanzahl
 - Grün = positiv, Rot = negativ
 - 👑 für führenden Spieler (wenn Kontostand > 0)
 
@@ -294,7 +319,13 @@ useEffect(() => {
 **Features:**
 - Spielerliste mit Avatar, Name, Charakter-Typ, Stimme
 - Neuen Spieler anlegen: Name, Avatar-Picker, Charakter-Chips, Stimmen-Dropdown
+- **"🎙️ Charakter & Stimme testen"**-Button: öffnet `PlayerTestOverlay` mit aktuellem Formular-Zustand (vor dem Speichern testbar)
 - Bestehende Spieler bearbeiten oder löschen
+
+**PlayerTestOverlay** (inline, nicht `CommentaryOverlay`):
+- Zeigt zufälligen Text aus dem Reaktions-Pool des gewählten Charakters
+- **"🔄 Nochmal"**: wählt anderen Text, spricht ihn mit gewählter Stimme vor
+- Pool: alle Texte aus `PLAYER_REACTIONS[characterType]` über alle Szenarien (dedupliziert)
 
 **API-Calls:** `GET /api/players`, `POST /api/players`, `PATCH /api/players/:id`, `DELETE /api/players/:id`
 

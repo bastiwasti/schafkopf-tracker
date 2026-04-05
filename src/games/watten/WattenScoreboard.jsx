@@ -1,25 +1,19 @@
 import styles from "../../components/styles.js";
 
-export default function WattenScoreboard({ team1_players, team2_players, team1_score, team2_score, targetScore, isGespannt }) {
+export default function WattenScoreboard({ team1_players, team2_players, avatarMap = {}, team1_score, team2_score, targetScore, isGespannt, team1Bommel = 0, team2Bommel = 0 }) {
   const team1Percentage = Math.min(100, (team1_score / targetScore) * 100);
   const team2Percentage = Math.min(100, (team2_score / targetScore) * 100);
 
   return (
-    <div style={styles.scoreboard}>
-      <div style={styles.scoreboardTeam}>
-        <div style={styles.scoreboardTeamHeader}>
-          <span style={styles.scoreboardTeamName}>Team 1</span>
+    <div style={{ ...styles.scoreboard, justifyContent: "center", alignItems: "stretch" }}>
+      <div style={{ flex: 1, textAlign: "center", display: "flex", flexDirection: "column" }}>
+        <div style={{ fontSize: 16, fontWeight: "bold", color: "#2c1810", marginBottom: 4 }}>
+          {team1_players.map(p => `${avatarMap[p] || "🃏"} ${p}`).join(" + ")}{team1Bommel > 0 && <span style={{ color: "#9d0208", marginLeft: 4 }}>🔴{team1Bommel}</span>}{isGespannt && <span style={{ color: "#8b6914", marginLeft: 4 }}>🧱</span>}
+        </div>
+        <div style={{ textAlign: "center", marginBottom: 4 }}>
           <span style={styles.scoreboardTeamScore}>{team1_score} / {targetScore}</span>
         </div>
-        <div style={{ fontSize: 12, color: "#8b6914", marginBottom: 8 }}>
-          {team1_players.join(" + ")}
-        </div>
-        <div style={{
-          height: 8,
-          background: "#e8dcc5",
-          borderRadius: 4,
-          overflow: "hidden",
-        }}>
+        <div style={{ marginTop: "auto", height: 8, background: "#e8dcc5", borderRadius: 4, overflow: "hidden" }}>
           <div style={{
             height: "100%",
             width: `${team1Percentage}%`,
@@ -29,22 +23,16 @@ export default function WattenScoreboard({ team1_players, team2_players, team1_s
         </div>
       </div>
 
-      <div style={styles.scoreboardDivider} />
+      <div style={{ ...styles.scoreboardDivider, alignSelf: "center" }} />
 
-      <div style={styles.scoreboardTeam}>
-        <div style={styles.scoreboardTeamHeader}>
-          <span style={styles.scoreboardTeamName}>Team 2</span>
+      <div style={{ flex: 1, textAlign: "center", display: "flex", flexDirection: "column" }}>
+        <div style={{ fontSize: 16, fontWeight: "bold", color: "#2c1810", marginBottom: 4 }}>
+          {team2_players.map(p => `${avatarMap[p] || "🃏"} ${p}`).join(" + ")}{team2Bommel > 0 && <span style={{ color: "#9d0208", marginLeft: 4 }}>🔴{team2Bommel}</span>}{isGespannt && <span style={{ color: "#8b6914", marginLeft: 4 }}>🧱</span>}
+        </div>
+        <div style={{ textAlign: "center", marginBottom: 4 }}>
           <span style={styles.scoreboardTeamScore}>{team2_score} / {targetScore}</span>
         </div>
-        <div style={{ fontSize: 12, color: "#8b6914", marginBottom: 8 }}>
-          {team2_players.join(" + ")}
-        </div>
-        <div style={{
-          height: 8,
-          background: "#e8dcc5",
-          borderRadius: 4,
-          overflow: "hidden",
-        }}>
+        <div style={{ marginTop: "auto", height: 8, background: "#e8dcc5", borderRadius: 4, overflow: "hidden" }}>
           <div style={{
             height: "100%",
             width: `${team2Percentage}%`,

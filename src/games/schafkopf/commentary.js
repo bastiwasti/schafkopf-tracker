@@ -32,6 +32,20 @@ const COMMENTATOR_TEMPLATES = {
       "Solo Tout": [
         "TOUT!!! Solo Tout von {player}! Das sieht man einmal im Leben! Die Gegner haben nicht einen Stich geholt! {spielwert} Euro — historisch!",
       ],
+      Geier: [
+        "EIN GEIER! {player} spielt den Geier — und GEWINNT! Nur die Ober trumpfen, und trotzdem durch! {spielwert} Euro — spektakulär!",
+        "GEIER DURCHGEZOGEN! {player} mit dieser seltenen Spielart — souverän, UNWIDERSTEHLICH! {spielwert} Euro pro Gegner — zahlen!",
+      ],
+      "Geier Tout": [
+        "GEIER TOUT!!! {player} gewinnt ALLE Stiche mit dem Geier Tout! Das ist jenseits des Vorstellbaren! {spielwert} Euro — LEGENDE!",
+      ],
+      Farbwenz: [
+        "FARBWENZ GEWONNEN! {player} meistert den Farbwenz! Farbe und Unter als Trumpf — was für eine Leistung! {spielwert} Euro — beeindruckend!",
+        "Was für ein FARBWENZ! {player} gewinnt mit dieser exotischen Spielart! {spielwert} Euro — der Tisch ist sprachlos!",
+      ],
+      "Farbwenz Tout": [
+        "FARBWENZ TOUT!!! {player} macht alle Stiche! Das ist absoluter Wahnsinn! {spielwert} Euro — unvergesslich!",
+      ],
     },
     lost: {
       Sauspiel: [
@@ -54,6 +68,20 @@ const COMMENTATOR_TEMPLATES = {
       ],
       "Solo Tout": [
         "HISTORISCHE NIEDERLAGE! {player} verliert das Solo Tout! Das werden sie noch in zehn Jahren erzählen! {spielwert} Euro — zahlen und schweigen!",
+      ],
+      Geier: [
+        "GEIER GESCHEITERT! {player} verliert den Geier! {spielwert} Euro pro Gegner — das war ein teures Experiment!",
+        "DER GEIER STÜRZT AB! {player} scheitert! {spielwert} Euro — die Gegner kassieren doppelt!",
+      ],
+      "Geier Tout": [
+        "GEIER TOUT VERLOREN! {player} scheitert auf ganzer Linie! {spielwert} Euro — das war ein BLUTBAD!",
+      ],
+      Farbwenz: [
+        "FARBWENZ VERLOREN! {player} scheitert mit dem Farbwenz! {spielwert} Euro pro Gegner — das tut weh!",
+        "Was für ein ABSTURZ! {player} verliert den Farbwenz! {spielwert} Euro — die Gegner freuen sich!",
+      ],
+      "Farbwenz Tout": [
+        "FARBWENZ TOUT VERLOREN! {player} verliert alle Stiche nicht! {spielwert} Euro — katastrophal!",
       ],
     },
   },
@@ -79,6 +107,20 @@ const COMMENTATOR_TEMPLATES = {
       "Solo Tout": [
         "Ein Solo Tout von {player}. Gewonnen. Kosten für die Gegner: {spielwert} Euro. Weitere Kommentare erübrigen sich.",
       ],
+      Geier: [
+        "{player} hat den Geier gewonnen. Jeder Gegner zahlt {spielwert} Euro. Die Spielart ist statistisch ungewöhnlich.",
+        "Geier gewonnen. Spieler: {player}. Kosten pro Gegner: {spielwert} Euro. Ergebnis vermerkt.",
+      ],
+      "Geier Tout": [
+        "{player} hat einen Geier Tout gespielt und gewonnen. Jeder Gegner zahlt {spielwert} Euro. Das ist bemerkenswert.",
+      ],
+      Farbwenz: [
+        "{player} hat den Farbwenz gewonnen. Jeder Gegner zahlt {spielwert} Euro. Die Spielart war aktiviert.",
+        "Farbwenz gewonnen. Spieler: {player}. Kosten: {spielwert} Euro je Gegner.",
+      ],
+      "Farbwenz Tout": [
+        "Ein Farbwenz Tout von {player}. Gewonnen. Kosten für die Gegner: {spielwert} Euro. Selten, aber dokumentiert.",
+      ],
     },
     lost: {
       Sauspiel: [
@@ -99,6 +141,20 @@ const COMMENTATOR_TEMPLATES = {
       ],
       "Solo Tout": [
         "{player} hat das Solo Tout verloren. Kosten: {spielwert} Euro pro Gegner. Die Zahlen sind, wie sie sind.",
+      ],
+      Geier: [
+        "{player} hat den Geier verloren. {spielwert} Euro pro Gegner. Das Ergebnis ist dokumentiert.",
+        "Der Geier von {player} ist gescheitert. {spielwert} Euro an jeden Gegner. So ist es.",
+      ],
+      "Geier Tout": [
+        "{player} hat den Geier Tout verloren. {spielwert} Euro pro Gegner. Das ist ein erheblicher Verlust.",
+      ],
+      Farbwenz: [
+        "{player} hat den Farbwenz verloren. {spielwert} Euro pro Gegner. Das Ergebnis ist vermerkt.",
+        "Farbwenz verloren. {player}. Kosten: {spielwert} Euro je Gegner. Weiter.",
+      ],
+      "Farbwenz Tout": [
+        "{player} hat den Farbwenz Tout verloren. Kosten: {spielwert} Euro pro Gegner. Die Zahlen sprechen für sich.",
       ],
     },
   },
@@ -126,6 +182,20 @@ const COMMENTATOR_TEMPLATES = {
       "Solo Tout": [
         "Kruzifix! Solo Tout und gwunna! Da {player} ist a Wahnsinniger! {spielwert} Euro — des schreibt ma auf!",
       ],
+      Geier: [
+        "Jessas, a Geier! Da {player} hod den Geier durchzogn! {spielwert} Euro — des war scho a Leistung!",
+        "Sapperment! Da {player} gewinnt den Geier! {spielwert} Euro, Buam — des is scho was!",
+      ],
+      "Geier Tout": [
+        "Heiligs Blechle! Da {player} spielt an Geier Tout — und GWINNTS! {spielwert} Euro — des is extraordinär!",
+      ],
+      Farbwenz: [
+        "Jo schau, da {player} hod an Farbwenz gwunna! {spielwert} Euro — des ko ma scho sagn.",
+        "Na bitte! Farbwenz gwunna! Da {player} macht des souverän! {spielwert} Euro — schee wars.",
+      ],
+      "Farbwenz Tout": [
+        "Kruzifix! Farbwenz Tout und gwunna! Da {player} is a Wahnsinniger! {spielwert} Euro — heilixs Blechle!",
+      ],
     },
     lost: {
       Sauspiel: [
@@ -148,6 +218,20 @@ const COMMENTATOR_TEMPLATES = {
       ],
       "Solo Tout": [
         "Kruzifix nochmal! Solo Tout verlorn! Da {player} schaut aus wie a begossener Pudel. {spielwert} Euro — heilixs Blechle!",
+      ],
+      Geier: [
+        "Da {player} hod halt seinen Geier verlorn. Passiert. {spielwert} Euro — des schmerzt scho a bissl.",
+        "Jo mei. Geier verlorn. Da {player} schaut jetzt a bissl blöd. {spielwert} Euro — zahln und guad is.",
+      ],
+      "Geier Tout": [
+        "Herrschaftszeiten! Da {player} verliert an Geier Tout! {spielwert} Euro — des is a teurer Spaß!",
+      ],
+      Farbwenz: [
+        "Ojeoje. Da {player} hod sein Farbwenz verlorn. {spielwert} Euro hin — des tuat weh.",
+        "Schad eigentlich. Da {player} hod den Farbwenz ned hinkriagt. {spielwert} Euro weg — des is hoid so.",
+      ],
+      "Farbwenz Tout": [
+        "Herrschaftszeiten nochmal! Farbwenz Tout verlorn! Da {player} schaut bedröppelt drein. {spielwert} Euro — heilixs Blechle!",
       ],
     },
   },
@@ -174,6 +258,20 @@ const COMMENTATOR_TEMPLATES = {
       ],
       "Solo Tout": [
         "ICH KANN ES NICHT GLAUBEN! Solo Tout! GEWONNEN! {player} ist ein Schafkopf-Gott! {spielwert} Euro — LEGENDE!",
+      ],
+      Geier: [
+        "EIN GEIER!! Und GEWONNEN!! {player}, das habe ich noch nie gesehen!! {spielwert} Euro — SENSATION!!",
+        "GEIER GEWONNEN!! {player} ist UNGLAUBLICH!! {spielwert} Euro — ich dreh durch!!",
+      ],
+      "Geier Tout": [
+        "GEIER TOUT GEWONNEN?!! {player}, du bist ein GOTT!! {spielwert} Euro — DAS IST LEGENDE!!",
+      ],
+      Farbwenz: [
+        "FARBWENZ GEWONNEN!! {player}, ich fass es nicht!! {spielwert} Euro — das ist WAHN-SINN!!",
+        "OH MEIN GOTT! Farbwenz! Gewonnen! {player} ist ein Phänomen! {spielwert} Euro — PROST!!",
+      ],
+      "Farbwenz Tout": [
+        "FARBWENZ TOUT GEWONNEN?!! Das ist das Verrückteste was ich je gesehen hab!! {player}!! {spielwert} Euro — LEGENDE!!",
       ],
     },
     lost: [
@@ -226,6 +324,31 @@ const MODIFIERS = {
 };
 
 // ---------------------------------------------------------------------------
+// FIRST-EXOTIC COMMENTARY (shown once per session per mode)
+// ---------------------------------------------------------------------------
+
+const FIRST_EXOTIC_COMMENTARY = {
+  geier: {
+    dramatic: "Moment mal — ein GEIER? Man hat also diesen Modus extra aktiviert. Wie… mutig.",
+    tagesschau: "Erstmals in dieser Sitzung: ein Geier. Der Modus war zu Beginn der Session aktiviert worden.",
+    bavarian: "Ah, a Geier! Den habt's ja erst einschalten müssn — des sagt eigentlich scho alles.",
+    fan: "EIN GEIER!! Das habe ich noch nie live gesehen!! Ihr habt den tatsächlich eingeschaltet!! WAHNSINN!!",
+  },
+  farbwenz: {
+    dramatic: "Ein Farbwenz. Ausgerechnet. Jemand hat diesen Modus also aktiviert — na dann.",
+    tagesschau: "Erstmals in dieser Sitzung: ein Farbwenz. Dieser Modus war zu Beginn freigegeben worden.",
+    bavarian: "Farbwenz! Jo, des kennt ma nur wenn ma's extra einschaltet — habt's ihr nix Besseres z'toa?",
+    fan: "FARBWENZ!! Das ist ja so selten!! Ihr habt den extra aktiviert!! Das ist HISTORISCH!!",
+  },
+};
+
+function getExoticPrefix(type) {
+  if (type?.startsWith("Geier"))    return "geier";
+  if (type?.startsWith("Farbwenz")) return "farbwenz";
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // PUBLIC API
 // ---------------------------------------------------------------------------
 
@@ -267,8 +390,8 @@ function buildCommentatorText(game, personality) {
 // How likely player reactions are, based on how dramatic the game was
 function reactionChance(game) {
   let p = 0.30; // base for a plain Sauspiel
-  if (game.type === "Solo Tout" || game.type === "Wenz Tout") p += 0.50;
-  else if (game.type === "Solo" || game.type === "Wenz") p += 0.28;
+  if (["Solo Tout", "Wenz Tout", "Geier Tout", "Farbwenz Tout"].includes(game.type)) p += 0.50;
+  else if (["Solo", "Wenz", "Geier", "Farbwenz"].includes(game.type)) p += 0.28;
   if (game.schwarz) p += 0.25;
   if (game.schneider) p += 0.10;
   if ((game.laufende ?? 0) >= 3) p += 0.12;
@@ -287,12 +410,17 @@ function reactionChance(game) {
  * @param {string} personality - commentator personality key
  * @returns {{ segments: Array, spokenText: string }}
  */
-export function buildFullCommentary(game, regPlayers = [], personality = "dramatic") {
+export function buildFullCommentary(game, regPlayers = [], personality = "dramatic", sessionHistory = []) {
   const pers = PERSONALITIES[personality] ?? PERSONALITIES.dramatic;
   const regMap = Object.fromEntries((regPlayers ?? []).map((p) => [p.name, p]));
   const isSauspiel = game.type === "Sauspiel";
   const partnerName = isSauspiel ? game.partner : null;
   const players = game.players ?? [];
+
+  const exoticPrefix = getExoticPrefix(game.type);
+  const isFirstExotic = exoticPrefix
+    ? !(sessionHistory ?? []).filter((g) => g.id !== game.id).some((g) => getExoticPrefix(g.type) === exoticPrefix)
+    : false;
 
   const balances = {};
   players.forEach((p) => (balances[p] = 0));
@@ -308,12 +436,17 @@ export function buildFullCommentary(game, regPlayers = [], personality = "dramat
 
   const scenario = analyzeGameScenario(game, players, balances);
 
+  const normalText = buildCommentatorText(game, personality);
+  const commentatorText = (isFirstExotic && exoticPrefix)
+    ? `${FIRST_EXOTIC_COMMENTARY[exoticPrefix][personality] ?? FIRST_EXOTIC_COMMENTARY[exoticPrefix].dramatic} ${normalText}`
+    : normalText;
+
   const segments = [
     {
       avatar: pers.icon,
       name: "Kommentator",
       label: pers.label,
-      text: buildCommentatorText(game, personality),
+      text: commentatorText,
     },
   ];
 

@@ -19,6 +19,7 @@ router.get('/archived', (_req, res) => {
     ...s,
     players: JSON.parse(s.players),
     game_count: Number(s.game_count),
+    schafkopf_options: JSON.parse(s.schafkopf_options || '{}'),
   })));
 });
 
@@ -57,13 +58,15 @@ router.get('/', (_req, res) => {
     ...s,
     players: JSON.parse(s.players),
     game_count: Number(s.game_count),
+    schafkopf_options: JSON.parse(s.schafkopf_options || '{}'),
+    doppelkopf_options: JSON.parse(s.doppelkopf_options || '{}'),
     watten_team1_players: s.watten_team1_players ? JSON.parse(s.watten_team1_players) : null,
     watten_team2_players: s.watten_team2_players ? JSON.parse(s.watten_team2_players) : null,
   })));
 });
 
 router.post('/', (req, res) => {
-  const { id, name, game_type = 'schafkopf', players, stake = 0.50, target_score, team1_players, team2_players } = req.body;
+  const { id, name, game_type = 'schafkopf', players, stake = 0.50, schafkopf_options, doppelkopf_options, target_score, team1_players, team2_players } = req.body;
   if (!id || !name || !Array.isArray(players)) {
     return res.status(400).json({ error: 'id, name and players are required' });
   }
@@ -86,15 +89,25 @@ router.post('/', (req, res) => {
       JSON.stringify(team2_players || players.slice(2, 4)),
       new Date().toISOString()
     );
+  } else if (game_type === 'doppelkopf') {
+    db.prepare(`
+      INSERT INTO sessions (id, name, game_type, players, stake, bock, doppelkopf_options, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+    `).run(id, name, game_type, JSON.stringify(players), stake, JSON.stringify(doppelkopf_options || {}), new Date().toISOString());
   } else {
     db.prepare(`
-      INSERT INTO sessions (id, name, game_type, players, stake, bock, created_at)
-      VALUES (?, ?, ?, ?, ?, 1, ?)
-    `).run(id, name, game_type, JSON.stringify(players), stake, new Date().toISOString());
+      INSERT INTO sessions (id, name, game_type, players, stake, bock, schafkopf_options, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+    `).run(id, name, game_type, JSON.stringify(players), stake, JSON.stringify(schafkopf_options || {}), new Date().toISOString());
   }
 
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
-  res.status(201).json({ ...session, players: JSON.parse(session.players) });
+  res.status(201).json({
+    ...session,
+    players: JSON.parse(session.players),
+    schafkopf_options: JSON.parse(session.schafkopf_options || '{}'),
+    doppelkopf_options: JSON.parse(session.doppelkopf_options || '{}'),
+  });
 });
 
 router.get('/:id', (req, res) => {
@@ -108,6 +121,8 @@ router.get('/:id', (req, res) => {
   res.json({
     ...session,
     players: JSON.parse(session.players),
+    schafkopf_options: JSON.parse(session.schafkopf_options || '{}'),
+    doppelkopf_options: JSON.parse(session.doppelkopf_options || '{}'),
     watten_team1_players: session.watten_team1_players ? JSON.parse(session.watten_team1_players) : null,
     watten_team2_players: session.watten_team2_players ? JSON.parse(session.watten_team2_players) : null,
     history: games.map(g => ({

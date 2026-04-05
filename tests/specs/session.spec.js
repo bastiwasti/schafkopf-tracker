@@ -67,7 +67,7 @@ test.describe('Session Erstellung', () => {
 
     await page.click('text=Skat');
 
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       await page.click(`text=Spieler${i}`);
     }
 

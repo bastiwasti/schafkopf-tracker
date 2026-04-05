@@ -26,6 +26,7 @@ const schafkopfPlugin = createPlugin({
   defaultStake: 0.50,
   showStake: true,
   playerCount: { min: 3, max: 4 },
+  playerHint: "Wähle 3 oder 4 Spieler. Alle spielen jedes Spiel mit.",
   gameTypes: GAME_TYPES,
   makeDefaultForm,
   calcSpielwert,

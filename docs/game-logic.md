@@ -229,38 +229,111 @@ Das Backend überprüft beim POST einer Runde ebenfalls ob das Spiel beendet ist
 
 ## Plugin-Schnittstelle
 
-Jedes Spiel-Plugin wird in `src/games/index.js` registriert:
+Jedes Spiel-Plugin wird über `createPlugin()` erstellt und in `src/games/index.js` registriert. Die Reihenfolge der Keys bestimmt die Anzeigereihenfolge in der UI:
 
 ```js
 export const GAME_PLUGINS = {
-  schafkopf: schafkopfPlugin,
-  wizard: wizardPlugin,
+  schafkopf:   schafkopfPlugin,
+  watten:      wattenPlugin,
+  doppelkopf:  doppelkopfPlugin,
+  skat:        skatPlugin,
+  wizard:      wizardPlugin,
 };
+```
+
+### createPlugin() Factory
+
+`createPlugin(config)` setzt folgende Defaults und merged `config` darüber:
+
+```js
+{
+  // UI
+  showStake: false,
+  playerCount: null,        // { min, max } oder null
+  playerHint: null,         // Hinweistext unter dem Spieler-Selector im Erstellungsformular
+
+  // Components (null = nicht vorhanden)
+  FormComponent: null,
+  HistoryCardComponent: null,
+  RulesComponent: null,
+
+  // Logic (null = nicht implementiert)
+  buildCommentary: null,
+  calcBalances: null,
+  makeDefaultForm: null,
+
+  // Display
+  getSessionMeta: (s) => `${s.game_count} Spiel(e)`,
+  getArchiveConfirm: () => "Runde ins Archiv verschieben?",
+}
 ```
 
 ### Pflichtfelder
 
 ```js
 {
-  id: string,          // z.B. "schafkopf"
-  label: string,       // z.B. "Schafkopf"
+  id: string,          // z.B. "doppelkopf"
+  label: string,       // z.B. "Doppelkopf"
   description: string,
   defaultStake: number,
 }
 ```
 
-### Optionale Felder (Schafkopf-Plugin)
+Das **Wizard-Plugin** und das **Watten-Plugin** implementieren keine `FormComponent`/`HistoryCardComponent` — die gesamte UI-Logik liegt in `ScoreSheet.jsx` bzw. `WattenSession.jsx`. `SessionView.jsx` delegiert anhand von `game_type` direkt an diese Komponenten.
 
+---
+
+## Doppelkopf
+
+### Spieltypen
+
+| Typ | Basiswert |
+|---|---|
+| `Normal` | `stake` |
+| `Solo` | `soloValue` (konfigurierbar, Default 3 €) |
+
+### Spielwert-Berechnung
+
+```
+spielwert = (base + (kontra ? stake : 0) + ansagePts(ansage)) × bock
+```
+
+Wobei `base = soloValue` für Solo, sonst `stake`.
+
+**Ansage-Punkte:**
+| Ansage | Zusatzpunkte |
+|---|---|
+| `keine30` | +1 |
+| `keine60` | +2 |
+| `keine90` | +3 |
+| `schwarz` | +4 |
+
+### Sonderpunkte
+
+Sonderpunkte verschieben zusätzlich Geld zwischen den Parteien. Jeder Sonderpunkt = `stake × bock` pro Einheit.
+
+| Sonderpunkt | Regeln |
+|---|---|
+| Fuchs | Max. 2 geteilt zwischen Re-Partei und Kontra-Partei |
+| Doppelkopf | Unbegrenzt |
+| Karlchen | Exklusiv: entweder Re oder Kontra, nicht beide |
+
+### API-Funktionen (src/games/doppelkopf/logic.js)
+
+#### `calcSpielwert({ type, kontra, ansage, bock, stake, soloValue })`
+Berechnet den reinen Spielwert ohne Sonderpunkte.
+
+#### `resolveGame({ type, player, partner, won, kontra, ansage, re_sonderpunkte, kontra_sonderpunkte, bock, players, stake, soloValue })`
+Berechnet vollständige `changes` für alle Spieler inkl. Sonderpunkte.
+
+**Rückgabe:**
 ```js
 {
-  makeDefaultForm: (players) => formState,
-  calcSpielwert: (formState) => number,
-  resolveGame: (formState) => { changes, spielwert },
-  calcBalances: (history, players) => { [name]: number },
-  FormComponent,
-  HistoryCardComponent,
-  RulesComponent,
+  changes: { "Müller": 3.00, "Wagner": 3.00, "Huber": -3.00, "Schmidt": -3.00 },
+  spielwert: 3.00  // Basiswert + Sonderpunkte
 }
 ```
 
-Das **Wizard-Plugin** implementiert diese Felder nicht — die gesamte UI-Logik liegt in `ScoreSheet.jsx`, die Backend-Logik in `server/routes/wizard/rounds.js`. `SessionView.jsx` erkennt `game_type === "wizard"` und rendert direkt `<WizardScoreSheet>` statt der Plugin-Komponenten.
+### Session-Konfiguration
+
+`solo_value` wird bei Session-Erstellung als `doppelkopf_options: { solo_value: N }` gespeichert (JSON-String in der DB-Spalte `doppelkopf_options`). `DoppelkopfSession.jsx` liest diesen Wert beim Mount.

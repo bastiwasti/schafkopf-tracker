@@ -133,10 +133,19 @@ router.get('/', (req, res) => {
   res.json(games);
 });
 
-// Spiel bearbeiten
+// Spiel bearbeiten / archivieren
 router.patch('/:gameId', async (req, res) => {
   try {
     const { gameId } = req.params;
+
+    // Archivierung
+    if (req.body.archived_at !== undefined) {
+      db.prepare('UPDATE skat_games SET archived_at = ? WHERE id = ?')
+        .run(req.body.archived_at, gameId);
+      const archived = db.prepare('SELECT * FROM skat_games WHERE id = ?').get(gameId);
+      return res.json(archived);
+    }
+
     const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, bock } = req.body;
 
   // Grundwerte
@@ -196,7 +205,8 @@ router.patch('/:gameId', async (req, res) => {
       WHERE id = ?
     `).run(game_type, declarer, partner, contra, won ? 1 : 0, schneider ? 1 : 0, schwarz ? 1 : 0, laufende, kontra_multiplier, bock, points, gameId);
 
-    res.json({ success: true });
+    const updated = db.prepare('SELECT * FROM skat_games WHERE id = ?').get(gameId);
+    res.json(updated);
   } catch (error) {
     console.error('Error updating skat game:', error);
     res.status(500).json({ error: error.message });

@@ -86,18 +86,10 @@ export function calculatePlayerPoints(game, players) {
   return pointsPerPlayer;
 }
 
+import { calcBalances as sharedCalcBalances } from "../shared/balanceCalculator.js";
+
 export function calcBalances(games, players) {
-  const balances = {};
-  players.forEach(p => balances[p] = 0);
-
-  games.forEach(game => {
-    const pointsPerPlayer = calculatePlayerPoints(game, players);
-    Object.entries(pointsPerPlayer).forEach(([player, points]) => {
-      balances[player] += points;
-    });
-  });
-
-  return balances;
+  return sharedCalcBalances(games, players, (game) => calculatePlayerPoints(game, players));
 }
 
 export function calcSpielwert(form) {

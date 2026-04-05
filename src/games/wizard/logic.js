@@ -36,18 +36,11 @@ export function resolveRound({ predictions, tricks, players }) {
   return scores;
 }
 
+import { calcBalances as sharedCalcBalances } from "../shared/balanceCalculator.js";
+
 // Gesamtpunktzahl über alle Runden berechnen
 export function calcBalances(rounds, players) {
-  const balances = {};
-  players.forEach(p => balances[p] = 0);
-  
-  rounds.forEach(r => {
-    players.forEach(p => {
-      balances[p] += r.scores[p] || 0;
-    });
-  });
-  
-  return balances;
+  return sharedCalcBalances(rounds, players, (r) => r.scores);
 }
 
 // Vorhersage-Range für aktuelle Runde

@@ -45,13 +45,8 @@ export function resolveGame({ type, player, partner, won, schneider, schwarz, la
   return { changes, spielwert: amount };
 }
 
+import { calcBalances as sharedCalcBalances } from "../shared/balanceCalculator.js";
+
 export function calcBalances(history, players) {
-  const b = {};
-  players.forEach((p) => (b[p] = 0));
-  history.forEach((g) => {
-    players.forEach((p) => {
-      b[p] += g.changes[p] || 0;
-    });
-  });
-  return b;
+  return sharedCalcBalances(history, players, (g) => g.changes);
 }

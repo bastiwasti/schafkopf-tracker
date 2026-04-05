@@ -2,6 +2,7 @@ import { GAME_TYPES, calcSpielwert, resolveGame, calcBalances } from "./logic.js
 import GameForm from "./GameForm.jsx";
 import GameCard from "./GameCard.jsx";
 import SkatSession from "./SkatSession.jsx";
+import { createPlugin } from "../shared/createPlugin.js";
 
 function makeDefaultForm(players) {
   return {
@@ -17,12 +18,13 @@ function makeDefaultForm(players) {
   };
 }
 
-const skatPlugin = {
+const skatPlugin = createPlugin({
   id: "skat",
   label: "Skat",
   description: "Klassischer Skat · 3 Spieler · DSV-Regeln",
   defaultStake: 0.50,
   showStake: true,
+  playerCount: { min: 3, max: 3 },
   gameTypes: GAME_TYPES,
   makeDefaultForm,
   calcSpielwert,
@@ -31,8 +33,6 @@ const skatPlugin = {
   FormComponent: GameForm,
   HistoryCardComponent: GameCard,
   SessionComponent: SkatSession,
-  getSessionMeta: (s) => `${s.game_count} ${s.game_count === 1 ? "Spiel" : "Spiele"}`,
-  getArchiveConfirm: () => "Runde ins Archiv verschieben?",
-};
+});
 
 export default skatPlugin;

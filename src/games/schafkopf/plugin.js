@@ -4,6 +4,7 @@ import HistoryCard from "./HistoryCard.jsx";
 import RulesBox from "../../components/RulesBox.jsx";
 import SchafkopfSession from "./SchafkopfSession.jsx";
 import { buildFullCommentary } from "./commentary.js";
+import { createPlugin } from "../shared/createPlugin.js";
 
 function makeDefaultForm(players) {
   return {
@@ -18,12 +19,13 @@ function makeDefaultForm(players) {
   };
 }
 
-const schafkopfPlugin = {
+const schafkopfPlugin = createPlugin({
   id: "schafkopf",
   label: "Schafkopf",
-  description: "Bayerisches Kartenspiel · Dreier · 50 Cent",
+  description: "Bayerisches Kartenspiel · 3-4 Spieler · 50 Cent",
   defaultStake: 0.50,
   showStake: true,
+  playerCount: { min: 3, max: 4 },
   gameTypes: GAME_TYPES,
   makeDefaultForm,
   calcSpielwert,
@@ -34,8 +36,6 @@ const schafkopfPlugin = {
   RulesComponent: RulesBox,
   SessionComponent: SchafkopfSession,
   buildCommentary: buildFullCommentary,
-  getSessionMeta: (s) => `${s.game_count} ${s.game_count === 1 ? "Spiel" : "Spiele"}`,
-  getArchiveConfirm: () => "Runde ins Archiv verschieben?",
-};
+});
 
 export default schafkopfPlugin;

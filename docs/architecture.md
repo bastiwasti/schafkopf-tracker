@@ -36,12 +36,16 @@ Im lokalen Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an 
 |---|---|---|
 | `id` | TEXT PK | UUID |
 | `name` | TEXT | Anzeigename der Runde |
-| `game_type` | TEXT | Plugin-ID: `"schafkopf"` oder `"wizard"` |
+| `game_type` | TEXT | Plugin-ID: `"schafkopf"`, `"wizard"` oder `"watten"` |
 | `players` | TEXT | JSON-Array von Spielernamen |
 | `stake` | REAL | Grundeinsatz in Euro (nur Schafkopf relevant) |
 | `bock` | INTEGER | Aktueller Bock-Multiplikator ≥1 (nur Schafkopf) |
 | `created_at` | TEXT | ISO-Timestamp |
 | `archived_at` | TEXT \| NULL | Archiviert wenn gesetzt (nur Schafkopf) |
+| `game_count` | INTEGER | Zähler für Spiele/Runden |
+| `watten_team1_players` | TEXT \| NULL | JSON-Array Spielernamen Team 1 (nur Watten) |
+| `watten_team2_players` | TEXT \| NULL | JSON-Array Spielernamen Team 2 (nur Watten) |
+| `watten_target_score` | INTEGER \| NULL | Zielwert 13 oder 15 (nur Watten, Default 15) |
 
 ### Tabelle `players`
 
@@ -88,14 +92,58 @@ Im lokalen Entwicklungsmodus proxied Vite alle `/api/*`-Anfragen automatisch an 
 | `created_at` | TEXT | ISO-Timestamp |
 | `archived_at` | TEXT \| NULL | Reserviert (derzeit nicht genutzt) |
 
+### Tabelle `watten_games`
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | INTEGER PK | Auto-Increment |
+| `session_id` | TEXT FK | Referenz auf `sessions.id` (CASCADE DELETE) |
+| `game_number` | INTEGER | Laufende Spielnummer innerhalb der Session |
+| `winner_team` | TEXT | `"team1"` oder `"team2"` |
+| `final_score_team1` | INTEGER | Endstand Team 1 |
+| `final_score_team2` | INTEGER | Endstand Team 2 |
+| `is_completed` | BOOLEAN | 0 = aktiv, 1 = abgeschlossen |
+| `bommerl_team` | TEXT \| NULL | Team das den Bommerl (Niederlage) bekam |
+| `created_at` | TEXT | ISO-Timestamp |
+| `archived_at` | TEXT \| NULL | Soft-Delete |
+
+### Tabelle `watten_rounds`
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | INTEGER PK | Auto-Increment |
+| `session_id` | TEXT FK | Referenz auf `sessions.id` (CASCADE DELETE) |
+| `game_id` | INTEGER FK | Referenz auf `watten_games.id` (CASCADE DELETE) |
+| `round_number` | INTEGER | Laufende Nummer über alle Runden der Session |
+| `winning_team` | TEXT | `"team1"` oder `"team2"` |
+| `points` | INTEGER | Punkte dieser Runde (2–5, bei Gespannt fix 3) |
+| `is_machine` | BOOLEAN | Maschine (alle 3 kritischen Karten) |
+| `is_spannt_played` | BOOLEAN | Reserviert (derzeit nicht genutzt) |
+| `is_gegangen` | BOOLEAN | Gegangen (Team hat aufgegeben) |
+| `tricks_team1` | INTEGER | Stiche Team 1 (optional, 0–5) |
+| `tricks_team2` | INTEGER | Stiche Team 2 (optional, 0–5) |
+| `created_at` | TEXT | ISO-Timestamp |
+| `archived_at` | TEXT \| NULL | Soft-Delete |
+
 ### Migrationen
 
 Neue Spalten werden per `try/catch`-Pattern nachträglich hinzugefügt (SQLite unterstützt kein `IF NOT EXISTS` bei `ALTER TABLE`):
 
 ```js
 try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
-try { db.exec('ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT "dramatic"'); } catch (e) {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
+try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
 try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN game_count INTEGER DEFAULT 0'); } catch (e) {}
+// Watten-Migrations
+try { db.exec('ALTER TABLE sessions ADD COLUMN watten_target_score INTEGER DEFAULT 15'); } catch (e) {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team1_players TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team2_players TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE watten_games ADD COLUMN is_completed BOOLEAN DEFAULT 0'); } catch (e) {}
+try { db.exec('ALTER TABLE watten_games ADD COLUMN bommerl_team TEXT'); } catch (e) {}
+try { db.exec('ALTER TABLE watten_rounds ADD COLUMN is_gegangen BOOLEAN DEFAULT 0'); } catch (e) {}
 ```
 
 ---
@@ -214,6 +262,7 @@ Das Spiellogik-System ist plugin-basiert. Aktuell registrierte Plugins:
 export const GAME_PLUGINS = {
   schafkopf: schafkopfPlugin,
   wizard: wizardPlugin,
+  watten: wattenPlugin,
 };
 ```
 
@@ -245,6 +294,24 @@ Schlankes Plugin — die Spiellogik liegt im Backend (`server/routes/wizard/roun
 ```
 
 `SessionView.jsx` erkennt `game_type === "wizard"` und rendert statt der Schafkopf-UI direkt `<WizardScoreSheet>`.
+
+### Watten-Plugin
+
+Schlankes Plugin — die gesamte UI-Logik liegt in `WattenSession.jsx` und seinen Sub-Komponenten. Das Plugin liefert hauptsächlich Metadaten und Session-Erstellungs-Konfiguration (Team-Auswahl statt einfacher Spieler-Auswahl):
+
+```js
+{
+  id: "watten",
+  label: "Watten",
+  description: "...",
+  defaultStake: 0,
+  requiresTeams: true,  // Erfordert Team-Konfiguration in SessionList
+}
+```
+
+`SessionView.jsx` erkennt `game_type === "watten"` und rendert direkt `<WattenSession>`.
+
+**Backend-Routen:** `server/routes/watten/games.js` — enthält alle Watten-Endpunkte für Runden und Spiele. Automatische Game-Verwaltung: Neue Runde erstellt automatisch ein aktives Spiel falls keines existiert. Wenn `targetScore` erreicht, wird das Spiel automatisch abgeschlossen.
 
 ---
 

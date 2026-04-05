@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf und Wizard.
+Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf, Wizard und Watten.
 
 ## Architecture
 
@@ -35,21 +35,15 @@ Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf un
 **Nginx:** Reverse Proxy für statische Files und API
 **SSL:** Certbot auto-renewal
 
-**Deployment-Schritte:**
+**Deployment-Schritte (wir sind bereits auf der VM):**
 ```bash
-# 1. Code committen und pushen
-git add .
-git commit -m "feat: beschreibung"
-git push origin master
-
-# 2. Auf VM: Code holen, bauen, Server neustarten
-cd /home/vscode/schafkopf-tracker
-git pull origin master
-npm ci
+# Frontend bauen und Server neustarten
 npm run build
-pm2 restart schafkopf-dev
-pm2 restart schafkopf-prod
+pm2 restart schafkopf-dev   # für Dev-Deployment
+# pm2 restart schafkopf-prod  # nur nach expliziter Anfrage!
 ```
+
+**PM2-Konfiguration:** `ecosystem.config.cjs` (muss .cjs sein wegen `"type": "module"` in package.json)
 
 **PM2-Kommandos:**
 ```bash
@@ -100,17 +94,23 @@ schafkopf-tracker/
 │       ├── sessions.js     # Runden-Endpunkte
 │       ├── games.js        # Schafkopf-Spiele
 │       ├── players.js      # Spieler-Endpunkte
-│       └── wizard/
-│           └── rounds.js  # Wizard-Runden
+│       ├── wizard/
+│       │   └── rounds.js  # Wizard-Runden
+│       └── watten/
+│           └── games.js   # Watten-Runden & Games
 ├── src/                   # React Frontend
 │   ├── App.jsx            # View Router
 │   ├── components/        # Shared UI Komponenten
 │   ├── games/            # Game Plugins
+│   │   ├── schafkopf/    # Schafkopf Plugin
+│   │   ├── wizard/       # Wizard Plugin
+│   │   └── watten/       # Watten Plugin
 │   └── hooks/            # React Hooks
 ├── data/                 # SQLite Datenbanken
-│   ├── tracker.db        # Production (echte Spiele)
-│   ├── tracker-dev.db    # Development (Testing)
-│   └── tracker-test.db   # E2E Tests (Auto-Reset)
+│   ├── tracker.db        # Production (echte Spiele, git-tracked)
+│   ├── tracker-dev.db    # Development (Testing, nicht git-tracked)
+│   └── tracker-test.db   # E2E Tests (Auto-Reset, nicht git-tracked)
+├── ecosystem.config.cjs  # PM2 Prozess-Konfiguration
 ├── tests/                # Playwright E2E Tests
 └── docs/                 # Vollständige Dokumentation
 ```
@@ -128,6 +128,13 @@ Alle Spiellogik ist plugin-basiert in `src/games/`:
 - Vorhersage-basiertes Spiel mit Phasen
 - Automatische Score-Berechnung
 - Live Kommentator-System
+
+**Watten Plugin:** `src/games/watten/plugin.js`
+- Bayerisches 4-Spieler-Kartenspiel (2 Teams à 2 Spieler)
+- Team-basiertes Scoring mit Zielwert (13 oder 15 Punkte)
+- Gespannt-Modus, Maschine, Gegangen
+- Bommerl (verlorene Spiele) pro Team
+- Live Kommentator-System (`src/games/watten/commentary.js`)
 
 ## Key Patterns
 
@@ -181,12 +188,10 @@ onClick={() => {
    npm run test:e2e
    ```
 
-5. **Auf Dev deployen:**
+5. **Auf Dev deployen (wir sind bereits auf der VM):**
    ```bash
-   git add .
-   git commit -m "feat: beschreibung"
-   git push origin master
-   # Auf VM: git pull && npm run build && pm2 restart schafkopf-dev
+   npm run build
+   pm2 restart schafkopf-dev
    ```
 
 6. **Auf Dev verifizieren:**
@@ -233,10 +238,12 @@ NODE_ENV=production PORT=3002 node server/index.js
 
 Siehe `docs/architecture.md` für Details:
 
-- **Sessions table** - Game rounds mit Spielern
-- **Players table** - Registrierte Spieler mit Avataren/Charakteren
-- **Games table** - Schafkopf Spiele mit Scores
-- **Wizard rounds** - Wizard Vorhersagen/Stiche/Scores
+- **sessions** - Game rounds mit Spielern (inkl. watten_team1_players, watten_team2_players, watten_target_score)
+- **players** - Registrierte Spieler mit Avataren/Charakteren
+- **games** - Schafkopf Spiele mit Scores
+- **wizard_rounds** - Wizard Vorhersagen/Stiche/Scores
+- **watten_games** - Watten Spiele (je Session mehrere Spiele möglich, Bommerl-Tracking)
+- **watten_rounds** - Einzelne Watten-Runden innerhalb eines Spiels
 
 ## API Reference
 
@@ -261,6 +268,14 @@ Siehe `docs/api.md` für vollständige API-Dokumentation:
 - `PATCH /api/sessions/:id/wizard-rounds/:roundId` - Runde bearbeiten
 - `DELETE /api/sessions/:id/wizard-rounds/last` - Letzte Runde löschen
 
+**Watten:**
+- `GET /api/sessions/:id/watten/rounds` - Runden auflisten (gruppiert nach Game)
+- `POST /api/sessions/:id/watten/rounds` - Neue Runde eintragen
+- `DELETE /api/sessions/:id/watten/rounds/last` - Letzte Runde rückgängig
+- `GET /api/sessions/:id/watten/games` - Spiele auflisten (aktiv + abgeschlossen)
+- `POST /api/sessions/:id/watten/games` - Neues Spiel starten
+- `DELETE /api/sessions/:id/watten/games/last` - Letztes Spiel löschen
+
 **Players:**
 - `GET /api/players` - Alle Spieler auflisten
 - `POST /api/players` - Spieler erstellen
@@ -276,6 +291,13 @@ Siehe `docs/game-logic.md` für vollständige Regeln
 - Korrekte Vorhersage: `20 + (stiche * 10)`
 - Falsche Vorhersage: `-(|differenz| * 10)`
 
+**Watten Scoring:**
+- Grundpunkte: 2 pro Runde
+- Gespannt (Team ≥ Ziel-2): automatisch 3 Punkte
+- Maschine (alle 3 Kritischen): spezielle Markierung
+- Gegangen: Markierung für aufgegebene Runde
+- Zielwert: 13 oder 15 Punkte (konfigurierbar)
+
 ## Commentary System
 
 Siehe `docs/commentary.md` für:
@@ -283,6 +305,7 @@ Siehe `docs/commentary.md` für:
 - 10 Spieler-Charakter-Typen mit je 15 Szenarien
 - TTS Integration mit Web Speech API
 - Template-basierte Kommentar-Generierung
+- Watten-Kommentator: 17 Szenarien × 4 Persönlichkeiten × 3 Varianten = 204 Templates
 
 ## Troubleshooting
 
@@ -291,6 +314,7 @@ Siehe `docs/commentary.md` für:
 - Datenbank-Dateien prüfen: `ls -lah data/`
 - Server neustarten: `pm2 restart schafkopf-dev schafkopf-prod`
 - Browser-Cache löschen: `Ctrl + Shift + R`
+- **Systemd-Dienst prüfen!** Es existierte ein `schafkopf-backend.service` der ohne PORT-Env lief und Port 3001 blockierte → `sudo systemctl status schafkopf-backend` prüfen, ggf. deaktivieren
 
 **⚠️ PM2 Prozesse nicht aktualisiert (kritisch!):**
 - Symptom: Code-Änderungen werden nicht sichtbar nach `pm2 restart`
@@ -309,7 +333,7 @@ pm2 delete <alte_id>
 pm2 delete <weitere_alte_id>
 
 # PM2 Dev neu starten
-pm2 start "node server/index.js" --name schafkopf-dev -- --env NODE_ENV=development
+pm2 start ecosystem.config.cjs --only schafkopf-dev
 
 # Verifizieren
 pm2 list              # Nur EIN schafkopf-dev

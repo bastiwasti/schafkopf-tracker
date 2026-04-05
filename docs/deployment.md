@@ -45,20 +45,50 @@ Beide Server laufen aus demselben Verzeichnis (`/home/vscode/schafkopf-tracker`)
 
 ## Deployment-Prozess
 
-Beide Umgebungen bekommen beim Deployment immer denselben Code:
+Wir arbeiten **direkt auf der VM** im Verzeichnis `/home/vscode/schafkopf-tracker`. Kein `git pull` nötig.
 
 ```bash
-# 1. Code lokal committen und pushen
-git add .
-git commit -m "feat: beschreibung"
-git push origin master
-
-# 2. Auf VM: Code holen, bauen, beide Server neustarten
-git pull origin master
-npm ci
+# Frontend bauen
 npm run build
-pm2 restart schafkopf-prod
+
+# Dev neustarten (Standard)
 pm2 restart schafkopf-dev
+
+# Prod neustarten (nur nach expliziter Anfrage)
+pm2 restart schafkopf-prod
+```
+
+### PM2-Konfiguration (ecosystem.config.cjs)
+
+Die Prozess-Konfiguration liegt in `ecosystem.config.cjs` (muss `.cjs` sein, da `package.json` `"type": "module"` hat):
+
+```js
+module.exports = {
+  apps: [
+    {
+      name: 'schafkopf-dev',
+      script: 'server/index.js',
+      cwd: '/home/vscode/schafkopf-tracker',
+      env: { NODE_ENV: 'development', PORT: 3001 },
+      autorestart: true,
+      max_memory_restart: '300M'
+    },
+    {
+      name: 'schafkopf-prod',
+      script: 'server/index.js',
+      cwd: '/home/vscode/schafkopf-tracker',
+      env: { NODE_ENV: 'production', PORT: 3002 },
+      autorestart: true,
+      max_memory_restart: '300M'
+    }
+  ]
+}
+```
+
+Prozesse neu starten über ecosystem:
+```bash
+pm2 start ecosystem.config.cjs --only schafkopf-dev
+pm2 start ecosystem.config.cjs --only schafkopf-prod
 ```
 
 ---
@@ -116,6 +146,20 @@ npm run reset:dev   # löscht data/tracker-dev.db*
 pm2 restart schafkopf-dev
 ```
 
+### Automatische Backups (aktiv eingerichtet)
+
+Täglich um 02:00 Uhr läuft ein Cronjob der die Prod-DB sicher kopiert:
+
+```bash
+# WAL in Hauptdatei zusammenführen, dann kopieren, alte Backups nach 30 Tagen löschen
+0 2 * * * sqlite3 /home/vscode/schafkopf-tracker/data/tracker.db 'PRAGMA wal_checkpoint(TRUNCATE);' \
+  && cp /home/vscode/schafkopf-tracker/data/tracker.db \
+     /home/vscode/backups/schafkopf-tracker/tracker_$(date +\%Y\%m\%d_\%H\%M\%S).db \
+  && find /home/vscode/backups/schafkopf-tracker -mtime +30 -delete
+```
+
+`PRAGMA wal_checkpoint(TRUNCATE)` ist wichtig — ohne es kann die kopierte Datei inkonsistent sein (WAL-Modus schreibt Updates zunächst in `.db-wal`).
+
 ### Prod-Datenbank zurücksetzen (Vorsicht!)
 
 ```bash
@@ -162,6 +206,34 @@ sudo systemctl reload nginx
 
 ## Troubleshooting
 
+### Session-Erstellung zeigt falsche UI für Spieltypen?
+
+**Problem:** Watten-Team-Konfiguration wird bei allen Spielarten angezeigt statt nur bei Watten.
+
+**Ursache:** Spielart-spezifische States werden beim Wechsel nicht korrekt zurückgesetzt.
+
+**Lösung:**
+- Stellen Sie sicher, dass `togglePlayer` Funktion `gameType` prüft
+- States beim Spielart-Wechsel korrekt initialisieren
+- UI-Elemente nur bei korrektem `gameType` anzeigen
+
+```javascript
+// Beispiel: Spielart-Wechsel
+onClick={() => {
+  setGameType(p.id);
+  setStake(p.defaultStake);
+  if (p.id === 'watten') {
+    setTeam1Players([]);
+    setTeam2Players([]);
+    setSelectedNames([]);
+  } else {
+    setSelectedNames([]);
+    setTeam1Players([]);
+    setTeam2Players([]);
+  }
+}}
+```
+
 ### API nicht erreichbar?
 
 ```bash
@@ -188,6 +260,85 @@ sudo tail -f /var/log/nginx/error.log
 ss -tlnp | grep -E '3001|3002'
 pm2 restart all
 ```
+
+### ⚠️ KRITISCH: Systemd-Dienst kann Dev/Prod mixen
+
+**Problem:** Es existiert ein `schafkopf-backend.service` systemd-Dienst, der ohne `PORT`-Env läuft und Port 3001 mit `NODE_ENV=production` belegt. Das führt dazu dass Dev auf die Prod-Datenbank zugreift.
+
+**Diagnose:**
+```bash
+sudo systemctl status schafkopf-backend
+lsof -i :3001 | grep LISTEN   # Mehrere Prozesse auf Port 3001?
+cat /proc/<PID>/environ | tr '\0' '\n' | grep NODE_ENV  # Welches NODE_ENV?
+```
+
+**Lösung:**
+```bash
+sudo systemctl stop schafkopf-backend
+sudo systemctl disable schafkopf-backend
+# Dann Dev über PM2 neu starten:
+pm2 start ecosystem.config.cjs --only schafkopf-dev
+```
+
+### ⚠️ WICHTIG: Doppelte Prozesse auf Port 3001 vermeiden
+
+**Problem:** Wenn `npm run dev` läuft und gleichzeitig PM2 gestartet wird, können beide auf Port 3001 laufen. Dies führt dazu, dass Dev auf Prod-Datenbank zugreift.
+
+**KRITISCH: Auch PM2-Prozess-Kollision möglich!**
+- PM2 kann beim `restart` oder `delete` alte Prozesse nicht korrekt beenden
+- Die alten Prozesse laufen weiter und binden den Port 3001
+- `pm2 restart` startet neue Prozesse, aber die alten laufen noch
+- Ergebnis: Neue Code-Änderungen sind **nicht aktiv**, weil der alte Prozess noch läuft
+
+**Symptome:**
+- Dev zeigt Prod-Daten
+- `curl http://localhost:3001/api/sessions` zeigt falsche Daten
+- PM2 Dev läuft aber Vite proxyt auf falschen Prozess
+- **Code-Änderungen werden nicht sichtbar** (selbst nach `pm2 restart`)
+- `pm2 list` zeigt mehrere schafkopf-dev Einträge
+
+**Diagnose:**
+```bash
+# 1. Prüfe alle Prozesse auf Port 3001
+ss -tlnp | grep 3001
+# Zeigt mehrere Prozesse auf Port 3001 → Problem!
+
+# 2. PM2 Status prüfen
+pm2 list
+# Zeigt mehrere schafkopf-dev Einträge? → Problem!
+
+# 3. Welcher Prozess antwortet?
+curl http://localhost:3001/api/sessions | head
+# Sind das die falschen Daten? → Alter Prozess läuft noch!
+```
+
+**Lösung:**
+```bash
+# 1. Alle Prozesse auf Port 3001 identifizieren
+lsof -i :3001 | grep LISTEN
+
+# 2. Nicht-PM2 Prozesse beenden (z.B. npm run dev)
+kill <PID_des_anderen_Prozesses>
+
+# 3. Doppelte PM2-Prozesse löschen
+pm2 delete <alte_id>
+pm2 delete <weitere_alte_id>
+
+# 4. PM2 Dev neu starten
+pm2 start "node server/index.js" --name schafkopf-dev -- --env NODE_ENV=development
+
+# 5. Verifizieren
+ss -tlnp | grep 3001  # Nur EIN Prozess sollte da sein
+pm2 list              # Nur EIN schafkopf-dev sollte da sein
+curl http://localhost:3001/api/sessions | head  # Dev-Daten (nicht Prod!)
+```
+
+**Prävention:**
+- Nie `npm run dev` und PM2 gleichzeitig laufen lassen
+- PM2 Dev über PM2 verwalten, nicht über npm scripts
+- **Nach jedem Deployment:** `ss -tlnp | grep 3001` und `pm2 list` prüfen
+- Bei Doppel-Prozessen: IMMER zuerst alte Prozesse löschen, dann neustarten
+- Bei `pm2 restart` mit unerwartetem Ergebnis: Prozesse komplett löschen und neu starten
 
 ### Seite zeigt alte Inhalte?
 

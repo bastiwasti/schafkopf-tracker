@@ -1,226 +1,306 @@
-# Schafkopf Tracker
+# Schafkopf Tracker — Agent Guide
 
-Ein flexibler Spielrunden-Tracker mit Plugin-Architektur für verschiedene Kartenspiele.
+**Agent-specific documentation for implementing features, deployment, and testing.**
 
-## Unterstützte Spiele
-
-- **Schafkopf** - Bayerisches Kartenspiel mit Bockrunden und Klopfern
-- **Wizard** - Stich-basiertes Kartenspiel mit Vorhersage-Punkten
-
-## Features
-
-- 📊 Live-Scoreboard mit Punkteständen
-- 🎙️ Kommentator mit verschiedenen Persönlichkeiten (dramatisch, Tagesschau, bayerisch, Fan)
-- 🎭 Spieler-spezifische Charaktere (Optimist, Pessimist, Stratege, Joker, Eitle, Stoische, Empörte, Anfänger, Veteran, Chiller)
-- 📝 Flexible Kommentar-Szenarien basierend auf Spieleregebnissen
-- 🎤 Individuelle Stimmen pro Spieler für Text-to-Speech
-- 📦 Archiv für beendete Runden
-- 🎮 Plugin-System zum einfachen Hinzufügen neuer Spiele
-
-## Projektstruktur
-
-```
-src/
-├── games/
-│   ├── index.js                    # Plugin-Registry
-│   ├── shared/
-│   │   └── commentary.js           # Geteilte Kommentator-Logik
-│   │   └── playerPersonalities.js  # 10 Spieler-Charaktere mit 15 Szenarien
-│   ├── schafkopf/
-│   │   ├── plugin.js              # Schafkopf-Plugin-Konfiguration
-│   │   ├── SchafkopfSession.jsx   # Komplette Schafkopf-UI
-│   │   ├── commentary.js          # Schafkopf-spezifische Kommentare
-│   │   ├── gameScenarios.js       # 15 Szenarien für Spieler-Reaktionen
-│   │   ├── logic.js              # Spiellogik
-│   │   ├── GameForm.jsx           # Spiel-Eingabeformular
-│   │   └── HistoryCard.jsx        # Spiel-Historie-Karten
-│   └── wizard/
-│       ├── plugin.js              # Wizard-Plugin-Konfiguration
-│       ├── ScoreSheet.jsx         # Komplette Wizard-UI
-│       ├── commentary.js          # Wizard-spezifische Kommentare
-│       ├── roundScenarios.js      # 15 Szenarien für Spieler-Reaktionen
-│       ├── logic.js              # Spiellogik
-│       └── RulesBox.jsx           # Regeln
-├── components/
-│   ├── SessionView.jsx            # Dünne Shell für Plugin-Komponente
-│   ├── SessionList.jsx            # Runden-Liste mit Plugin-Integration
-│   ├── CommentaryOverlay.jsx      # Kommentar-Overlay mit TTS
-│   ├── CommentarySettingsPanel.jsx # Kommentator-Einstellungen
-│   ├── BockBar.jsx               # Bockrunden-Anzeige
-│   ├── Scoreboard.jsx             # Punktestände
-│   └── ... weitere Komponenten
-└── hooks/
-    └── useCommentatorSettings.js  # Kommentator-Einstellungs-Hook
-```
-
-## Plugin-Architektur
-
-Jedes Spiel muss ein Plugin exportieren, das folgende Struktur hat:
-
-```javascript
-const gamePlugin = {
-  // Pflicht
-  id: string,                    // Eindeutige ID (z.B. "schafkopf")
-  label: string,                 // Anzeigename (z.B. "Schafkopf")
-  description: string,            // Beschreibung
-  defaultStake: number,          // Standard-Einsatz
-  showStake: boolean,            // Einsatzfeld anzeigen?
-  SessionComponent: Component,      // Komplette Spiel-UI-Komponente
-
-  // Optional: Kommentator
-  buildCommentary: fn | null,    // (event/round, regPlayers, personality) → { segments, spokenText }
-
-  // Optional: SessionList-Integration
-  getSessionMeta: fn,            // (session) → string, z.B. "12 Spiele" oder "3/15 Runden"
-  getArchiveConfirm: fn,         // (session) → string | null (null = kein Archivieren möglich)
-
-  // Optional: Runden-Erstellung
-  SessionCreationHint: Component | null,  // Hinweis beim Erstellen (z.B. "15 Runden")
-};
-```
-
-## Neues Spiel hinzufügen
-
-1. **Plugin-Verzeichnis erstellen:**
-   ```bash
-   mkdir -p src/games/newgame
-   ```
-
-2. **Plugin konfigurieren (`src/games/newgame/plugin.js`):**
-   ```javascript
-   const newgamePlugin = {
-     id: "newgame",
-     label: "New Game",
-     description: "Beschreibung deines Spiels",
-     defaultStake: 1.0,
-     showStake: true,
-     SessionComponent: Session,
-     // ... optionale Methoden
-   };
-   export default newgamePlugin;
-   ```
-
-3. **Session-Komponente erstellen (`src/games/newgame/Session.jsx`):**
-   ```javascript
-   export default function Session({ session, registeredPlayers, onBack, onSessionUpdated }) {
-     // Deine Spiel-UI
-     return <div>...</div>;
-   }
-   ```
-
-4. **Plugin registrieren (`src/games/index.js`):**
-   ```javascript
-   import newgamePlugin from './newgame/plugin.js';
-   export const GAME_PLUGINS = { schafkopf, wizard, newgame: newgamePlugin };
-   ```
-
-5. **Fertig!** Das Spiel erscheint automatisch in SessionList und SessionView.
-
-## Spieler-Charaktere
-
-10 verschiedene Charaktere mit je 15 Szenarien:
-
-1. **Der Optimist** 🌟 - Immer positiv, sieht das Gute
-2. **Der Pessimist** 🌧️ - Erwartet immer das Schlimmste
-3. **Der Strateg** 🧠 - Analysiert, rational, kalkuliert
-4. **Der Joker** 🤪 - Macht Witze, lockert auf
-5. **Der Eitle** 🎩 - Nimmt alles persönlich, liebt Lob
-6. **Der Stoische** 🪨 - Zeigt kaum Emotionen, ruhig
-7. **Die Empörte** 😤 - Wird leicht wütend, findet alles unfair
-8. **Der Anfänger** 🐣 - Unsicher, lernt noch, fragt oft
-9. **Der Veteran** 🏆 - Hat alles schon gesehen, weise
-10. **Der Chiller** 😎 - Geht locker, entspannt, kühl
-
-### Schafkopf-Szenarien (15)
-
-- routine_win / routine_loss
-- close_win / close_loss
-- dramatic_win / dramatic_loss
-- bock_good_luck / bock_bad_luck
-- high_solo_win / against_solo_win
-- klopfer_luck / klopfer_bad_luck
-- streak_end_win
-- leader_gain / leader_loss
-
-### Wizard-Szenarien (15)
-
-- all_correct / all_wrong
-- single_winner / single_loser
-- close_game_decision / game_decided
-- dramatic_zero / dramatic_max
-- comeback_likely / comeback_unlikely
-- all_zero / all_max
-- tie_situation
-- score_overtake / score_collapse
-
-## Entwicklung
-
-### Installieren
+## Quick Start for Agents
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### Server starten
-
-```bash
+# Local development (Vite :5173 + Express :3001)
 npm run dev
+
+# Test environment (Playwright + tracker-test.db)
+NODE_ENV=test npm run dev:test
+
+# Production server (PM2, tracker.db)
+NODE_ENV=production PORT=3002 node server/index.js
 ```
 
-Dies startet gleichzeitig den Vite Dev Server (Port 5173) und den Express Backend Server.
+## Project Structure
 
-### Build
+```
+schafkopf-tracker/
+├── server/                 # Express backend
+│   ├── index.js           # Main entry point
+│   ├── db.js              # SQLite schema & migrations
+│   └── routes/            # API endpoints
+│       ├── sessions.js
+│       ├── games.js        # Schafkopf
+│       ├── players.js
+│       ├── wizard/rounds.js
+│       └── watten/games.js # Watten rounds & games
+├── src/                   # React frontend
+│   ├── App.jsx            # View router
+│   ├── components/        # Shared UI components
+│   ├── games/            # Game plugins
+│   │   ├── schafkopf/
+│   │   ├── wizard/
+│   │   └── watten/       # WattenSession, commentary, roundScenarios
+│   └── hooks/            # React hooks
+├── data/                 # SQLite databases
+│   ├── tracker.db        # Production (real games, git-tracked)
+│   ├── tracker-dev.db    # Development (testing, git-ignored)
+│   └── tracker-test.db   # E2E tests (auto-reset, git-ignored)
+├── ecosystem.config.cjs  # PM2 process configuration
+├── tests/                # Playwright E2E tests
+└── docs/                 # Full documentation
+```
 
+## Environment Separation (CRITICAL)
+
+| Environment | URL | Port | Database | Purpose |
+|-------------|-----|------|-----------|---------|
+| **Local** | localhost:5173 | 3001 | tracker-dev.db | Development |
+| **Dev** | dev.schafkopf.eventig.app | 3001 | tracker-dev.db | Feature testing |
+| **Prod** | schafkopf.eventig.app | 3002 | tracker.db | Real games |
+
+**CRITICAL RULE:**
+- Dev and Prod share the **same `dist/` folder** (built assets)
+- Dev and Prod have **separate databases**
+- Both run from the **same directory** (`/home/vscode/schafkopf-tracker`)
+- **Never test on Prod** — use Dev only
+
+## Database Schema & Architecture
+
+See `docs/architecture.md` for complete details:
+
+- **Sessions table** - Game rounds with players
+- **Players table** - Registered players with avatars/characters
+- **Games table** - Schafkopf games with scores
+- **Wizard rounds** - Wizard predictions/tricks/scores
+
+## Plugin Architecture
+
+All game logic is plugin-based in `src/games/`:
+
+**Schafkopf Plugin:** `src/games/schafkopf/plugin.js`
+- Complete game logic, UI, commentary
+- Live score calculation
+- Bock rounds, klopfer support
+
+**Wizard Plugin:** `src/games/wizard/plugin.js`
+- Prediction-based game with phases
+- Automatic score calculation
+- Live commentary system
+
+**Watten Plugin:** `src/games/watten/plugin.js`
+- Bavarian 4-player card game, 2v2 teams
+- Gespannt mode, Maschine, Gegangen, Bommerl tracking
+- 17-scenario commentary system
+
+## Deployment Process
+
+**Current deployment status:**
+- Server: VM with PM2 process manager
+- Nginx: Reverse proxy for static files and API
+- SSL: Certbot auto-renewal
+
+**Deployment steps (we are already on the VM):**
 ```bash
+# Build and restart Dev
 npm run build
+pm2 restart schafkopf-dev
+
+# Restart Prod (only when explicitly requested)
+pm2 restart schafkopf-prod
 ```
 
-### Linting
+PM2 processes are configured in `ecosystem.config.cjs` (must be `.cjs` due to `"type": "module"` in package.json).
 
+**PM2 Commands:**
 ```bash
-npm run lint
+pm2 list                          # Check status
+pm2 logs schafkopf-dev          # Dev logs
+pm2 logs schafkopf-prod         # Prod logs
+pm2 restart schafkopf-dev        # Restart Dev
+pm2 restart schafkopf-prod       # Restart Prod
+pm2 monit                        # Monitoring
 ```
 
-## Datenbank
+**Database Operations:**
+```bash
+# Reset Dev database
+rm -f data/tracker-dev.db*
+pm2 restart schafkopf-dev
 
-Das Projekt verwendet SQLite mit better-sqlite3. Die Datenbankdatei ist `data/schafkopf.db`.
+# Copy Prod data to Dev (for testing with real data)
+pm2 stop schafkopf-dev
+cp data/tracker.db* data/tracker-dev.db*
+pm2 start schafkopf-dev
+```
 
-## API-Endpunkte
+## Testing
 
-### Sessions
-- `GET /api/sessions` - Alle aktiven Runden
-- `POST /api/sessions` - Neue Runde erstellen
-- `GET /api/sessions/:id` - Runde abrufen
-- `PATCH /api/sessions/:id` - Runde aktualisieren (z.B. archivieren)
-- `DELETE /api/sessions/:id` - Runde löschen
+**E2E Testing (Playwright):**
+```bash
+# Run tests
+npm run test:e2e
 
-### Spiele
-- `GET /api/sessions/:id/games` - Alle Spiele einer Runde
-- `POST /api/sessions/:id/games` - Neues Spiel erstellen
-- `PATCH /api/sessions/:id/games/:gameId` - Spiel bearbeiten
-- `DELETE /api/sessions/:id/games/last` - Letztes Spiel löschen
-- `PATCH /api/sessions/:id/games/:gameId` - Spiel archivieren
+# Run with clean database
+npm run test:e2e:clean
 
-### Wizard-Runden
-- `GET /api/sessions/:id/wizard-rounds` - Alle Wizard-Runden
-- `POST /api/sessions/:id/wizard-rounds` - Neue Wizard-Runde erstellen
-- `PATCH /api/sessions/:id/wizard-rounds/:roundId` - Wizard-Runde bearbeiten
-- `DELETE /api/sessions/:id/wizard-rounds/last` - Letzte Wizard-Runde löschen
+# Run with UI
+npm run test:e2e:ui
 
-### Spieler
-- `GET /api/players` - Alle registrierten Spieler
-- `POST /api/players` - Neuen Spieler erstellen
-- `PATCH /api/players/:id` - Spieler aktualisieren
-- `DELETE /api/players/:id` - Spieler löschen
+# Debug mode
+npm run test:e2e:debug
+```
 
-## Technologie-Stack
+**Test Files:**
+- `tests/specs/schafkopf.spec.js` - Schafkopf game flow
+- `tests/specs/wizard.spec.js` - Wizard round flow
+- `tests/specs/wizard-commentary.spec.js` - Wizard commentary
+- `tests/specs/player-manager.spec.js` - Player management
+
+**Testing Best Practices:**
+1. Always test on Dev first
+2. Run `npm run test:e2e` before committing
+3. Use `npm run test:e2e:clean` for fresh database
+4. Check browser console for errors during tests
+
+## API Reference
+
+See `docs/api.md` for complete API documentation:
+
+**Sessions:**
+- `GET /api/sessions` - List all sessions
+- `POST /api/sessions` - Create new session
+- `GET /api/sessions/:id` - Get session details
+- `PATCH /api/sessions/:id` - Update session
+- `DELETE /api/sessions/:id` - Delete session
+
+**Schafkopf Games:**
+- `GET /api/sessions/:id/games` - List games
+- `POST /api/sessions/:id/games` - Create game
+- `PATCH /api/sessions/:id/games/:gameId` - Update game
+- `DELETE /api/sessions/:id/games/last` - Delete last game
+
+**Wizard Rounds:**
+- `GET /api/sessions/:id/wizard-rounds` - List rounds
+- `POST /api/sessions/:id/wizard-rounds` - Create round
+- `PATCH /api/sessions/:id/wizard-rounds/:roundId` - Update round
+- `DELETE /api/sessions/:id/wizard-rounds/last` - Delete last round
+
+**Watten:**
+- `GET /api/sessions/:id/watten/rounds` - List rounds (grouped by game)
+- `POST /api/sessions/:id/watten/rounds` - Create round
+- `DELETE /api/sessions/:id/watten/rounds/last` - Undo last round
+- `GET /api/sessions/:id/watten/games` - List games (active + completed)
+- `POST /api/sessions/:id/watten/games` - Start new game
+- `DELETE /api/sessions/:id/watten/games/last` - Delete last game
+
+**Players:**
+- `GET /api/players` - List all players
+- `POST /api/players` - Create player
+- `PATCH /api/players/:id` - Update player
+- `DELETE /api/players/:id` - Delete player
+
+## Feature Implementation Guide
+
+**Adding New Features:**
+
+1. **Identify impact:**
+   - Frontend only? → Edit React components
+   - Backend only? → Edit Express routes
+   - Both? → Edit both layers
+   - Database change? → Update `server/db.js` with migrations
+
+2. **Implement changes:**
+   - Follow existing code style
+   - Use inline styles from `src/components/styles.js`
+   - Add proper error handling
+
+3. **Test locally:**
+   ```bash
+   npm run dev
+   # Test in browser at localhost:5173
+   ```
+
+4. **Run E2E tests:**
+   ```bash
+   npm run test:e2e
+   ```
+
+5. **Deploy to Dev:**
+   ```bash
+   git add .
+   git commit -m "feat: description"
+   git push origin master
+   # On VM: git pull && npm run build && pm2 restart schafkopf-dev
+   ```
+
+6. **Verify on Dev:**
+   - Test at dev.schafkopf.eventig.app
+   - Check PM2 logs: `pm2 logs schafkopf-dev`
+
+7. **Deploy to Prod (after Dev verification):**
+   ```bash
+   # On VM: pm2 restart schafkopf-prod
+   ```
+
+## Game Logic Reference
+
+**Schafkopf Scoring:**
+See `docs/game-logic.md` for complete rules
+
+**Wizard Scoring:**
+- Correct prediction: `20 + (tricks * 10)`
+- Incorrect prediction: `-(|difference| * 10)`
+
+## Commentary System
+
+See `docs/commentary.md` for:
+- 4 commentator personalities (dramatic, tagesschau, bavarian, fan)
+- 10 player character types with 15 scenarios each
+- TTS integration with Web Speech API
+- Template-based commentary generation
+- Watten: 17 scenarios × 4 personalities × 3 variants = 204 templates
+
+## Troubleshooting
+
+**Dev and Prod showing same data:**
+- Check PM2 status: `pm2 list`
+- Check database files: `ls -lah data/`
+- Check for rogue systemd service: `sudo systemctl status schafkopf-backend`
+- Restart servers: `pm2 restart schafkopf-dev schafkopf-prod`
+- Clear browser cache: `Ctrl + Shift + R`
+
+**API not responding:**
+- Check PM2 logs: `pm2 logs schafkopf-dev`
+- Check port availability: `ss -tlnp | grep 3001`
+- Test API directly: `curl http://localhost:3001/api/sessions`
+
+**Build issues:**
+- Clear cache: `rm -rf node_modules/.vite`
+- Reinstall: `npm install`
+- Check package.json scripts
+
+## Complete Documentation
+
+- **[Architecture](./docs/architecture.md)** - System architecture, database schema, data flow
+- **[API Reference](./docs/api.md)** - Complete REST API documentation
+- **[Game Logic](./docs/game-logic.md)** - Game rules, scoring, plugin system
+- **[Commentary](./docs/commentary.md)** - Commentator system, personalities, TTS
+- **[Frontend](./docs/frontend.md)** - Component overview, UI structure
+- **[Deployment](./docs/deployment.md)** - Hosting, deployment process, CI/CD
+- **[Dev/Prod Separation](./docs/dev-prod-separation.md)** - Environment setup and separation
+
+## Tech Stack
 
 - **Frontend:** React 19 + Vite 8
 - **Backend:** Express 5
-- **Datenbank:** SQLite (better-sqlite3)
-- **Styling:** Inline-Styles (kein CSS-Framework)
-- **Sprache:** JavaScript (ES Modules)
+- **Database:** SQLite 3 (better-sqlite3)
+- **Styling:** Inline styles (no CSS framework)
+- **Testing:** Playwright E2E
+- **Language:** JavaScript (ES Modules)
 
-## Lizenz
+## Code Standards
 
-MIT
+- Use existing inline styles from `src/components/styles.js`
+- Follow React hooks patterns
+- Use async/await for API calls
+- Add proper error handling
+- Write E2E tests for new features
+- Keep database migrations backward compatible

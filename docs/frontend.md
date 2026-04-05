@@ -27,7 +27,7 @@ Das Frontend besteht aus funktionalen React-Komponenten mit Inline-Styles aus `s
 | `"players"` | `PlayerManager` | Spieler-Registry |
 | `"archive"` | `ArchiveView` | Archivierte Runden und Spiele |
 
-Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreSheet` delegiert.
+Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreSheet` delegiert. Watten-Sessions öffnen `SessionView`, das intern auf `WattenSession` delegiert.
 
 ---
 
@@ -40,9 +40,10 @@ Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreShee
 - Runde direkt ins Archiv verschieben (📦)
 - Neue Runde erstellen:
   - Namen eingeben
-  - Spieltyp aus Plugin-Registry wählen (Schafkopf oder Wizard)
+  - Spieltyp aus Plugin-Registry wählen (Schafkopf, Wizard oder Watten)
   - Spieler aus Registry auswählen (Quick-Add direkt im Formular)
   - Einsatz festlegen (für Schafkopf)
+  - Bei Watten: Team-Konfiguration (je 2 Spieler pro Team) + Zielwert (13/15)
 
 **API-Calls:** `GET /api/sessions`, `POST /api/sessions`, `PATCH /api/sessions/:id`
 
@@ -60,6 +61,10 @@ Wizard-Sessions öffnen ebenfalls `SessionView`, das intern auf `WizardScoreShee
 
 **Wizard-Modus** (`game_type === "wizard"`):
 - Rendert direkt `<WizardScoreSheet>` (das komplette Wizard-UI)
+- Keine eigene Scoreboard/Form-Logik in SessionView
+
+**Watten-Modus** (`game_type === "watten"`):
+- Rendert direkt `<WattenSession>` (das komplette Watten-UI)
 - Keine eigene Scoreboard/Form-Logik in SessionView
 
 **Gemeinsam:** ← Runden-Button, Session-Name, Kommentator-Settings (Schafkopf-only)
@@ -143,6 +148,97 @@ Notwendig, da `GET /api/sessions/:id` keine Wizard-Runden zurückgibt.
 - `POST /api/sessions/:id/wizard-rounds` — neue Runde
 - `PATCH /api/sessions/:id/wizard-rounds/:id` — Runde bearbeiten
 - `DELETE /api/sessions/:id/wizard-rounds/last` — Undo
+
+---
+
+## WattenSession.jsx (`src/games/watten/WattenSession.jsx`)
+
+**Rolle:** Vollständige Watten-Spielansicht — Scoreboard, Runden-Historie, Spiel-Verwaltung, Kommentator.
+
+**Sub-Komponenten:**
+- `WattenScoreboard` — Fortschrittsbalken beider Teams mit Bommerl-Counter
+- `WattenRoundForm` — Formular für neue Runde (Gewinner-Team, Punkte, Maschine, Gegangen, Stiche)
+- `WattenSessionHistory` — Accordion-Liste aller abgeschlossenen Spiele
+
+**State:**
+```js
+{
+  showForm: false,
+  rounds: { all: [], byGame: {} },
+  games: { active: null, completed: [], all: [] },
+  form: { winning_team, points, is_machine, is_gegangen, tricks_team1, tricks_team2 },
+  expandedGameId: null,
+  pendingCommentary: null,
+  showCommentatorSettings: false,
+}
+```
+
+**Gespannt-Logik:**
+```js
+const isTeam1Gespannt = team1_score >= (targetScore || 15) - 2;
+const isTeam2Gespannt = team2_score >= (targetScore || 15) - 2;
+const isGespannt = isTeam1Gespannt || isTeam2Gespannt;
+```
+
+**Spiel-Verwaltung:**
+- "＋ Neues Spiel" — öffnet Runden-Formular (oder startet neues Spiel wenn aktuelles beendet)
+- "↩ Rückgängig" — `DELETE /api/sessions/:id/watten/rounds/last`
+- Automatischer Spiel-Abschluss wenn Server zurückmeldet dass `targetScore` erreicht
+
+**Commentary:** Wird direkt nach `POST /rounds` ausgelöst, VOR dem Reload. Scores werden client-seitig vorberechnet damit Commentary sofort mit korrekten Werten läuft.
+
+**API-Calls:**
+- `GET /api/sessions/:id/watten/rounds`
+- `GET /api/sessions/:id/watten/games`
+- `POST /api/sessions/:id/watten/rounds`
+- `DELETE /api/sessions/:id/watten/rounds/last`
+- `POST /api/sessions/:id/watten/games`
+
+---
+
+## WattenRoundForm.jsx (`src/games/watten/WattenRoundForm.jsx`)
+
+**Rolle:** Formular zum Eintragen einer neuen Watten-Runde.
+
+**Features:**
+- Gewinner-Team Auswahl (Chip-Buttons mit Spielernamen)
+- Punkte-Auswahl (2–5), automatisch gesperrt und auf 3 gesetzt wenn `isTeamGespannt`
+- Gespannt-Banner (gelb) wenn ein Team gespannt ist
+- Maschine-Checkbox (immer klickbar)
+- Gegangen-Checkbox (gesperrt wenn gespannt)
+- Stiche-Eingabe (optional, beide Felder verknüpft: Team1 + Team2 = 5)
+
+**`useEffect` für Gespannt-Auto-Punkte:**
+```js
+useEffect(() => {
+  if (isTeamGespannt && form.points !== 3) {
+    onFormChange({ ...form, points: 3 });
+  }
+}, [isTeamGespannt, form.points]);
+```
+
+---
+
+## WattenScoreboard.jsx (`src/games/watten/WattenScoreboard.jsx`)
+
+**Rolle:** Fortschrittsanzeige für beide Teams.
+
+**Features:**
+- Team-Name + Bommerl-Counter (🔴N)
+- Punktestand `X / targetScore`
+- Fortschrittsbalken (wird gold wenn gespannt, grün wenn gewonnen)
+- `isGespannt`-Markierung (🧱) am Team-Namen
+
+---
+
+## WattenSessionHistory.jsx (`src/games/watten/WattenSessionHistory.jsx`)
+
+**Rolle:** Accordion-Liste aller abgeschlossenen Spiele der Session.
+
+**Features:**
+- Pro Spiel: Gewinner-Team, Endstand, Bommerl-Markierung
+- Ausklappbar: Runden-Details pro Spiel
+- Bommerl-Gesamtübersicht am Ende
 
 ---
 

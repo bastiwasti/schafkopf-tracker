@@ -380,3 +380,121 @@ Löscht eine Wizard-Runde endgültig.
 
 **Response `204`**  
 **Response `404`** — Runde nicht gefunden
+
+---
+
+## Watten (`/api/sessions/:id/watten`)
+
+Alle Watten-Endpunkte sind in `server/routes/watten/games.js` definiert.
+
+---
+
+### `GET /api/sessions/:id/watten/rounds`
+Gibt alle aktiven Runden der Session zurück, gruppiert nach Spiel.
+
+**Response `200`**
+```json
+{
+  "all": [
+    {
+      "id": 1,
+      "session_id": "uuid",
+      "game_id": 1,
+      "round_number": 1,
+      "winning_team": "team1",
+      "points": 2,
+      "is_machine": false,
+      "is_spannt_played": false,
+      "is_gegangen": false,
+      "tricks_team1": 3,
+      "tricks_team2": 2,
+      "created_at": "..."
+    }
+  ],
+  "byGame": {
+    "1": [ /* Runden von Spiel 1 */ ]
+  }
+}
+```
+
+---
+
+### `POST /api/sessions/:id/watten/rounds`
+Trägt eine neue Runde ein. Erstellt automatisch ein aktives Spiel falls keines existiert. Schließt das Spiel automatisch ab wenn `watten_target_score` erreicht wird.
+
+**Body**
+```json
+{
+  "winning_team": "team1",
+  "points": 2,
+  "is_machine": false,
+  "is_gegangen": false,
+  "tricks_team1": 3,
+  "tricks_team2": 2
+}
+```
+
+`points` Default: `2`. Sonderfälle: `3` bei Gespannt, bis `5` bei Maschine/Bidding.
+
+**Response `201`** — Runden-Objekt  
+**Response `400`** — `winning_team` fehlt
+
+---
+
+### `DELETE /api/sessions/:id/watten/rounds/last`
+Löscht die letzte Runde (Undo). Falls das zugehörige Spiel danach leer ist, wird es ebenfalls gelöscht.
+
+**Response `204`**  
+**Response `404`** — Keine Runde zum Löschen
+
+---
+
+### `GET /api/sessions/:id/watten/games`
+Gibt alle aktiven Spiele der Session zurück, aufgeteilt in aktives Spiel und abgeschlossene Spiele.
+
+**Response `200`**
+```json
+{
+  "active": {
+    "id": 2,
+    "session_id": "uuid",
+    "game_number": 2,
+    "winner_team": "team1",
+    "final_score_team1": 5,
+    "final_score_team2": 3,
+    "is_completed": false,
+    "bommerl_team": null,
+    "created_at": "..."
+  },
+  "completed": [
+    {
+      "id": 1,
+      "game_number": 1,
+      "winner_team": "team2",
+      "final_score_team1": 13,
+      "final_score_team2": 15,
+      "is_completed": true,
+      "bommerl_team": "team1"
+    }
+  ],
+  "all": [ /* alle Spiele */ ]
+}
+```
+
+`bommerl_team` ist das Team das verloren hat (und damit einen Bommerl bekommt).
+
+---
+
+### `POST /api/sessions/:id/watten/games`
+Startet explizit ein neues Spiel (z.B. nach Spielende über den "Neues Spiel"-Button).
+
+**Response `201`** — Spiel-Objekt  
+**Response `400`** — Es gibt bereits ein aktives Spiel
+
+---
+
+### `DELETE /api/sessions/:id/watten/games/last`
+Löscht das letzte Spiel inkl. aller zugehörigen Runden.
+
+**Response `204`**  
+**Response `404`** — Kein Spiel gefunden

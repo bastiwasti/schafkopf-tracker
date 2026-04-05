@@ -157,6 +157,76 @@ Nur die jeweils nächste ausstehende Runde hat einen "Starten"-Button — bereit
 
 ---
 
+## Watten
+
+### Spielübersicht
+
+Watten ist ein bayerisches 4-Spieler-Kartenspiel, das **2 gegen 2** (feste Teams) gespielt wird. Eine Session besteht aus mehreren aufeinanderfolgenden Spielen. Jedes Spiel wird bis zum `watten_target_score` (13 oder 15 Punkte) gespielt.
+
+### Teams & Konfiguration
+
+- **Team 1** und **Team 2**: je 2 Spieler, fest für die gesamte Session
+- **Zielwert**: 13 oder 15 Punkte (bei Session-Erstellung gewählt, Default 15)
+- **Bommerl**: Ein Team das ein Spiel verliert bekommt einen Bommerl (🔴). Wird über alle Spiele der Session gezählt.
+
+### Punkte pro Runde
+
+| Situation | Punkte |
+|---|---|
+| Normal | 2 |
+| Gespannt (auto) | 3 |
+| Gegangen | 2 (Standard, vom Gewinner festgelegt) |
+| Maschine | 2 (Standard, Sondermarkierung) |
+| Bidding/Auspielen | bis 5 |
+
+### Gespannt-Modus
+
+Ein Team ist **gespannt**, wenn sein aktueller Punktestand ≥ `targetScore - 2` ist:
+
+```js
+const isTeamGespannt = (team1_score >= targetScore - 2) || (team2_score >= targetScore - 2);
+```
+
+**Effekte:**
+- Jede Runde zählt automatisch 3 Punkte (unabhängig von Normalwert)
+- Punkte-Buttons im Formular werden deaktiviert
+- Gegangen-Checkbox wird deaktiviert
+- Gelbes Banner wird angezeigt
+
+### Sondermarkierungen
+
+| Markierung | Bedeutung | Effekt auf Punkte |
+|---|---|---|
+| **Maschine** 🤖 | Spieler hält alle 3 kritischen Karten | Keine automatische Punktänderung — wird im Kommentar erwähnt |
+| **Gegangen** 🏃 | Team hat aufgegeben | Keine automatische Punktänderung |
+
+### Spielende & Bommerl
+
+Wenn `team1_score >= targetScore` oder `team2_score >= targetScore`:
+1. Das aktive Spiel wird als `is_completed = 1` markiert
+2. `bommerl_team` wird auf das **Verlierer-Team** gesetzt
+3. Der Spieler sieht einen "Neues Spiel"-Button
+
+### Stiche (optional)
+
+Stiche können eingetragen werden (0–5, Team 1 + Team 2 = 5). Dienen nur als Information für den Kommentator (keine Punkte-Berechnung).
+
+### Score-Berechnung
+
+Erfolgt **im Frontend** (`WattenSession.jsx`):
+
+```js
+const { team1_score, team2_score } = displayRounds.reduce((acc, r) => {
+  if (r.winning_team === 'team1') acc.team1_score += r.points;
+  if (r.winning_team === 'team2') acc.team2_score += r.points;
+  return acc;
+}, { team1_score: 0, team2_score: 0 });
+```
+
+Das Backend überprüft beim POST einer Runde ebenfalls ob das Spiel beendet ist und aktualisiert `watten_games` entsprechend.
+
+---
+
 ## Plugin-Schnittstelle
 
 Jedes Spiel-Plugin wird in `src/games/index.js` registriert:

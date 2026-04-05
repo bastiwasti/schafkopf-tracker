@@ -1,47 +1,35 @@
+import SharedHistoryCard from "../shared/HistoryCard.jsx";
 import styles from "../../components/styles.js";
 
 export default function HistoryCard({ game: g, players, onEdit, onArchive }) {
+  const extraBadges = [
+    g.bock > 1 && { label: `Bock ×${g.bock}`, badgeStyle: styles.bockBadge },
+    g.klopfer?.length > 0 && { label: `👊 ×${Math.pow(2, g.klopfer.length)}`, badgeStyle: styles.klopfBadge },
+  ].filter(Boolean);
+
+  const badges = [
+    g.schneider && "Schneider",
+    g.schwarz && "Schwarz",
+    g.laufende > 0 && `${g.laufende} Laufende`,
+  ].filter(Boolean);
+
+  const changes = {};
+  players.forEach((p) => { changes[p] = g.changes[p] ?? 0; });
+
   return (
-    <div style={styles.historyCard}>
-      <div style={styles.historyHeader}>
-        <span style={styles.historyRound}>#{g.seq}</span>
-        <span style={styles.historyType}>{g.type}</span>
-        <span style={styles.spielwertBadge}>{(g.spielwert || 0).toFixed(2)} €</span>
-        {g.bock > 1 && <span style={styles.bockBadge}>Bock ×{g.bock}</span>}
-        {g.klopfer && g.klopfer.length > 0 && (
-          <span style={styles.klopfBadge}>👊 ×{Math.pow(2, g.klopfer.length)}</span>
-        )}
-        <span style={{ ...styles.historyResult, background: g.won ? "#2d6a4f" : "#9d0208" }}>
-          {g.won ? "Gewonnen" : "Verloren"}
-        </span>
-      </div>
-      <div style={styles.historyDetail}>
-        <strong>{g.player}</strong>
-        {g.partner && <span> mit {g.partner}</span>}
-        {g.schneider && <span style={styles.badge}>Schneider</span>}
-        {g.schwarz && <span style={styles.badge}>Schwarz</span>}
-        {g.laufende > 0 && <span style={styles.badge}>{g.laufende} Laufende</span>}
-      </div>
-      <div style={styles.historyChanges}>
-        {players.map((p) => (
-          <span key={p} style={{
-            ...styles.changeItem,
-            color: g.changes[p] > 0 ? "#2d6a4f" : g.changes[p] < 0 ? "#9d0208" : "#888",
-          }}>
-            {p}: {g.changes[p] >= 0 ? "+" : ""}{(g.changes[p] || 0).toFixed(2)}€
-          </span>
-        ))}
-      </div>
-      {(onEdit || onArchive) && (
-        <div style={styles.historyActions}>
-          {onEdit && (
-            <button style={styles.btnEdit} onClick={() => onEdit(g)}>✏️ Bearbeiten</button>
-          )}
-          {onArchive && (
-            <button style={styles.btnArchiveGame} onClick={() => onArchive(g.id)}>📦 Archivieren</button>
-          )}
-        </div>
-      )}
-    </div>
+    <SharedHistoryCard
+      seq={g.seq}
+      typeLabel={g.type}
+      valueBadge={`${(g.spielwert || 0).toFixed(2)} €`}
+      extraBadges={extraBadges}
+      won={g.won}
+      mainPlayer={g.player}
+      subPlayer={g.partner ? `mit ${g.partner}` : null}
+      badges={badges}
+      changes={changes}
+      formatChange={(v) => `${v >= 0 ? "+" : ""}${(v || 0).toFixed(2)}€`}
+      onEdit={onEdit ? () => onEdit(g) : null}
+      onArchive={onArchive ? () => onArchive(g.id) : null}
+    />
   );
 }

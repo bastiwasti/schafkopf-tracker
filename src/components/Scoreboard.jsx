@@ -1,7 +1,8 @@
 import styles from "./styles.js";
 import PlayerTooltip from "./PlayerTooltip.jsx";
 
-export default function Scoreboard({ players, balances, history, registeredPlayers = [] }) {
+export default function Scoreboard({ players, balances, history, registeredPlayers = [], formatBalance }) {
+  const _formatBalance = formatBalance ?? ((v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)} €`);
   const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
 
   const leader = players.length > 0
@@ -23,7 +24,7 @@ export default function Scoreboard({ players, balances, history, registeredPlaye
               ...styles.playerBalance,
               color: val > 0 ? "#2d6a4f" : val < 0 ? "#9d0208" : "#555",
             }}>
-              {val >= 0 ? "+" : ""}{val.toFixed(2)} €
+              {_formatBalance(val)}
             </div>
             <div style={styles.playerGames}>
               {history.filter((g) => g.player === p).length} Spiele

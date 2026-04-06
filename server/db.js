@@ -94,15 +94,15 @@ db.exec(`
 
       game_type TEXT NOT NULL,
       declarer TEXT NOT NULL,
-      partner TEXT,
-      contra TEXT,
+      mit_ohne TEXT DEFAULT 'mit',
+      spitzen INTEGER DEFAULT 1,
       won BOOLEAN,
       schneider BOOLEAN,
       schwarz BOOLEAN,
-      laufende INTEGER DEFAULT 0,
-      klopfer TEXT,
-      bock INTEGER DEFAULT 1,
-      kontra_multiplier INTEGER DEFAULT 1,
+      re BOOLEAN DEFAULT 0,
+      bock BOOLEAN DEFAULT 0,
+      hirsch BOOLEAN DEFAULT 0,
+      ramsch_points TEXT,
       points INTEGER,
 
       FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
@@ -112,6 +112,13 @@ db.exec(`
   // Skat migrations for existing databases
   try { db.exec('ALTER TABLE sessions ADD COLUMN game_variant TEXT DEFAULT \'skat_3er\''); } catch (e) {}
   try { db.exec('ALTER TABLE sessions ADD COLUMN skat_bock_level INTEGER DEFAULT 1'); } catch (e) {}
+  // New skat_games columns for reworked logic
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN mit_ohne TEXT DEFAULT \'mit\''); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN spitzen INTEGER DEFAULT 1'); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN re BOOLEAN DEFAULT 0'); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN hirsch BOOLEAN DEFAULT 0'); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN ramsch_points TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN active_players TEXT'); } catch (e) {}
 
   // Create indexes for skat_games
   db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_session ON skat_games(session_id);');

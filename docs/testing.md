@@ -73,7 +73,7 @@ Der Server erstellt die DB beim Start automatisch neu (mit leerem Schema).
 | `schafkopf-commentary.spec.js` | Schafkopf Kommentator-Overlay |
 | `wizard.spec.js` | Wizard Runden-Flow (Prediction, Tricks, Score) |
 | `wizard-commentary.spec.js` | Wizard Kommentator-Overlay inkl. TTS-Validierung |
-| `skat.spec.js` | Skat Spiel-Flow |
+| `skat.spec.js` | Skat: Farbspiel, Grand+Schneider, Null Ouvert Hand, Ramsch (Auto-Fill + Punkte), Re/Bock/Hirsch-Abhängigkeit |
 | `watten.spec.js` | Watten Spiel-Flow (Teams, Runden, Gespannt, Bommerl) |
 | `doppelkopf.spec.js` | Doppelkopf Spiel-Flow (Normal, Solo, Kontra, Sonderpunkte) |
 | `player-personality-tooltip.spec.js` | Persönlichkeit wird gespeichert + Tooltip zeigt korrektes Label |
@@ -121,10 +121,47 @@ npm run test:e2e:clean -- tests/specs/watten.spec.js
 
 ### Typische Fallstricke
 
-**Commentary-Overlays blockieren** — nach jedem `POST /rounds` oder `POST /games` kann ein Kommentator-Overlay erscheinen. Tests müssen es schließen bevor sie weitermachen:
+**Commentary-Overlays blockieren** — nach jedem `POST /rounds` oder `POST /games` kann ein Kommentator-Overlay erscheinen. Das Overlay rendert leicht verzögert nach `networkidle`, daher kurz warten und dann in einer Schleife schließen:
 ```js
-const closeBtn = page.locator('button').filter({ hasText: '✕ Schließen' });
-if (await closeBtn.isVisible()) await closeBtn.click();
+const closeOverlay = async (page) => {
+  await page.waitForTimeout(300); // Overlay braucht einen Moment zum Rendern
+  for (let i = 0; i < 10; i++) {
+    const btn = page.locator('button').filter({ hasText: '✕ Schließen' });
+    if (await btn.isVisible()) { await btn.click(); await page.waitForTimeout(500); continue; }
+    const overlay = page.locator('div[style*="position: fixed"]').first();
+    if (await overlay.isVisible()) { await overlay.click({ force: true }); await page.waitForTimeout(400); continue; }
+    break;
+  }
+};
+```
+
+**`text=` Locator mit `+` oder `-` schlägt fehl** — Playwright interpretiert `+` und `-` in `text=`-Selektoren als CSS-Operatoren. Für Text der mit diesen Zeichen beginnt immer `getByText()` verwenden:
+```js
+// Schlägt fehl (CSS-Parsing-Problem):
+await expect(page.locator('text=+30 Punkte')).toBeVisible();
+await expect(page.locator('text=-40')).toBeVisible();
+
+// Korrekt:
+await expect(page.getByText('+30 Punkte').first()).toBeVisible();
+await expect(page.getByText('-40 Punkte').first()).toBeVisible();
+```
+
+**Mehrdeutiger Text (Heading vs. Button)** — Wenn Heading und Button denselben Text enthalten (z.B. `<h3>Spiel eintragen</h3>` und `<button>✓ Spiel eintragen — 30 Punkte</button>`), trifft `page.click('text=Spiel eintragen')` das Heading, nicht den Button. Immer gezielt mit `button.filter()` selektieren:
+```js
+// Trifft ggf. das <h3>-Heading statt den Button:
+await page.click('text=Spiel eintragen');
+
+// Korrekt:
+await page.locator('button').filter({ hasText: 'Spiel eintragen' }).click();
+```
+
+**Checkbox-Locator** — Parent-Traversal mit `locator('text=Label').locator('..').locator('input')` ist unzuverlässig. Stattdessen `getByRole` mit `name` verwenden:
+```js
+// Unzuverlässig:
+page.locator('text=Re').locator('..').locator('input[type="checkbox"]');
+
+// Korrekt:
+page.getByRole('checkbox', { name: 'Re' });
 ```
 
 **`waitForTimeout` vermeiden** — stattdessen auf konkrete UI-Elemente warten:
@@ -134,6 +171,7 @@ await page.waitForTimeout(1000);
 // Gut:
 await expect(page.locator('text=Runde #1')).toBeVisible();
 ```
+Ausnahme: ein kurzes `waitForTimeout(300)` direkt nach `waitForLoadState('networkidle')` ist manchmal nötig, wenn asynchron gerenderete Overlays (z.B. Commentary) auf ihre `isVisible()`-Prüfung warten müssen.
 
 **DB-Zustand zwischen Tests** — `beforeEach` kann keine saubere DB garantieren (nur `globalSetup` vor dem gesamten Run tut das). Tests sollten daher eigene Testdaten anlegen und nicht auf Daten aus vorherigen Tests angewiesen sein.
 

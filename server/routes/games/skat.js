@@ -2,29 +2,30 @@ import express from 'express';
 import { randomUUID } from 'crypto';
 import db from '../../db.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-// Punkteberechnung für ein Skat-Spiel
-function calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock) {
-  const CARD_VALUES = { grand: 24, kreuz: 12, pik: 11, herz: 10, null: 23 };
+const NULL_VALUES = {
+  'Null': 23,
+  'Null Hand': 35,
+  'Null Ouvert': 46,
+  'Null Ouvert Hand': 59,
+};
 
-  const baseValue = game_type === 'grand'
-    ? CARD_VALUES['grand'] + laufende + 4
-    : CARD_VALUES[game_type] !== undefined
-      ? (game_type !== 'null' ? CARD_VALUES[game_type] + laufende : CARD_VALUES['null'])
-      : CARD_VALUES['grand'] + laufende + 4; // fallback für "kontra"
+const CARD_VALUES = { grand: 24, kreuz: 12, pik: 11, herz: 10, karo: 9 };
 
-  const schneiderMult = schwarz ? 3 : schneider ? 2 : 1;
-  const bockMult = Math.pow(2, (bock ?? 1) - 1);
+function calculateSkatPoints({ game_type, spitzen = 1, schneider = false, schwarz = false, re = false, bock = false, hirsch = false }) {
+  const reBoekMult = 1 + (re ? 1 : 0) + (bock ? 1 : 0) + (hirsch ? 1 : 0);
 
-  if (game_type === 'kontra') {
-    const grandBase = CARD_VALUES['grand'] + laufende + 4;
-    return grandBase * schneiderMult * (kontra_multiplier ?? 1) * bockMult;
+  if (NULL_VALUES[game_type] !== undefined) {
+    return NULL_VALUES[game_type] * reBoekMult;
   }
-  return baseValue * schneiderMult * bockMult;
+
+  const baseValue = CARD_VALUES[game_type.toLowerCase()];
+  const schneiderBonus = schwarz ? 2 : schneider ? 1 : 0;
+  const multiplier = spitzen + 1 + schneiderBonus;
+  return baseValue * multiplier * reBoekMult;
 }
 
-// Helper: Nächste Sequenz
 function getNextSeq(sessionId) {
   const result = db.prepare(`
     SELECT COALESCE(MAX(seq), 0) + 1 as next_seq
@@ -37,51 +38,48 @@ function getNextSeq(sessionId) {
 // Spiel erstellen
 router.post('/', async (req, res) => {
   try {
-    const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, bock } = req.body;
     const sessionId = req.params.id;
+    const { game_type, declarer, mit_ohne = 'mit', spitzen = 1, won, schneider = false, schwarz = false, re = false, bock = false, hirsch = false, ramsch_points, active_players } = req.body;
 
-  const points = calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock);
+    const isRamsch = game_type === 'Ramsch';
+    const points = isRamsch ? 0 : calculateSkatPoints({ game_type, spitzen, schneider, schwarz, re, bock, hirsch });
 
-  const game = {
-    id: randomUUID(),
-    session_id: sessionId,
-    seq: getNextSeq(sessionId),
-    created_at: new Date().toISOString(),
-    game_type,
-    declarer,
-    partner: partner ?? null,
-    contra: contra ?? null,
-    won: won ? 1 : 0,
-    schneider: schneider ? 1 : 0,
-    schwarz: schwarz ? 1 : 0,
-    laufende,
-    klopfer: JSON.stringify([]),
-    bock: bock ?? 1,
-    kontra_multiplier: kontra_multiplier ?? 1,
-    points,
-  };
+    const game = {
+      id: randomUUID(),
+      session_id: sessionId,
+      seq: getNextSeq(sessionId),
+      created_at: new Date().toISOString(),
+      game_type,
+      declarer: isRamsch ? '' : declarer,
+      mit_ohne: isRamsch ? null : mit_ohne,
+      spitzen: isRamsch ? null : spitzen,
+      won: isRamsch ? null : (won ? 1 : 0),
+      schneider: schneider ? 1 : 0,
+      schwarz: schwarz ? 1 : 0,
+      re: re ? 1 : 0,
+      bock: bock ? 1 : 0,
+      hirsch: hirsch ? 1 : 0,
+      ramsch_points: isRamsch ? JSON.stringify(ramsch_points || {}) : null,
+      active_players: active_players ? JSON.stringify(active_players) : null,
+      points,
+    };
 
-  const stmt = db.prepare(`
-    INSERT INTO skat_games (
-      id, session_id, seq, created_at,
-      game_type, declarer, partner, contra,
-      won, schneider, schwarz, laufende,
-      klopfer, kontra_multiplier, bock, points
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+    db.prepare(`
+      INSERT INTO skat_games (
+        id, session_id, seq, created_at,
+        game_type, declarer, mit_ohne, spitzen,
+        won, schneider, schwarz, re, bock, hirsch, ramsch_points, active_players, points
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      game.id, game.session_id, game.seq, game.created_at,
+      game.game_type, game.declarer, game.mit_ohne, game.spitzen,
+      game.won, game.schneider, game.schwarz, game.re, game.bock, game.hirsch, game.ramsch_points, game.active_players, game.points
+    );
 
-  stmt.run(
-    game.id, game.session_id, game.seq, game.created_at,
-    game.game_type, game.declarer, game.partner, game.contra,
-    game.won, game.schneider, game.schwarz, game.laufende,
-    game.klopfer, game.kontra_multiplier, game.bock, game.points
-  );
-
-  // Session game_count aktualisieren
-  const gameCount = db.prepare('SELECT COUNT(*) as count FROM skat_games WHERE session_id = ?')
-    .get(sessionId).count;
-  db.prepare('UPDATE sessions SET game_count = ? WHERE id = ?')
-    .run(gameCount, sessionId);
+    const gameCount = db.prepare('SELECT COUNT(*) as count FROM skat_games WHERE session_id = ?')
+      .get(sessionId).count;
+    db.prepare('UPDATE sessions SET game_count = ? WHERE id = ?')
+      .run(gameCount, sessionId);
 
     res.json(game);
   } catch (error) {
@@ -107,7 +105,6 @@ router.patch('/:gameId', async (req, res) => {
   try {
     const { gameId } = req.params;
 
-    // Archivierung
     if (req.body.archived_at !== undefined) {
       db.prepare('UPDATE skat_games SET archived_at = ? WHERE id = ?')
         .run(req.body.archived_at, gameId);
@@ -115,16 +112,26 @@ router.patch('/:gameId', async (req, res) => {
       return res.json(archived);
     }
 
-    const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, bock } = req.body;
-    const points = calculateSkatPoints(game_type, laufende, schneider, schwarz, kontra_multiplier, bock);
+    const { game_type, declarer, mit_ohne = 'mit', spitzen = 1, won, schneider = false, schwarz = false, re = false, bock = false, hirsch = false, ramsch_points, active_players } = req.body;
+    const isRamsch = game_type === 'Ramsch';
+    const points = isRamsch ? 0 : calculateSkatPoints({ game_type, spitzen, schneider, schwarz, re, bock, hirsch });
 
     db.prepare(`
       UPDATE skat_games SET
-        game_type = ?, declarer = ?, partner = ?, contra = ?,
-        won = ?, schneider = ?, schwarz = ?, laufende = ?,
-        kontra_multiplier = ?, bock = ?, points = ?
+        game_type = ?, declarer = ?, mit_ohne = ?, spitzen = ?,
+        won = ?, schneider = ?, schwarz = ?, re = ?, bock = ?, hirsch = ?, ramsch_points = ?, active_players = ?, points = ?
       WHERE id = ?
-    `).run(game_type, declarer, partner, contra, won ? 1 : 0, schneider ? 1 : 0, schwarz ? 1 : 0, laufende, kontra_multiplier, bock, points, gameId);
+    `).run(
+      game_type,
+      isRamsch ? '' : declarer,
+      isRamsch ? null : mit_ohne,
+      isRamsch ? null : spitzen,
+      isRamsch ? null : (won ? 1 : 0),
+      schneider ? 1 : 0, schwarz ? 1 : 0, re ? 1 : 0, bock ? 1 : 0, hirsch ? 1 : 0,
+      isRamsch ? JSON.stringify(ramsch_points || {}) : null,
+      active_players ? JSON.stringify(active_players) : null,
+      points, gameId
+    );
 
     const updated = db.prepare('SELECT * FROM skat_games WHERE id = ?').get(gameId);
     res.json(updated);
@@ -138,7 +145,6 @@ router.patch('/:gameId', async (req, res) => {
 router.delete('/last', (req, res) => {
   const sessionId = req.params.id;
 
-  // Letztes Spiel finden
   const lastGame = db.prepare(`
     SELECT id FROM skat_games
     WHERE session_id = ? AND archived_at IS NULL
@@ -148,22 +154,12 @@ router.delete('/last', (req, res) => {
   if (lastGame) {
     db.prepare('DELETE FROM skat_games WHERE id = ?').run(lastGame.id);
 
-    // Session game_count aktualisieren
     const gameCount = db.prepare('SELECT COUNT(*) as count FROM skat_games WHERE session_id = ?')
       .get(sessionId).count;
     db.prepare('UPDATE sessions SET game_count = ? WHERE id = ?')
       .run(gameCount, sessionId);
   }
 
-  res.json({ success: true });
-});
-
-// Bockrunde ändern
-router.patch('/bock', (req, res) => {
-  const { bock } = req.body;
-  const sessionId = req.params.id;
-  db.prepare('UPDATE sessions SET skat_bock_level = ? WHERE id = ?')
-    .run(bock, sessionId);
   res.json({ success: true });
 });
 

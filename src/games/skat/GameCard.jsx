@@ -1,23 +1,41 @@
 import SharedHistoryCard from "../shared/HistoryCard.jsx";
-import { calculatePlayerPoints } from "./logic.js";
+import { calculatePlayerPoints, isNullType, isFarbGrandType, isRamsch } from "./logic.js";
 
 export default function GameCard({ game, players, onEdit, onArchive }) {
-  const { game_type, declarer, won, schneider, schwarz, laufende, points, kontra_multiplier } = game;
-
-  const typeLabel = game_type === "kontra" ? `Kontra (×${kontra_multiplier})` : game_type;
-
-  const badges = [
-    schneider && "Schneider",
-    schwarz && "Schwarz",
-    laufende > 0 && `${laufende} Laufende`,
-  ].filter(Boolean);
+  const { game_type, declarer, won, schneider, schwarz, mit_ohne, spitzen, re, bock, hirsch, points } = game;
 
   const pointsPerPlayer = calculatePlayerPoints(game, players);
+
+  if (isRamsch(game_type)) {
+    return (
+      <SharedHistoryCard
+        seq={game.seq}
+        typeLabel="Ramsch"
+        valueBadge="120 Punkte"
+        won={null}
+        mainPlayer={null}
+        badges={[]}
+        changes={pointsPerPlayer}
+        formatChange={(v) => `${v > 0 ? "+" : ""}${v}`}
+        onEdit={onEdit ? () => onEdit(game) : null}
+        onArchive={onArchive ? () => onArchive(game.id) : null}
+      />
+    );
+  }
+
+  const badges = [
+    isFarbGrandType(game_type) && mit_ohne && spitzen && `${mit_ohne} ${spitzen}`,
+    isFarbGrandType(game_type) && schneider && "Schneider",
+    isFarbGrandType(game_type) && schwarz && "Schwarz",
+    re && "Re",
+    bock && "Bock",
+    hirsch && "Hirsch",
+  ].filter(Boolean);
 
   return (
     <SharedHistoryCard
       seq={game.seq}
-      typeLabel={typeLabel}
+      typeLabel={game_type}
       valueBadge={`${won ? "+" : "-"}${points} Punkte`}
       won={won}
       mainPlayer={declarer}

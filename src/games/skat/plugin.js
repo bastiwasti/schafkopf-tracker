@@ -1,20 +1,24 @@
-import { GAME_TYPES, calcSpielwert, resolveGame, calcBalances } from "./logic.js";
+import { calcSpielwert, calcBalances, FARB_GRAND_TYPES } from "./logic.js";
 import GameForm from "./GameForm.jsx";
 import GameCard from "./GameCard.jsx";
 import SkatSession from "./SkatSession.jsx";
 import { createPlugin } from "../shared/createPlugin.js";
 
 function makeDefaultForm(players) {
+  const active = players.length > 3 ? players.slice(0, 3) : players;
   return {
-    game_type: "Grand",
-    declarer: players[0] ?? "",
-    partner: players[1] ?? "",
-    contra: players[2] ?? "",
-    won: true,
+    game_type: "Karo",
+    declarer: active[0] ?? "",
+    mit_ohne: "mit",
+    spitzen: 1,
     schneider: false,
     schwarz: false,
-    laufende: 0,
-    kontra_multiplier: 1,
+    re: false,
+    bock: false,
+    hirsch: false,
+    won: true,
+    active_players: active,
+    ramsch_points: Object.fromEntries(active.map(p => [p, 0])),
   };
 }
 
@@ -23,13 +27,12 @@ const skatPlugin = createPlugin({
   label: "Skat",
   description: "Klassischer Skat · 3 Spieler · DSV-Regeln",
   defaultStake: 0.50,
-  showStake: true,
-  playerCount: { min: 3, max: 3 },
-  playerHint: "Genau 3 Spieler erforderlich. Einer spielt alleine, zwei spielen gemeinsam gegen ihn.",
-  gameTypes: GAME_TYPES,
+  showStake: false,
+  playerCount: { min: 3 },
+  playerHint: "Mindestens 3 Spieler. Bei 4+ sitzt pro Spiel einer aus.",
+  gameTypes: FARB_GRAND_TYPES,
   makeDefaultForm,
   calcSpielwert,
-  resolveGame,
   calcBalances,
   FormComponent: GameForm,
   HistoryCardComponent: GameCard,

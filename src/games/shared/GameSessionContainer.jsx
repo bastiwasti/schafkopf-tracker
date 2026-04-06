@@ -53,6 +53,8 @@ export default function GameSessionContainer({
   topSlot,
   // Game-specific context forwarded to CRUD handlers
   gameContext,
+  // Optional custom balance formatter (e.g. Punkte statt €)
+  formatBalance,
 }) {
   const { players } = session;
 
@@ -177,6 +179,7 @@ export default function GameSessionContainer({
         balances={balances}
         history={activeHistory}
         registeredPlayers={registeredPlayers}
+        formatBalance={formatBalance}
       />
 
       <div style={styles.actions}>

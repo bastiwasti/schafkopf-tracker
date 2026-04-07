@@ -20,6 +20,10 @@ npm run test:e2e:ui
 
 # Debug-Modus (Schritt für Schritt)
 npm run test:e2e:debug
+
+# Nur bestimmte Tests ausführen
+npm run test:e2e -- --grep "Testname"
+npm run test:e2e -- tests/specs/schafkopf.spec.js
 ```
 
 ---
@@ -64,19 +68,222 @@ Der Server erstellt die DB beim Start automatisch neu (mit leerem Schema).
 
 | Datei | Beschreibung |
 |---|---|
-| `app.spec.js` | App lädt, Basis-Smoke-Test |
-| `session.spec.js` | Session-Erstellung für alle Spieltypen |
-| `player.spec.js` | Spieler Management (CRUD) |
-| `player-nav.spec.js` | Navigation zur Spieler-Ansicht |
-| `immediate-cancel.spec.js` | Formular abbrechen ohne zu speichern |
-| `schafkopf.spec.js` | Schafkopf Spiel-Flow (Spiel eintragen, Undo, Archiv) |
-| `schafkopf-commentary.spec.js` | Schafkopf Kommentator-Overlay |
-| `wizard.spec.js` | Wizard Runden-Flow (Prediction, Tricks, Score) |
-| `wizard-commentary.spec.js` | Wizard Kommentator-Overlay inkl. TTS-Validierung |
-| `skat.spec.js` | Skat: Farbspiel, Grand+Schneider, Null Ouvert Hand, Ramsch (Auto-Fill + Punkte), Re/Bock/Hirsch-Abhängigkeit |
-| `watten.spec.js` | Watten Spiel-Flow (Teams, Runden, Gespannt, Bommerl) |
-| `doppelkopf.spec.js` | Doppelkopf Spiel-Flow (Normal, Solo, Kontra, Sonderpunkte) |
-| `player-personality-tooltip.spec.js` | Persönlichkeit wird gespeichert + Tooltip zeigt korrektes Label |
+| `sessions.spec.js` | Session Management (Archivieren, Löschen, Wiederherstellen) |
+| `players.spec.js` | Spieler CRUD, Persönlichkeit, Avatar, Cancel |
+| `schafkopf.spec.js` | Schafkopf 3/4 Spieler, Sauspiel/Solo/Geier/Farbwenz, Commentary |
+| `wizard.spec.js` | Wizard 3/4 Spieler, Vorhersagen, Commentary |
+| `watten.spec.js` | Watten Teams, Maschine/Gegangen/Gespannt, Commentary |
+| `skat.spec.js` | Skat Farbspiel/Grand/Null/Ramsch/Re-Bock-Hirsch, 3/4 Spieler |
+| `doppelkopf.spec.js` | Doppelkopf Normal/Solo/Kontra/Sonderpunkte |
+| `romme.spec.js` | Romme 3/4 Spieler, Commentary |
+
+---
+
+## Naming Convention
+
+Alle Tests folgen einem **4-Teiligen Schema:**
+
+```
+SPIEL - KATEGORIE - SZENARIO - PERSÖNLICHKEIT
+```
+
+### Kategorien
+
+| Kategorie | Verwendung |
+|---|---|
+| `GAME` | Gameplay-Flows (Spiel eintragen, Scoring, Live-Score) |
+| `SESSION` | Session-Management (Erstellen, Archivieren, Löschen) |
+| `COMMENTARY` | Kommentator-Overlay, TTS-Validierung |
+| `MANAGEMENT` | Admin-Funktionen (Archiv, Undo) |
+| `CRUD` | Create/Read/Update/Delete Operationen |
+| `NAV` | Navigation zwischen Views |
+| `FEATURE` | Spezifische Features (Avatar, Persönlichkeit) |
+
+### Persönlichkeiten
+
+- `Dramatisch`
+- `Bayerisch`
+- `Tagesschau`
+- `Fan`
+- `Standard` (default, ohne spezieller Persönlichkeit)
+
+### Beispiele
+
+```javascript
+'SCHAFKOPF - GAME - Sauspiel - 3 Spieler - Dramatisch'
+'WATTEN - GAME - Maschine - Team 2 - Standard'
+'SESSION - MANAGEMENT - Session archivieren'
+'WIZARD - COMMENTARY - Alle Korrekt - 4 Spieler - Dramatisch'
+'SKAT - GAME - Ramsch - Auto-Berechnung - Standard'
+'PLAYER - CRUD - Spieler erstellen'
+'PLAYER - FEATURE - Persönlichkeit auswählen + Tooltip'
+```
+
+---
+
+## Wie Tests aufgebaut sein müssen
+
+### Grundstruktur
+
+```javascript
+import { test, expect } from '@playwright/test';
+
+test.describe('Spielname', () => {
+  test.describe('Spieleranzahl oder Variante', () => {
+    test.beforeEach(async ({ page }) => {
+      // Setup: Spieler anlegen, Session erstellen
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+
+      // Spieler erstellen
+      const players = ['Spieler1', 'Spieler2', 'Spieler3'];
+      for (const name of players) {
+        await page.evaluate(async (playerName) => {
+          const id = crypto.randomUUID();
+          await fetch('/api/players', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, name: playerName, avatar: '🃏' }),
+          });
+        }, name);
+      }
+
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // Session erstellen
+      await page.click('text=＋ Neue Runde');
+      await page.fill('input[placeholder*="Freitagsrunde"]', 'Test Session');
+      await page.click('text=Spielname');
+
+      for (const name of players) {
+        await page.click(`text=${name}`);
+      }
+
+      await page.click('text=Runde starten');
+      await page.waitForLoadState('networkidle');
+    });
+
+    test('SPIEL - KATEGORIE - Szenario - Persönlichkeit', async ({ page }) => {
+      // 1. TTS Mock (für Commentary-Tests)
+      await page.evaluate(() => {
+        const originalSpeak = window.speechSynthesis?.speak;
+        if (originalSpeak) {
+          window.speechSynthesis.speak = function(utterance) {
+            setTimeout(() => utterance.dispatchEvent(new Event('end')), 5);
+            return originalSpeak.call(window.speechSynthesis, utterance);
+          };
+        }
+      });
+
+      // 2. Persönlichkeit setzen (für Commentary-Tests)
+      await page.evaluate(() => {
+        localStorage.setItem('tracker_commentator_personality', JSON.stringify('dramatic'));
+        localStorage.setItem('tracker_commentator_enabled', JSON.stringify(true));
+      });
+
+      // 3. Test-Schritte
+      await page.click('text=＋ Neues Spiel');
+      await page.waitForLoadState('networkidle');
+
+      // UI-Interaktionen
+      await page.click('text=Spieltyp');
+      await page.click('text=Spieler1');
+      await page.click('text=✓ Gewonnen');
+
+      // 4. Overlay schließen (wenn vorhanden)
+      await page.waitForTimeout(300);
+      const closeBtn = page.locator('button').filter({ hasText: 'Schließen' });
+      if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await closeBtn.click();
+        await page.waitForTimeout(300);
+      }
+
+      // 5. Assertions
+      await expect(page.locator('text=Spieltyp')).toBeVisible();
+      await expect(page.locator('text=Gewonnen')).toBeVisible();
+      await expect(page.locator('text=Spieler1')).toBeVisible();
+    });
+  });
+});
+```
+
+### Setup-Pattern
+
+**Spieler anlegen:**
+```javascript
+const players = ['Spieler1', 'Spieler2', 'Spieler3'];
+for (const name of players) {
+  await page.evaluate(async (playerName) => {
+    const id = crypto.randomUUID();
+    await fetch('/api/players', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, name: playerName, avatar: '🃏' }),
+    });
+  }, name);
+}
+```
+
+**Session erstellen:**
+```javascript
+await page.click('text=＋ Neue Runde');
+await page.fill('input[placeholder*="Freitagsrunde"]', 'Test Session');
+await page.click('text=Spielname');
+
+// Spieler auswählen
+for (const name of players) {
+  await page.click(`text=${name}`);
+}
+
+await page.click('text=Runde starten');
+await page.waitForLoadState('networkidle');
+```
+
+**Watten-Teams:**
+```javascript
+const team1 = ['Team1Spieler1', 'Team1Spieler2'];
+const team2 = ['Team2Spieler1', 'Team2Spieler2'];
+
+for (const name of team1) await page.click(`text=${name}`);
+for (const name of team2) await page.click(`text=${name}`);
+
+await page.click('text=13 Punkte');
+await page.click('text=Runde starten');
+```
+
+### Commentary-Pattern
+
+**TTS Mock:**
+```javascript
+await page.evaluate(() => {
+  const originalSpeak = window.speechSynthesis?.speak;
+  if (originalSpeak) {
+    window.speechSynthesis.speak = function(utterance) {
+      setTimeout(() => utterance.dispatchEvent(new Event('end')), 5);
+      return originalSpeak.call(window.speechSynthesis, utterance);
+    };
+  }
+});
+```
+
+**Persönlichkeit setzen:**
+```javascript
+await page.evaluate(() => {
+  localStorage.setItem('tracker_commentator_personality', JSON.stringify('dramatic'));
+  localStorage.setItem('tracker_commentator_enabled', JSON.stringify(true));
+});
+```
+
+**Overlay schließen:**
+```javascript
+await page.waitForTimeout(300);
+const overlayVisible = await page.locator('text=Kommentator').isVisible({ timeout: 1000 }).catch(() => false);
+if (overlayVisible) {
+  await page.click('text=Schließen');
+  await page.waitForTimeout(300);
+}
+```
 
 ---
 
@@ -96,47 +303,35 @@ Der Server erstellt die DB beim Start automatisch neu (mit leerem Schema).
 3. **Test grün machen** — debuggen bis er zuverlässig besteht
 4. **Dann erst den nächsten Test schreiben**
 
-### Einzelnen Test isolieren
+### Checkliste für neue Tests
 
-```bash
-# Nur Tests deren Name "Gespannt" enthält
-npm run test:e2e -- --grep "Gespannt"
+- [ ] Naming Convention folgt dem 4-Teiligen Schema
+- [ ] `beforeEach` erstellt saubere Testdaten (Spieler, Session)
+- [ ] Commentary-Tests: TTS Mock gesetzt
+- [ ] Commentary-Tests: Persönlichkeit gesetzt
+- [ ] Commentary-Tests: Overlay nach jedem POST geschlossen
+- [ ] Assertions prüfen UI-Elemente und Spielerdaten
+- [ ] Test isoliert ausführbar (nicht abhängig von anderen Tests)
+- [ ] `waitForLoadState('networkidle')` verwendet statt `waitForTimeout`
+- [ ] `getByText()` statt `text=` für Inhalte mit `+` oder `-`
+- [ ] `button.filter()` statt `text=` für Buttons
 
-# Nur eine Spec-Datei
-npm run test:e2e -- tests/specs/watten.spec.js
+---
 
-# Mit UI (empfohlen beim Entwickeln neuer Tests)
-npm run test:e2e:ui
-```
+## Typische Fallstricke
 
-### Beim Debuggen
-
-```bash
-# Debug-Modus: Browser öffnet sich, Schritt für Schritt
-npm run test:e2e:debug -- tests/specs/watten.spec.js
-
-# Frische DB wenn Zustand unklar
-npm run test:e2e:clean -- tests/specs/watten.spec.js
-```
-
-### Typische Fallstricke
-
-**Commentary-Overlays blockieren** — nach jedem `POST /rounds` oder `POST /games` kann ein Kommentator-Overlay erscheinen. Das Overlay rendert leicht verzögert nach `networkidle`, daher kurz warten und dann in einer Schleife schließen:
-```js
-const closeOverlay = async (page) => {
-  await page.waitForTimeout(300); // Overlay braucht einen Moment zum Rendern
-  for (let i = 0; i < 10; i++) {
-    const btn = page.locator('button').filter({ hasText: '✕ Schließen' });
-    if (await btn.isVisible()) { await btn.click(); await page.waitForTimeout(500); continue; }
-    const overlay = page.locator('div[style*="position: fixed"]').first();
-    if (await overlay.isVisible()) { await overlay.click({ force: true }); await page.waitForTimeout(400); continue; }
-    break;
-  }
-};
+**Commentary-Overlays blockieren** — nach jedem `POST /rounds` oder `POST /games` kann ein Kommentator-Overlay erscheinen. Das Overlay rendert leicht verzögert nach `networkidle`, daher kurz warten und dann schließen:
+```javascript
+await page.waitForTimeout(300);
+const closeBtn = page.locator('button').filter({ hasText: 'Schließen' });
+if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+  await closeBtn.click();
+  await page.waitForTimeout(300);
+}
 ```
 
 **`text=` Locator mit `+` oder `-` schlägt fehl** — Playwright interpretiert `+` und `-` in `text=`-Selektoren als CSS-Operatoren. Für Text der mit diesen Zeichen beginnt immer `getByText()` verwenden:
-```js
+```javascript
 // Schlägt fehl (CSS-Parsing-Problem):
 await expect(page.locator('text=+30 Punkte')).toBeVisible();
 await expect(page.locator('text=-40')).toBeVisible();
@@ -147,7 +342,7 @@ await expect(page.getByText('-40 Punkte').first()).toBeVisible();
 ```
 
 **Mehrdeutiger Text (Heading vs. Button)** — Wenn Heading und Button denselben Text enthalten (z.B. `<h3>Spiel eintragen</h3>` und `<button>✓ Spiel eintragen — 30 Punkte</button>`), trifft `page.click('text=Spiel eintragen')` das Heading, nicht den Button. Immer gezielt mit `button.filter()` selektieren:
-```js
+```javascript
 // Trifft ggf. das <h3>-Heading statt den Button:
 await page.click('text=Spiel eintragen');
 
@@ -156,7 +351,7 @@ await page.locator('button').filter({ hasText: 'Spiel eintragen' }).click();
 ```
 
 **Checkbox-Locator** — Parent-Traversal mit `locator('text=Label').locator('..').locator('input')` ist unzuverlässig. Stattdessen `getByRole` mit `name` verwenden:
-```js
+```javascript
 // Unzuverlässig:
 page.locator('text=Re').locator('..').locator('input[type="checkbox"]');
 
@@ -165,7 +360,7 @@ page.getByRole('checkbox', { name: 'Re' });
 ```
 
 **`waitForTimeout` vermeiden** — stattdessen auf konkrete UI-Elemente warten:
-```js
+```javascript
 // Schlecht:
 await page.waitForTimeout(1000);
 // Gut:
@@ -187,19 +382,17 @@ kill $(lsof -ti:3003,5173) 2>/dev/null; npm run test:e2e
 ```
 Ohne Neustart kann der Server noch den alten Code ausführen und Tests schlagen mit irreführenden Fehlern fehl.
 
-**API-Calls in Tests:** Für direkte API-Aufrufe (z.B. Spieler anlegen ohne UI) `request`-Fixtures verwenden statt `page.evaluate`:
-```js
-// Gut: request-Fixture (eigener HTTP-Client, kein Browser-Kontext)
-test("...", async ({ page, request }) => {
-  await request.post("http://localhost:3003/api/players", { data: { ... } });
-});
-
-// Alternativ: page.evaluate (läuft im Browser-Kontext, fetch-basiert)
+**API-Calls in Tests:** Für direkte API-Aufrufe (z.B. Spieler anlegen ohne UI) `page.evaluate` mit `fetch` verwenden:
+```javascript
 await page.evaluate(async (data) => {
-  await fetch("/api/players", { method: "POST", body: JSON.stringify(data), headers: { "Content-Type": "application/json" } });
+  await fetch("/api/players", {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" }
+  });
 }, data);
 ```
 
-**Commentary-Tests**: Die Kommentator-Tests (`wizard-commentary.spec.js`, `schafkopf-commentary.spec.js`) schließen das Overlay aktiv über den ✕-Button, weil TTS im Test-Browser nicht verfügbar ist und das Overlay sich daher nicht automatisch schließt.
+**Commentary-Tests**: Alle Kommentator-Tests schließen das Overlay aktiv über den ✕-Button, weil TTS im Test-Browser nicht verfügbar ist und das Overlay sich daher nicht automatisch schließt.
 
 **Parallelität**: Tests laufen mit `workers: 1` — sequenziell, keine parallelen Tests. Hintergrund: Alle Tests teilen dieselbe DB und denselben Server-Prozess.

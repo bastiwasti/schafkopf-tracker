@@ -51,10 +51,16 @@ export default function GameSessionContainer({
   HistoryCardComponent,
   RulesComponent,
   topSlot,
-  // Game-specific context forwarded to CRUD handlers
-  gameContext,
-  // Optional custom balance formatter (e.g. Punkte statt €)
-  formatBalance,
+   // Game-specific context forwarded to CRUD handlers
+   gameContext,
+   // Optional custom balance formatter (e.g. Punkte statt €)
+   formatBalance,
+   // Optional custom won counts calculator
+   wonCounts,
+   // Optional flag for lowest wins logic (e.g. Romme: lowest points = leader)
+   lowestWins,
+   // Optional callback for history updates (e.g. for won counts calculation)
+   onHistoryChange,
 }) {
   const { players } = session;
 
@@ -75,7 +81,10 @@ export default function GameSessionContainer({
   useEffect(() => {
     if (initialHistory !== undefined) return;
     if (fetchHistory) {
-      fetchHistory().then((data) => setHistory(data ?? []));
+      fetchHistory().then((data) => {
+        setHistory(data ?? []);
+        if (onHistoryChange) onHistoryChange(data ?? []);
+      });
     }
   }, [session.id]);
 
@@ -87,13 +96,21 @@ export default function GameSessionContainer({
     if (editingGame) {
       const updated = await onUpdateGame(editingGame.id, getForm(), gameContext);
       if (updated) {
-        setHistory((h) => h.map((g) => (g.id === updated.id ? updated : g)));
+        setHistory((h) => {
+          const newHistory = h.map((g) => (g.id === updated.id ? updated : g));
+          if (onHistoryChange) onHistoryChange(newHistory);
+          return newHistory;
+        });
         closeForm();
       }
     } else {
       const newGame = await onSubmitGame(getForm(), gameContext);
       if (newGame) {
-        setHistory((h) => [...(h ?? []), newGame]);
+        setHistory((h) => {
+          const newHistory = [...(h ?? []), newGame];
+          if (onHistoryChange) onHistoryChange(newHistory);
+          return newHistory;
+        });
         onSessionUpdated({ ...session, game_count: (session.game_count || 0) + 1 });
         closeForm();
         if (enabled && buildCommentary) setPendingCommentary(newGame);
@@ -110,9 +127,11 @@ export default function GameSessionContainer({
   const handleArchiveGame = async (gameId) => {
     const result = await onArchiveGame(gameId);
     if (result) {
-      setHistory((h) =>
-        h.map((g) => (g.id === result.id ? { ...g, ...result } : g))
-      );
+      setHistory((h) => {
+        const newHistory = h.map((g) => (g.id === result.id ? { ...g, ...result } : g));
+        if (onHistoryChange) onHistoryChange(newHistory);
+        return newHistory;
+      });
     }
   };
 
@@ -120,7 +139,11 @@ export default function GameSessionContainer({
     await onUndoGame(gameContext);
     const lastActive = [...activeHistory].pop();
     if (lastActive) {
-      setHistory((h) => h.filter((g) => g.id !== lastActive.id));
+      setHistory((h) => {
+        const newHistory = h.filter((g) => g.id !== lastActive.id);
+        if (onHistoryChange) onHistoryChange(newHistory);
+        return newHistory;
+      });
       onSessionUpdated({
         ...session,
         game_count: Math.max(0, (session.game_count || 0) - 1),
@@ -180,6 +203,8 @@ export default function GameSessionContainer({
         history={activeHistory}
         registeredPlayers={registeredPlayers}
         formatBalance={formatBalance}
+        wonCounts={wonCounts}
+        lowestWins={lowestWins}
       />
 
       <div style={styles.actions}>

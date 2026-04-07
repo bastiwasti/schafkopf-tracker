@@ -52,7 +52,7 @@ test.describe('Skat', () => {
   });
 
   // ── Test 1 ────────────────────────────────────────────────────────────────
-  test('Farbspiel eintragen: Herz mit 2 gewonnen', async ({ page }) => {
+  test('SKAT - GAME - Farbspiel - Herz mit 2 - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
 
     await page.click('text=Herz');
@@ -74,7 +74,7 @@ test.describe('Skat', () => {
   });
 
   // ── Test 2 ────────────────────────────────────────────────────────────────
-  test('Grand mit 1, Schneider: korrekte Punkteberechnung', async ({ page }) => {
+  test('SKAT - GAME - Grand - Mit Schneider - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
 
     await page.click('text=Grand');
@@ -98,7 +98,7 @@ test.describe('Skat', () => {
   });
 
   // ── Test 3 ────────────────────────────────────────────────────────────────
-  test('Null Ouvert Hand: fester Wert 59, eintragen', async ({ page }) => {
+  test('SKAT - GAME - Null Ouvert Hand - Fester 59 - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
 
     await page.locator('button').filter({ hasText: 'Ouvert Hand' }).click();
@@ -118,7 +118,7 @@ test.describe('Skat', () => {
   });
 
   // ── Test 4 ────────────────────────────────────────────────────────────────
-  test('Ramsch: Auto-Befüllung und Punkte-Verteilung', async ({ page }) => {
+  test('SKAT - GAME - Ramsch - Auto-Berechnung - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
     await page.locator('button').filter({ hasText: 'Ramsch' }).click();
 
@@ -147,7 +147,7 @@ test.describe('Skat', () => {
   });
 
   // ── Test 5 ────────────────────────────────────────────────────────────────
-  test('Re/Bock/Hirsch Abhängigkeitskette', async ({ page }) => {
+  test('SKAT - GAME - Kontra - Re/Bock/Hirsch Kette - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
 
     const reCheck     = page.getByRole('checkbox', { name: 'Re' });
@@ -206,7 +206,7 @@ test.describe('Skat 4-Spieler', () => {
   });
 
   // ── Test 6 ────────────────────────────────────────────────────────────────
-  test('4-Spieler: Wer-spielt-mit Selektor, Spiel eintragen, Auswahl wird gemerkt', async ({ page }) => {
+  test('SKAT - GAME - 4-Spieler - Wer-Spielt-Mit Selektor - Standard', async ({ page }) => {
     await page.click('text=＋ Neues Spiel');
 
     // "Wer spielt mit?" erscheint — erste 3 vorausgewählt

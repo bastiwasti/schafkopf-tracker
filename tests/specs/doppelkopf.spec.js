@@ -62,7 +62,7 @@ test.describe('Doppelkopf Spiel', () => {
     await page.waitForLoadState('networkidle', { timeout: 10000 });
   });
 
-  test('Normales Spiel eintragen und Balances prüfen', async ({ page }) => {
+  test('DOPPELKOPF - GAME - Normal - Gewonnen - Standard', async ({ page }) => {
     const sessionId = await createSessionViaApi(page);
     expect(sessionId).toBeTruthy();
 
@@ -101,7 +101,7 @@ test.describe('Doppelkopf Spiel', () => {
     await expect(page.locator('text=DK1').first()).toBeVisible();
   });
 
-  test('Solo-Spiel gewonnen — Spieler gewinnt von allen 3', async ({ page }) => {
+  test('DOPPELKOPF - GAME - Solo - Gewonnen - Standard', async ({ page }) => {
     const sessionId = await createSessionViaApi(page);
     expect(sessionId).toBeTruthy();
 
@@ -132,7 +132,7 @@ test.describe('Doppelkopf Spiel', () => {
     await expect(page.locator('text=Gewonnen').first()).toBeVisible();
   });
 
-  test('Doppelkopf Session über UI erstellen', async ({ page }) => {
+  test('DOPPELKOPF - SESSION - Erstellen - UI - Standard', async ({ page }) => {
     await page.click('text=＋ Neue Runde');
     await page.fill('input[placeholder*="Freitagsrunde"]', 'Meine DK Runde');
 
@@ -146,5 +146,38 @@ test.describe('Doppelkopf Spiel', () => {
     await page.waitForLoadState('networkidle', { timeout: 10000 });
 
     await expect(page.locator('text=Meine DK Runde').first()).toBeVisible();
+  });
+
+  test('DOPPELKOPF - GAME - Normal - Verloren mit Sonderpunkten - Standard', async ({ page }) => {
+    const sessionId = await createSessionViaApi(page);
+    expect(sessionId).toBeTruthy();
+
+    await page.goto('/');
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+
+    await page.click('text=Test Doppelkopf Session');
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+
+    await page.click('text=Neues Spiel');
+    await page.waitForTimeout(500);
+
+    await page.click('text=Normal');
+    await page.click('text=DK1');
+
+    await page.locator('button').filter({ hasText: 'DK2' }).first().click();
+
+    await page.click('text=✕ Verloren');
+
+    await page.click('text=Keine 90');
+
+    await page.locator('label').filter({ hasText: 'Kontra' }).locator('input').click();
+
+    await page.click('text=✓ Spiel eintragen');
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+
+    await closeOverlays(page);
+
+    await expect(page.locator('text=Normal').first()).toBeVisible();
+    await expect(page.locator('text=DK1').first()).toBeVisible();
   });
 });

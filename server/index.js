@@ -4,6 +4,7 @@ import gamesRouter from './routes/games.js';
 import playersRouter from './routes/players.js';
 import wizardRoundsRouter from './routes/wizard/rounds.js';
 import wattenGamesRouter from './routes/watten/games.js';
+import rommeRoundsRouter from './routes/romme/rounds.js';
 
 const app = express();
 app.use(express.json());
@@ -12,6 +13,7 @@ app.use('/api/players', playersRouter);
 app.use('/api/sessions/:id/games', gamesRouter);
 app.use('/api/sessions/:id/wizard-rounds', wizardRoundsRouter);
 app.use('/api/sessions/:id/watten', wattenGamesRouter);
+app.use('/api/sessions/:id/romme-rounds', rommeRoundsRouter);
 app.use('/api/sessions', sessionsRouter);
 
 const PORT = process.env.PORT ?? 3001;

@@ -436,6 +436,7 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
           </div>
         </>
       )}
+
       {(() => {
         const HintComponent = GAME_PLUGINS[gameType]?.SessionCreationHint;
         const playerCount = gameType === 'watten' ? team1Players.length + team2Players.length : selectedNames.length;

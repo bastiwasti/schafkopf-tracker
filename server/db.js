@@ -179,4 +179,24 @@ db.exec(`
   try { db.exec("ALTER TABLE games ADD COLUMN kontra_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch (e) {}
   try { db.exec("ALTER TABLE sessions ADD COLUMN doppelkopf_options TEXT DEFAULT '{}'"); } catch (e) {}
 
-  export default db;
+  // Romme tables
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS romme_rounds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+      seq INTEGER NOT NULL,
+      winner TEXT NOT NULL,
+      scores TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      archived_at TEXT
+    );
+  `);
+
+  // Create indexes for romme
+  db.exec('CREATE INDEX IF NOT EXISTS idx_romme_rounds_session ON romme_rounds(session_id);');
+
+  // Romme migrations for existing databases
+  try { db.exec('ALTER TABLE sessions ADD COLUMN romme_target_score INTEGER DEFAULT 500'); } catch (e) {}
+  try { db.exec("ALTER TABLE sessions ADD COLUMN romme_status TEXT"); } catch (e) {}
+
+export default db;

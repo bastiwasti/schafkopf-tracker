@@ -110,6 +110,7 @@ export default function SchafkopfSession({ session, registeredPlayers = [], onBa
       RulesComponent={plugin.RulesComponent}
       topSlot={<BockBar bock={bock} onBockChange={handleBockChange} />}
       gameContext={{ bock, stake, sessionOptions: typeof session.schafkopf_options === 'string' ? JSON.parse(session.schafkopf_options) : (session.schafkopf_options || {}) }}
+      formatBalance={plugin.formatBalance}
     />
   );
 }

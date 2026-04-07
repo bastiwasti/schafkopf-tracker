@@ -78,7 +78,8 @@
       "Bash(pkill -f \"PORT=3003\")",
       "Bash(lsof -ti:3003)",
       "Bash(xargs kill:*)",
-      "Bash(lsof -ti:5173)"
+      "Bash(lsof -ti:5173)",
+      "Bash(ls -la /home/vscode/schafkopf-tracker/src/games/*/)"
     ],
     "additionalDirectories": [
       "/home/vscode/schafkopf-tracker/tests/specs"

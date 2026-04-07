@@ -37,6 +37,7 @@ const schafkopfPlugin = createPlugin({
   RulesComponent: RulesBox,
   SessionComponent: SchafkopfSession,
   buildCommentary: buildFullCommentary,
+  formatBalance: (v) => `${v > 0 ? "+" : ""}${v.toFixed(2)} €`,
 });
 
 export default schafkopfPlugin;

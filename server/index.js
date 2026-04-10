@@ -22,7 +22,7 @@ app.use('/api/sessions', sessionsRouter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(join(__dirname, '../dist')));
-  app.get('*', (_req, res) => res.sendFile(join(__dirname, '../dist/index.html')));
+  app.get('/*path', (_req, res) => res.sendFile(join(__dirname, '../dist/index.html')));
 }
 
 const PORT = process.env.PORT ?? 3001;

@@ -20,6 +20,10 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run lint
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: npx playwright test
 
   build-and-push:
     needs: test

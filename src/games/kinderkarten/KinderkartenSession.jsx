@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GAME_PLUGINS } from "../index.js";
 import GameSessionContainer from "../shared/GameSessionContainer.jsx";
 import KinderkartenForm from "./KinderkartenForm.jsx";

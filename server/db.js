@@ -217,6 +217,6 @@ db.exec(`
   db.exec('CREATE INDEX IF NOT EXISTS idx_kinderkarten_rounds_session ON kinderkarten_rounds(session_id);');
 
   // Kinderkarten migrations for existing databases
-  try { db.exec("ALTER TABLE sessions ADD COLUMN kinderkarten_options TEXT DEFAULT '{}'"); } catch (e) {}
+  try { db.exec("ALTER TABLE sessions ADD COLUMN kinderkarten_options TEXT DEFAULT '{}'"); } catch { /* expected */ }
 
 export default db;

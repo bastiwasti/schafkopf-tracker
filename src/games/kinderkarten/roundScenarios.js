@@ -23,7 +23,7 @@ export const KINDERKARTEN_SCENARIOS = [
  * @param {object} prevBalances     - total scores BEFORE this round  { name: score }
  */
 export function analyzeKinderkartenScenario(round, players, history, balances, prevBalances) {
-  const { winners = [], trick_counts = {}, scores = {} } = round;
+  const { winners = [], trick_counts = {} } = round;
   const pl = Array.isArray(players) ? players : [];
   const hist = Array.isArray(history) ? history : [];
   const trickValues = Object.values(trick_counts);
@@ -112,7 +112,7 @@ export function analyzeKinderkartenScenario(round, players, history, balances, p
 }
 
 export function buildTemplateVars(round, players, history, balances) {
-  const { winners = [], trick_counts = {}, scores = {} } = round;
+  const { winners = [], trick_counts = {} } = round;
   const pl = Array.isArray(players) ? players : [];
   const hist = Array.isArray(history) ? history : [];
 

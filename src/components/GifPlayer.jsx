@@ -1,4 +1,3 @@
-import styles from "../components/styles.js";
 
 export default function GifPlayer({ gifUrl, onClose }) {
   if (!gifUrl) return null;

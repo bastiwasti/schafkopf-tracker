@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "../../components/styles.js";
 
-export default function RoundForm({ round, players, currentRound, maxRounds, predictions, tricks, onPredictionChange, onTricksChange, onSave, onCancel }) {
+export default function RoundForm({ round, players, currentRound, _maxRounds, predictions, tricks, onPredictionChange, onTricksChange, onSave, onCancel }) {
   const [localPredictions, setLocalPredictions] = useState({});
   const [localTricks, setLocalTricks] = useState({});
 
@@ -99,8 +99,6 @@ export default function RoundForm({ round, players, currentRound, maxRounds, pre
         </div>
 
         {players.map((p, idx) => {
-          const pred = localPredictions[p] ?? 0;
-          const act = localTricks[p] ?? 0;
           const score = scores[p] ?? 0;
           const avatarMap = {
             "Basti": "🃏",

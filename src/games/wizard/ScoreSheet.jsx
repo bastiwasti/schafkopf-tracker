@@ -8,16 +8,15 @@ import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
 import ErrorBoundary from "../../components/ErrorBoundary.jsx";
 import PlayerTooltip from "../../components/PlayerTooltip.jsx";
 
-export default function ScoreSheet({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
+export default function ScoreSheet({ session, registeredPlayers = [], _onBack, onSessionUpdated }) {
   const [showRules, setShowRules] = useState(false);
   const [showCommentatorSettings, setShowCommentatorSettings] = useState(false);
   const [pendingCommentary, setPendingCommentary] = useState(null);
-  const [editingRound, setEditingRound] = useState(null);
+  const [, setEditingRound] = useState(null);
   const { personality, voice, enabled, setPersonality, setVoice, setEnabled } = useCommentatorSettings();
-  const [predictions, setPredictions] = useState({});
-  const [tricks, setTricks] = useState({});
+  const [, setPredictions] = useState({});
+  const [, setTricks] = useState({});
   const [showEndSession, setShowEndSession] = useState(false);
-  const [selectedCell, setSelectedCell] = useState(null);
 
   // State für alle Runden-Zwischenstände
   const [roundsData, setRoundsData] = useState({});
@@ -233,7 +232,7 @@ export default function ScoreSheet({ session, registeredPlayers = [], onBack, on
   const currentRound = activeRounds.length + 1;
   const isSessionActive = currentRound <= maxRounds;
 
-  const handleRoundSaved = async (roundData) => {
+  const _handleRoundSaved = async (roundData) => {
     const currentHistory = Array.isArray(history) ? history : [];
     try {
       const res = await fetch(`/api/sessions/${session.id}/wizard-rounds`, {

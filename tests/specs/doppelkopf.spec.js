@@ -6,7 +6,7 @@ test.describe('Doppelkopf Spiel', () => {
   const closeOverlays = async (page) => {
     for (let i = 0; i < 15; i++) {
       const closeBtn = page.locator('button').filter({ hasText: '✕ Schließen' });
-      const commentaryOverlay = page.locator('div').filter({ hasText: '✕ Schließen' }).first();
+      const _commentaryOverlay = page.locator('div').filter({ hasText: '✕ Schließen' }).first();
 
       if (await closeBtn.isVisible()) {
         await closeBtn.click();

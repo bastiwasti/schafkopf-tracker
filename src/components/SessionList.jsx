@@ -70,7 +70,6 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   const [selectedNames, setSelectedNames] = useState([]);
   const [stake, setStake] = useState(GAME_PLUGINS[gameType]?.defaultStake ?? 0.50);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [skatVariant, setSkatVariant] = useState("skat");
   const [localPlayers, setLocalPlayers] = useState(registeredPlayers);
   const [team1Players, setTeam1Players] = useState([]);
   const [team2Players, setTeam2Players] = useState([]);
@@ -145,7 +144,7 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   const generateId = () => {
     try {
       return crypto.randomUUID();
-    } catch (e) {
+    } catch {
       return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
     }
   };

@@ -1,7 +1,7 @@
 import styles from "../../components/styles.js";
 import { useEffect } from 'react';
 
-export default function WattenRoundForm({ form, onFormChange, team1_players, team2_players, avatarMap = {}, isGespannt, team1_score, team2_score, targetScore, onSubmit, onCancel }) {
+export default function WattenRoundForm({ form, onFormChange, team1_players, team2_players, avatarMap = {}, isGespannt, team1_score, team2_score, targetScore, onSubmit, _onCancel }) {
   const handleTeamChange = (team) => {
     onFormChange({ ...form, winning_team: team });
   };

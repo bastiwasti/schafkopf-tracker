@@ -53,7 +53,6 @@ export function analyzeRoundScenario(round, players, totalRounds, prevTotalScore
 
   // --- total-score ranking change ---
   let overtaker = null;
-  let overtaken = null;
   let leaderGap = 0;
 
   if (totalScores && prevTotalScores) {
@@ -71,7 +70,6 @@ export function analyzeRoundScenario(round, players, totalRounds, prevTotalScore
       if (prevPos > newPos && newPos === 0) {
         // Someone took over the lead
         overtaker = p;
-        overtaken = prevRank[0];
         break;
       }
     }

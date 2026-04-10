@@ -41,7 +41,7 @@ function SonderpunkteSection({ label, value, fuchsMax = 2, karlchenDisabled, onC
   );
 }
 
-export default function GameForm({ form, onFormChange, players, stake, bock, soloValue = 3, onSubmit, onCancel, submitLabel }) {
+export default function GameForm({ form, onFormChange, players, stake, bock, soloValue = 3, onSubmit, _onCancel, submitLabel }) {
   const { spielwert: liveSpielwert } = resolveGame({ ...form, bock, players, stake, soloValue });
   const isSolo = form.type === "Solo";
 

@@ -75,13 +75,13 @@ db.exec(`
 `);
 
   // Migrations for existing databases
-  try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch (e) {}
-    try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch (e) {}
-    try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch (e) {}
-    try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch (e) {}
-    try { db.exec('ALTER TABLE sessions ADD COLUMN game_count INTEGER DEFAULT 0'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN archived_at TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE sessions ADD COLUMN wizard_status TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE games ADD COLUMN archived_at TEXT'); } catch { /* expected */ }
+    try { db.exec("ALTER TABLE players ADD COLUMN character_type TEXT DEFAULT 'dramatic'"); } catch { /* expected */ }
+    try { db.exec('ALTER TABLE players ADD COLUMN voice_name TEXT'); } catch { /* expected */ }
+    try { db.exec('ALTER TABLE wizard_rounds ADD COLUMN archived_at TEXT'); } catch { /* expected */ }
+    try { db.exec('ALTER TABLE sessions ADD COLUMN game_count INTEGER DEFAULT 0'); } catch { /* expected */ }
 
   // Skat tables
   db.exec(`
@@ -110,15 +110,15 @@ db.exec(`
   `);
 
   // Skat migrations for existing databases
-  try { db.exec('ALTER TABLE sessions ADD COLUMN game_variant TEXT DEFAULT \'skat_3er\''); } catch (e) {}
-  try { db.exec('ALTER TABLE sessions ADD COLUMN skat_bock_level INTEGER DEFAULT 1'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN game_variant TEXT DEFAULT \'skat_3er\''); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE sessions ADD COLUMN skat_bock_level INTEGER DEFAULT 1'); } catch { /* expected */ }
   // New skat_games columns for reworked logic
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN mit_ohne TEXT DEFAULT \'mit\''); } catch (e) {}
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN spitzen INTEGER DEFAULT 1'); } catch (e) {}
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN re BOOLEAN DEFAULT 0'); } catch (e) {}
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN hirsch BOOLEAN DEFAULT 0'); } catch (e) {}
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN ramsch_points TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE skat_games ADD COLUMN active_players TEXT'); } catch (e) {}
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN mit_ohne TEXT DEFAULT \'mit\''); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN spitzen INTEGER DEFAULT 1'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN re BOOLEAN DEFAULT 0'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN hirsch BOOLEAN DEFAULT 0'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN ramsch_points TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE skat_games ADD COLUMN active_players TEXT'); } catch { /* expected */ }
 
   // Create indexes for skat_games
   db.exec('CREATE INDEX IF NOT EXISTS idx_skat_games_session ON skat_games(session_id);');
@@ -162,22 +162,22 @@ db.exec(`
   db.exec('CREATE INDEX IF NOT EXISTS idx_watten_rounds_game ON watten_rounds(game_id);');
 
   // Watten migrations for existing databases
-  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_target_score INTEGER DEFAULT 15'); } catch (e) {}
-  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team1_players TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team2_players TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE watten_games ADD COLUMN is_completed BOOLEAN DEFAULT 0'); } catch (e) {}
-  try { db.exec('ALTER TABLE watten_games ADD COLUMN bommerl_team TEXT'); } catch (e) {}
-  try { db.exec('ALTER TABLE watten_rounds ADD COLUMN is_gegangen BOOLEAN DEFAULT 0'); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_target_score INTEGER DEFAULT 15'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team1_players TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE sessions ADD COLUMN watten_team2_players TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE watten_games ADD COLUMN is_completed BOOLEAN DEFAULT 0'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE watten_games ADD COLUMN bommerl_team TEXT'); } catch { /* expected */ }
+  try { db.exec('ALTER TABLE watten_rounds ADD COLUMN is_gegangen BOOLEAN DEFAULT 0'); } catch { /* expected */ }
 
   // Schafkopf optional game modes (Geier, Farbwenz)
-  try { db.exec("ALTER TABLE sessions ADD COLUMN schafkopf_options TEXT DEFAULT '{}'"); } catch (e) {}
+  try { db.exec("ALTER TABLE sessions ADD COLUMN schafkopf_options TEXT DEFAULT '{}'"); } catch { /* expected */ }
 
   // Doppelkopf game fields
-  try { db.exec('ALTER TABLE games ADD COLUMN kontra INTEGER NOT NULL DEFAULT 0'); } catch (e) {}
-  try { db.exec("ALTER TABLE games ADD COLUMN ansage TEXT"); } catch (e) {}
-  try { db.exec("ALTER TABLE games ADD COLUMN re_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch (e) {}
-  try { db.exec("ALTER TABLE games ADD COLUMN kontra_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch (e) {}
-  try { db.exec("ALTER TABLE sessions ADD COLUMN doppelkopf_options TEXT DEFAULT '{}'"); } catch (e) {}
+  try { db.exec('ALTER TABLE games ADD COLUMN kontra INTEGER NOT NULL DEFAULT 0'); } catch { /* expected */ }
+  try { db.exec("ALTER TABLE games ADD COLUMN ansage TEXT"); } catch { /* expected */ }
+  try { db.exec("ALTER TABLE games ADD COLUMN re_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch { /* expected */ }
+  try { db.exec("ALTER TABLE games ADD COLUMN kontra_sonderpunkte TEXT NOT NULL DEFAULT '{}'"); } catch { /* expected */ }
+  try { db.exec("ALTER TABLE sessions ADD COLUMN doppelkopf_options TEXT DEFAULT '{}'"); } catch { /* expected */ }
 
   // Romme tables
   db.exec(`
@@ -196,7 +196,7 @@ db.exec(`
   db.exec('CREATE INDEX IF NOT EXISTS idx_romme_rounds_session ON romme_rounds(session_id);');
 
   // Romme migrations for existing databases
-  try { db.exec('ALTER TABLE sessions ADD COLUMN romme_target_score INTEGER DEFAULT 500'); } catch (e) {}
-  try { db.exec("ALTER TABLE sessions ADD COLUMN romme_status TEXT"); } catch (e) {}
+  try { db.exec('ALTER TABLE sessions ADD COLUMN romme_target_score INTEGER DEFAULT 500'); } catch { /* expected */ }
+  try { db.exec("ALTER TABLE sessions ADD COLUMN romme_status TEXT"); } catch { /* expected */ }
 
 export default db;

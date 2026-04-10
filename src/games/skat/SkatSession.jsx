@@ -3,9 +3,8 @@ import { GAME_PLUGINS } from "../index.js";
 import GameSessionContainer from "../shared/GameSessionContainer.jsx";
 import { buildFullCommentary } from "./commentary.js";
 
-export default function SkatSession({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
+export default function SkatSession({ session, registeredPlayers = [], _onBack, onSessionUpdated }) {
   const plugin = GAME_PLUGINS[session.game_type];
-  const { players } = session;
   const [lastActivePlayers, setLastActivePlayers] = useState(null);
 
   const fetchHistory = async () => {

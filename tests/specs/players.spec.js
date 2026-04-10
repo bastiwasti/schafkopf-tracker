@@ -15,7 +15,8 @@ test.describe('Players', () => {
         await cancelButton.click();
         await page.waitForTimeout(500);
       }
-    } catch (e) {
+    } catch {
+      // element may not be visible, that's fine
     }
   });
 

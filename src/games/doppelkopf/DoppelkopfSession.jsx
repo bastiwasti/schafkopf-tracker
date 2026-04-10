@@ -3,7 +3,7 @@ import GameSessionContainer from "../shared/GameSessionContainer.jsx";
 import { GAME_PLUGINS } from "../index.js";
 import { buildFullCommentary } from "./commentary.js";
 
-export default function DoppelkopfSession({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
+export default function DoppelkopfSession({ session, registeredPlayers = [], _onBack, onSessionUpdated }) {
   const plugin = GAME_PLUGINS[session.game_type];
   const { history, bock, stake } = session;
   const { players } = session;

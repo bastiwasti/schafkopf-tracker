@@ -8,7 +8,7 @@ import CommentarySettingsPanel from "../../components/CommentarySettingsPanel.js
 import useCommentatorSettings from "../../hooks/useCommentatorSettings.js";
 import { buildWattenCommentary } from "./commentary.js";
 
-export default function WattenSession({ session, registeredPlayers = [], onBack, onSessionUpdated }) {
+export default function WattenSession({ session, registeredPlayers = [], _onBack, onSessionUpdated }) {
   const [showForm, setShowForm] = useState(false);
   const [rounds, setRounds] = useState([]);
   const [games, setGames] = useState([]);
@@ -36,11 +36,6 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
 
   const avatarMap = Object.fromEntries(registeredPlayers.map((p) => [p.name, p.avatar]));
 
-  useEffect(() => {
-    loadRounds();
-    loadGames();
-  }, [session.id]);
-
   const loadRounds = async () => {
     const res = await fetch(`/api/sessions/${session.id}/watten/rounds`);
     if (res.ok) {
@@ -56,6 +51,11 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
       setGames(loadedGames);
     }
   };
+
+  useEffect(() => {
+    loadRounds();
+    loadGames();
+  }, [session.id]);
 
   // Aktives Game und Runden berechnen
   const activeGame = games.active;
@@ -99,7 +99,7 @@ export default function WattenSession({ session, registeredPlayers = [], onBack,
     console.log('Watten Round form before send:', form);
 
     if (res.ok) {
-      const newRound = await res.json();
+      await res.json();
       setShowForm(false);
       setForm({ winning_team: 'team1', points: isGespannt ? 3 : 2, is_machine: false, is_spannt_played: false, is_gegangen: false, tricks_team1: 0, tricks_team2: 0 });
       onSessionUpdated({ ...session, game_count: (session.game_count || 0) + 1 });

@@ -1,4 +1,4 @@
-import { isNullType, isFarbGrandType } from "./logic.js";
+import { isNullType } from "./logic.js";
 
 export function analyzeGameScenario(game, players, balances) {
   const isRamsch = game.game_type === "Ramsch";

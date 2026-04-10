@@ -91,7 +91,6 @@ export function analyzeWattenScenario(data) {
   // ── Spielende-Szenarien (höchste Priorität) ─────────────────────────────
   if (gameJustCompleted) {
     const winnerTeam  = round.winning_team;
-    const winnerScore = winnerTeam === 'team1' ? team1_score : team2_score;
     const loserScore  = winnerTeam === 'team1' ? team2_score : team1_score;
     const maxDef      = calcMaxDeficit(activeGameRounds || [], winnerTeam);
 

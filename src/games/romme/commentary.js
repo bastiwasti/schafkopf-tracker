@@ -201,7 +201,7 @@ const SCENARIOS_BY_PERSONALITY = {
 };
 
 function getRommeScenario(round, balances, history, prevBalances) {
-  const { winner, scores } = round;
+  const { winner } = round;
   const players = Object.keys(balances);
 
   if (history.length === 0) {
@@ -295,7 +295,7 @@ export function buildRommeCommentary(round, history, personality = PERSONALITIES
       return { segments: [{ avatar: " ", name: "System", label: "Fehler", text: "Ungultige Rundendaten" }] };
     }
 
-    const { winner, scores } = round;
+    const { scores } = round;
     const players = Object.keys(scores || {});
 
     const balances = {};

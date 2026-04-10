@@ -1,7 +1,7 @@
 import styles from "../components/styles.js";
 
-export default function GameCard({ game, players, onEdit, onArchive }) {
-  const { game_type, declarer, partner, contra, won, schneider, schwarz, laufende, kontra_multiplier, points, seq } = game;
+export default function GameCard({ game, _players, onEdit, onArchive }) {
+  const { game_type, contra, won, schneider, schwarz, laufende, kontra_multiplier, points, seq } = game;
 
   const getGameTypeLabel = () => {
     if (game_type === "null") return "Null-Spiel";
@@ -96,6 +96,7 @@ export default function GameCard({ game, players, onEdit, onArchive }) {
               >
                 📦
               </button>
+            )}
           </div>
         </div>
       </div>

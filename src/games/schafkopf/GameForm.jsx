@@ -1,7 +1,7 @@
 import { getEnabledGameTypes, calcSpielwert } from "./logic.js";
 import styles from "../../components/styles.js";
 
-export default function GameForm({ form, onFormChange, players, stake, bock, sessionOptions = {}, onSubmit, onCancel, submitLabel }) {
+export default function GameForm({ form, onFormChange, players, stake, bock, sessionOptions = {}, onSubmit, _onCancel, submitLabel }) {
   const isSolo = form.type !== "Sauspiel";
   const liveSpielwert = calcSpielwert({ ...form, stake, bock });
   const gameTypes = getEnabledGameTypes(sessionOptions);

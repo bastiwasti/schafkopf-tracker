@@ -613,9 +613,6 @@ export function buildFullCommentary(game, regPlayers = [], personality = "dramat
 
   if (isRamsch) {
     // Ramsch: alle Spieler können reagieren (alle betroffen)
-    const rp = typeof game.ramsch_points === "string"
-      ? JSON.parse(game.ramsch_points)
-      : (game.ramsch_points ?? {});
     const reactors = activeRegPlayers.filter(() => Math.random() < chance * 0.5);
     reactors.slice(0, 2).forEach(reg => {
       const charType = reg.character_type ?? "pessimist";

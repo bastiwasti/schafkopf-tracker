@@ -1,5 +1,5 @@
 import SharedHistoryCard from "../shared/HistoryCard.jsx";
-import { calculatePlayerPoints, isNullType, isFarbGrandType, isRamsch } from "./logic.js";
+import { calculatePlayerPoints, isFarbGrandType, isRamsch } from "./logic.js";
 
 export default function GameCard({ game, players, onEdit, onArchive }) {
   const { game_type, declarer, won, schneider, schwarz, mit_ohne, spitzen, re, bock, hirsch, points } = game;

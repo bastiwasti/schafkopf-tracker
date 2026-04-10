@@ -20,11 +20,9 @@ export function analyzeGameScenario(game, players, balances) {
   const isSolo = game.type !== "Sauspiel";
   const isTout = game.type.includes("Tout");
   const isWenz = game.type === "Wenz";
-  const isSchneider = game.schneider;
   const isSchwarz = game.schwarz;
   const hasKlopfer = game.klopfer?.length > 0;
   const bock = game.bock ?? 1;
-  const laufende = game.laufende ?? 0;
   const spielwert = game.spielwert ?? 0;
   
   const winMargin = game.changes[game.player] ?? 0;

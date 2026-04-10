@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PERSONALITIES } from "../games/shared/commentary.js";
 import styles from "./styles.js";
+import GifPlayer from "./GifPlayer.jsx";
 
 function PlayerBadge({ seg, registeredPlayers, commentatorVoice }) {
   const [tooltip, setTooltip] = useState(null);
@@ -57,17 +58,25 @@ const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
 export default function CommentaryOverlay({ game, registeredPlayers, commentatorPersonality, commentatorVoice, onClose, buildFn, sessionHistory }) {
   const personality = PERSONALITIES[commentatorPersonality] ?? PERSONALITIES.dramatic;
+  const [showGif, setShowGif] = useState(true);
 
-  const segments = useMemo(() => {
+  const { segments, gameType, gifUrl } = useMemo(() => {
+    const noGif = null;
     try {
       if (!game) {
         console.error('[CommentaryOverlay] No game data provided');
-        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Spieldaten vorhanden" }];
+        return {
+          segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Spieldaten vorhanden" }],
+          gameType: null, gifUrl: noGif,
+        };
       }
 
       if (!buildFn || typeof buildFn !== 'function') {
         console.error('[CommentaryOverlay] buildFn is not a function:', buildFn);
-        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentarfunktion verfügbar" }];
+        return {
+          segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Keine Kommentarfunktion verfügbar" }],
+          gameType: null, gifUrl: noGif,
+        };
       }
 
       console.log('[CommentaryOverlay] Building commentary for game:', game);
@@ -75,13 +84,47 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
 
       if (!result || !result.segments || !Array.isArray(result.segments)) {
         console.error('[CommentaryOverlay] Invalid commentary result:', result);
-        return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars" }];
+        return {
+          segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars" }],
+          gameType: null, gifUrl: noGif,
+        };
       }
 
-      return result.segments;
+      const detectedGameType = result.segments[0]?.gameType ?? null;
+      const scenario = result.scenario ?? 'mixed';
+
+      let gifUrl = noGif;
+      if (detectedGameType === 'kinderkarten') {
+        const gifCounts = {
+          first_round: 5,
+          perfect_round: 10,
+          worst_player: 10,
+          negative_run: 10,
+          comeback: 10,
+          leader_change: 10,
+          tie_game: 5,
+          close_game: 5,
+          mixed: 5,
+          dominant_lead: 0,
+        };
+        const count = gifCounts[scenario] ?? 5;
+        if (count > 0) {
+          const num = Math.floor(Math.random() * count) + 1;
+          gifUrl = `/gifs/kinderkarten/${commentatorPersonality}/${scenario}/gif${num}.gif`;
+        }
+      }
+
+      return {
+        segments: result.segments,
+        gameType: detectedGameType,
+        gifUrl,
+      };
     } catch (error) {
       console.error('[CommentaryOverlay] Error building commentary:', error);
-      return [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars: " + error.message }];
+      return {
+        segments: [{ avatar: "⚠️", name: "System", label: "Fehler", text: "Fehler beim Erstellen des Kommentars: " + error.message }],
+        gameType: null, gifUrl: noGif,
+      };
     }
   }, [game, registeredPlayers, commentatorPersonality, buildFn, sessionHistory]);
 
@@ -99,19 +142,20 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
 
     const speakSegment = (index) => {
       if (index >= segments.length) {
-        onClose();
+        handleClose();
         return;
       }
 
       const seg = segments[index];
       if (!seg) {
-        onClose();
+        handleClose();
         return;
       }
 
       const isPlayer = index > 0;
 
-      const utter = new SpeechSynthesisUtterance(seg.text);
+      const spokenText = seg.text.replace(/\p{Extended_Pictographic}/gu, '').replace(/\s+/g, ' ').trim();
+      const utter = new SpeechSynthesisUtterance(spokenText);
 
       if (isPlayer && seg.name) {
         const playerVoice = playerVoiceMap[seg.name];
@@ -148,9 +192,16 @@ export default function CommentaryOverlay({ game, registeredPlayers, commentator
     onClose();
   };
 
+  const handleCloseGif = () => {
+    setShowGif(false);
+  };
+
   return (
     <div style={styles.commentaryOverlay} onClick={handleClose}>
       <div style={styles.commentaryCard} onClick={(e) => e.stopPropagation()}>
+
+         {/* GIF (für Kindergarten) */}
+        {gifUrl && showGif && <GifPlayer gifUrl={gifUrl} onClose={handleClose} />}
 
         {/* Speaker header (commentator) */}
         <div style={styles.commentarySpeaker}>

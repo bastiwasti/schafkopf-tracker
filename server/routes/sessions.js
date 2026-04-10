@@ -62,11 +62,12 @@ router.get('/', (_req, res) => {
     doppelkopf_options: JSON.parse(s.doppelkopf_options || '{}'),
     watten_team1_players: s.watten_team1_players ? JSON.parse(s.watten_team1_players) : null,
     watten_team2_players: s.watten_team2_players ? JSON.parse(s.watten_team2_players) : null,
+    kinderkarten_options: JSON.parse(s.kinderkarten_options || '{}'),
   })));
 });
 
 router.post('/', (req, res) => {
-  const { id, name, game_type = 'schafkopf', players, stake = 0.50, schafkopf_options, doppelkopf_options, target_score, team1_players, team2_players } = req.body;
+  const { id, name, game_type = 'schafkopf', players, stake = 0.50, schafkopf_options, doppelkopf_options, target_score, team1_players, team2_players, kinderkarten_options } = req.body;
   if (!id || !name || !Array.isArray(players)) {
     return res.status(400).json({ error: 'id, name and players are required' });
   }
@@ -94,6 +95,11 @@ router.post('/', (req, res) => {
       INSERT INTO sessions (id, name, game_type, players, stake, bock, doppelkopf_options, created_at)
       VALUES (?, ?, ?, ?, ?, 1, ?, ?)
     `).run(id, name, game_type, JSON.stringify(players), stake, JSON.stringify(doppelkopf_options || {}), new Date().toISOString());
+  } else if (game_type === 'kinderkarten') {
+    db.prepare(`
+      INSERT INTO sessions (id, name, game_type, players, stake, bock, kinderkarten_options, created_at)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+    `).run(id, name, game_type, JSON.stringify(players), stake, JSON.stringify(kinderkarten_options || { with_trump: true, ober_trump: false, unter_trump: false, card_count: 5 }), new Date().toISOString());
   } else {
     db.prepare(`
       INSERT INTO sessions (id, name, game_type, players, stake, bock, schafkopf_options, created_at)
@@ -107,6 +113,7 @@ router.post('/', (req, res) => {
     players: JSON.parse(session.players),
     schafkopf_options: JSON.parse(session.schafkopf_options || '{}'),
     doppelkopf_options: JSON.parse(session.doppelkopf_options || '{}'),
+    kinderkarten_options: JSON.parse(session.kinderkarten_options || '{}'),
   });
 });
 
@@ -125,6 +132,7 @@ router.get('/:id', (req, res) => {
     doppelkopf_options: JSON.parse(session.doppelkopf_options || '{}'),
     watten_team1_players: session.watten_team1_players ? JSON.parse(session.watten_team1_players) : null,
     watten_team2_players: session.watten_team2_players ? JSON.parse(session.watten_team2_players) : null,
+    kinderkarten_options: JSON.parse(session.kinderkarten_options || '{}'),
     history: games.map(g => ({
       ...g,
       won: Boolean(g.won),

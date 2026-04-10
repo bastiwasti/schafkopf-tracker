@@ -199,4 +199,24 @@ db.exec(`
   try { db.exec('ALTER TABLE sessions ADD COLUMN romme_target_score INTEGER DEFAULT 500'); } catch { /* expected */ }
   try { db.exec("ALTER TABLE sessions ADD COLUMN romme_status TEXT"); } catch { /* expected */ }
 
+  // Kinderkarten tables
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS kinderkarten_rounds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+      seq INTEGER NOT NULL,
+      winners TEXT NOT NULL,
+      trick_counts TEXT NOT NULL,
+      scores TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      archived_at TEXT
+    );
+  `);
+
+  // Create indexes for kinderkarten
+  db.exec('CREATE INDEX IF NOT EXISTS idx_kinderkarten_rounds_session ON kinderkarten_rounds(session_id);');
+
+  // Kinderkarten migrations for existing databases
+  try { db.exec("ALTER TABLE sessions ADD COLUMN kinderkarten_options TEXT DEFAULT '{}'"); } catch (e) {}
+
 export default db;

@@ -74,6 +74,12 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
   const [team1Players, setTeam1Players] = useState([]);
   const [team2Players, setTeam2Players] = useState([]);
   const [targetScore, setTargetScore] = useState(13);
+  const [kinderkartenOptions, setKinderkartenOptions] = useState({
+    with_trump: true,
+    ober_trump: false,
+    unter_trump: false,
+    card_count: 5
+  });
   const [hasUserModifiedName, setHasUserModifiedName] = useState(false);
 
   const formatDateForSession = () => {
@@ -180,6 +186,8 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
       body.schafkopf_options = schafkopfOptions;
     } else if (gameType === "doppelkopf") {
       body.doppelkopf_options = { solo_value: doppelkopfSoloValue };
+    } else if (gameType === "kinderkarten") {
+      body.kinderkarten_options = kinderkartenOptions;
     }
 
     try {
@@ -194,6 +202,7 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
         setGameType("schafkopf");
         setSchafkopfOptions({ geier: false, farbwenz: false });
         setDoppelkopfSoloValue(3);
+        setKinderkartenOptions({ with_trump: true, ober_trump: false, unter_trump: false, card_count: 5 });
         setStake(GAME_PLUGINS.schafkopf?.defaultStake ?? 0.50);
         setSelectedNames([]);
         setTeam1Players([]);
@@ -234,19 +243,20 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
              key={p.id}
               style={{ ...styles.chip, ...(gameType === p.id ? styles.chipActive : {}) }}
               onClick={() => {
-                setGameType(p.id);
-                setStake(p.defaultStake ?? GAME_PLUGINS.schafkopf?.defaultStake ?? 0.50);
-                setSchafkopfOptions({ geier: false, farbwenz: false });
-                if (p.id === 'watten') {
-                  setTeam1Players([]);
-                  setTeam2Players([]);
-                  setSelectedNames([]);
-                } else {
-                  setSelectedNames([]);
-                  setTeam1Players([]);
-                  setTeam2Players([]);
-                }
-              }}
+                 setGameType(p.id);
+                 setStake(p.defaultStake ?? GAME_PLUGINS.schafkopf?.defaultStake ?? 0.50);
+                 setSchafkopfOptions({ geier: false, farbwenz: false });
+                 setKinderkartenOptions({ with_trump: true, ober_trump: false, unter_trump: false, card_count: 5 });
+                 if (p.id === 'watten') {
+                   setTeam1Players([]);
+                   setTeam2Players([]);
+                   setSelectedNames([]);
+                 } else {
+                   setSelectedNames([]);
+                   setTeam1Players([]);
+                   setTeam2Players([]);
+                 }
+               }}
            >{p.label}</button>
            ))}
          </div>
@@ -286,6 +296,49 @@ function NewSessionForm({ registeredPlayers, onCreated, onPlayersChanged }) {
             <button style={styles.btnSmall} onClick={() => setDoppelkopfSoloValue(v => Math.max(1, v - 1))}>−</button>
             <span style={{ fontWeight: 600, minWidth: 24, textAlign: "center" }}>{doppelkopfSoloValue}</span>
             <button style={styles.btnSmall} onClick={() => setDoppelkopfSoloValue(v => v + 1)}>+</button>
+          </div>
+        </div>
+      )}
+
+      {gameType === 'kinderkarten' && (
+        <div style={{ margin: "8px 0 4px", display: "flex", flexDirection: "column", gap: 12, padding: "12px", background: "#fdf6e3", borderRadius: 8, border: "1px solid #d4c49a" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <label style={styles.checkLabel}>
+              <input
+                type="checkbox"
+                checked={kinderkartenOptions.with_trump}
+                onChange={(e) => setKinderkartenOptions((o) => ({ ...o, with_trump: e.target.checked }))}
+              />
+              <span style={styles.checkText}>Mit Trumpf</span>
+            </label>
+            <label style={styles.checkLabel}>
+              <input
+                type="checkbox"
+                checked={kinderkartenOptions.ober_trump}
+                onChange={(e) => setKinderkartenOptions((o) => ({ ...o, ober_trump: e.target.checked }))}
+              />
+              <span style={styles.checkText}>Ober Trumpf</span>
+            </label>
+            <label style={styles.checkLabel}>
+              <input
+                type="checkbox"
+                checked={kinderkartenOptions.unter_trump}
+                onChange={(e) => setKinderkartenOptions((o) => ({ ...o, unter_trump: e.target.checked }))}
+              />
+              <span style={styles.checkText}>Unter Trumpf</span>
+            </label>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>Karten pro Spieler:</span>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(count => (
+              <button
+                key={count}
+                style={{ ...styles.chip, ...(kinderkartenOptions.card_count === count ? styles.chipActive : {}) }}
+                onClick={() => setKinderkartenOptions((o) => ({ ...o, card_count: count }))}
+              >
+                {count}
+              </button>
+            ))}
           </div>
         </div>
       )}

@@ -27,6 +27,7 @@ import styles from "../../components/styles.js";
  * @param {Component} HistoryCardComponent - Karten-Darstellung eines Spiels
  * @param {Component} [RulesComponent]- optional Regelwerk-Overlay
  * @param {JSX} [topSlot]             - optional — z.B. BockBar, wird über Scoreboard gerendert
+ * @param {JSX} [middleSlot]         - optional — wird zwischen Scoreboard und Actions gerendert
  * @param {object} [gameContext]      - game-spezifische Daten (bock, stake, etc.)
  */
 export default function GameSessionContainer({
@@ -51,16 +52,17 @@ export default function GameSessionContainer({
   _HistoryCardComponent,
   RulesComponent,
   topSlot,
-   // Game-specific context forwarded to CRUD handlers
-   gameContext,
-   // Optional custom balance formatter (e.g. Punkte statt €)
-   formatBalance,
-   // Optional custom won counts calculator
-   wonCounts,
-   // Optional flag for lowest wins logic (e.g. Romme: lowest points = leader)
-   lowestWins,
-   // Optional callback for history updates (e.g. for won counts calculation)
-   onHistoryChange,
+  middleSlot,
+    // Game-specific context forwarded to CRUD handlers
+    gameContext,
+    // Optional custom balance formatter (e.g. Punkte statt €)
+    formatBalance,
+    // Optional custom won counts calculator
+    wonCounts,
+    // Optional flag for lowest wins logic (e.g. Romme: lowest points = leader)
+    lowestWins,
+    // Optional callback for history updates (e.g. for won counts calculation)
+    onHistoryChange,
 }) {
   const { players } = session;
 
@@ -206,6 +208,8 @@ export default function GameSessionContainer({
         wonCounts={wonCounts}
         lowestWins={lowestWins}
       />
+
+      {middleSlot}
 
       <div style={styles.actions}>
         <button style={styles.btnPrimary} onClick={toggleForm}>

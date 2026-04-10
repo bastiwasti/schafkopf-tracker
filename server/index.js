@@ -7,6 +7,7 @@ import playersRouter from './routes/players.js';
 import wizardRoundsRouter from './routes/wizard/rounds.js';
 import wattenGamesRouter from './routes/watten/games.js';
 import rommeRoundsRouter from './routes/romme/rounds.js';
+import kinderkartenRoundsRouter from './routes/kinderkarten/rounds.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,6 +19,7 @@ app.use('/api/sessions/:id/games', gamesRouter);
 app.use('/api/sessions/:id/wizard-rounds', wizardRoundsRouter);
 app.use('/api/sessions/:id/watten', wattenGamesRouter);
 app.use('/api/sessions/:id/romme-rounds', rommeRoundsRouter);
+app.use('/api/sessions/:id/kinderkarten-rounds', kinderkartenRoundsRouter);
 app.use('/api/sessions', sessionsRouter);
 
 if (process.env.NODE_ENV === 'production') {

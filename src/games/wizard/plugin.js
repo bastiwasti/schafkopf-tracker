@@ -1,6 +1,7 @@
 import { getRoundCount, calcBalances, makeDefaultRound } from "./logic.js";
 import ScoreSheet from "./ScoreSheet.jsx";
 import RulesBox from "./RulesBox.jsx";
+import { buildWizardCommentary } from "./commentary.js";
 import { createPlugin } from "../shared/createPlugin.js";
 
 const wizardPlugin = createPlugin({
@@ -15,6 +16,7 @@ const wizardPlugin = createPlugin({
   calcBalances,
   RulesComponent: RulesBox,
   SessionComponent: ScoreSheet,
+  buildCommentary: buildWizardCommentary,
   getSessionMeta: (s) => `${s.game_count} ${s.game_count === 1 ? "Runde" : "Runden"}`,
 });
 

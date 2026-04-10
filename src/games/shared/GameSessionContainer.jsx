@@ -48,8 +48,8 @@ export default function GameSessionContainer({
   calcBalances,
   buildCommentary,
   // Components
-  _FormComponent,
-  _HistoryCardComponent,
+  FormComponent,
+  HistoryCardComponent,
   RulesComponent,
   topSlot,
   middleSlot,

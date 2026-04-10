@@ -12,13 +12,12 @@ dist
 dist-ssr
 *.local
 
-# SQLite databases (dev/test werden nicht getrackt, nur prod)
-data/tracker-dev.db
-data/tracker-dev.db-shm
-data/tracker-dev.db-wal
-data/tracker-test.db
-data/tracker-test.db-shm
-data/tracker-test.db-wal
+# SQLite databases (keine DB-Dateien tracken)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.db-journal
+data/*.backup*
 
 # Playwright
 playwright-report/

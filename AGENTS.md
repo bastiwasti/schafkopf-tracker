@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf, Wizard und Watten.
+Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf, Doppelkopf, Skat, Wizard, Watten, Romme und Kinderkarten.
 
 ## Architecture
 
@@ -14,82 +14,70 @@ Web-App für Kartenspielrunden mit Plugin-Architektur. Unterstützt Schafkopf, W
 - **Database**: SQLite mit WAL-Modus, 3 separate DBs (prod/dev/test)
 - **Communication**: Frontend → REST API → SQLite ← Backend
 
-## Environment Separation (CRITICAL)
+## Environment Separation
 
 | Environment | URL | Port | Database | Purpose |
 |-------------|-----|------|-----------|---------|
-| **Local** | localhost:5173 | 3001 | tracker-dev.db | Entwicklung |
-| **Dev** | dev.schafkopf.eventig.app | 3001 | tracker-dev.db | Feature-Tests |
-| **Prod** | schafkopf.eventig.app | 3002 | tracker.db | Echte Spiele |
+| **Lokal** | localhost:5173 | 3001 | tracker-dev.db | Entwicklung auf Dev-VM |
+| **Prod** | schafkopf.eventig.app | 3002 | tracker.db | Echte Spiele (Docker) |
 
-**CRITICAL:**
-- Dev und Prod teilen sich **denselben `dist/`-Ordner** (Build-Artifacts)
-- Dev und Prod haben **separate Datenbanken**
-- Beide laufen aus **demselben Verzeichnis** (`/home/vscode/schafkopf-tracker`)
-- **NIE auf Prod testen** — nur Dev verwenden
-- **NIE `npm run dev` und PM2 gleichzeitig auf Port 3001 laufen lassen** → Führt zu Datenbank-Mixup
+**KRITISCH:**
+- Prod läuft in einem **Docker Container** auf docker-host (192.168.178.160)
+- Deployment ist **vollautomatisch** via GitHub Actions + Watchtower
+- **NIE direkt auf docker-host eingreifen** außer bei Notfällen
+- Entwicklung findet ausschließlich auf der **Dev-VM (192.168.178.192)** statt
 
 ## Deployment
 
-**Server:** VM mit PM2 Process Manager
-**Nginx:** Reverse Proxy für statische Files und API
-**SSL:** Certbot auto-renewal
-
-**Deployment-Schritte (wir sind bereits auf der VM):**
-```bash
-# Frontend bauen und Server neustarten
-npm run build
-pm2 restart schafkopf-dev   # für Dev-Deployment
-# pm2 restart schafkopf-prod  # nur nach expliziter Anfrage!
+**Vollautomatische Pipeline:**
+```
+git push  →  GitHub Actions (lint + E2E)  →  ghcr.io  →  Watchtower  →  schafkopf.eventig.app
 ```
 
-**PM2-Konfiguration:** `ecosystem.config.cjs` (muss .cjs sein wegen `"type": "module"` in package.json)
-
-**PM2-Kommandos:**
+**Pre-Push Hook** (lokal konfiguriert in `.git/hooks/pre-push`):
 ```bash
-pm2 list                          # Status prüfen
-pm2 logs schafkopf-dev          # Dev Logs
-pm2 logs schafkopf-prod         # Prod Logs
-pm2 restart schafkopf-dev        # Dev neustarten
-pm2 restart schafkopf-prod       # Prod neustarten
-pm2 monit                        # Monitoring
+npm test   # läuft lint + alle E2E Tests vor jedem Push
 ```
 
-**Datenbank-Operationen:**
-```bash
-# Dev-Datenbank zurücksetzen
-rm -f data/tracker-dev.db*
-pm2 restart schafkopf-dev
+Der Push wird abgebrochen wenn Tests fehlschlagen — CI sollte damit nie mehr fehlschlagen.
 
-# Prod-Daten in Dev kopieren (zum Testen mit echten Daten)
-pm2 stop schafkopf-dev
-cp data/tracker.db* data/tracker-dev.db*
-pm2 start schafkopf-dev
+**Deploy-Status prüfen:**
+```bash
+# GitHub Actions
+# github.com/bastiwasti/schafkopf-tracker/actions
+
+# Watchtower-Logs
+ssh sebastian@192.168.178.160 "docker logs watchtower --tail 50"
+
+# Manueller Deploy (Notfall)
+ssh sebastian@192.168.178.160 "cd /opt/apps/schafkopf-tracker && docker compose pull && docker compose up -d --force-recreate"
 ```
+
+Siehe `docs/deployment.md` für vollständige Deployment-Dokumentation.
 
 ## Testing
 
-**E2E-Testing (Playwright):**
+**Alle Tests ausführen (lint + E2E):**
 ```bash
-npm run test:e2e              # Tests laufen lassen
-npm run test:e2e:clean        # Mit sauberer Test-DB
-npm run test:e2e:ui           # Mit UI
-npm run test:e2e:debug        # Debug-Modus
+npm test
 ```
 
-**Testing Best Practices:**
-1. Immer zuerst auf Dev testen
-2. `npm run test:e2e` vor Commits laufen lassen
-3. `npm run test:e2e:clean` für frische Datenbank
-4. Browser-Console auf Fehler prüfen während Tests
+**Nur E2E Tests (ohne Lint):**
+```bash
+npm run test:e2e
+npm run test:e2e:clean    # Mit frischer Test-DB
+npm run test:e2e:ui       # Mit interaktivem UI
+npm run test:e2e:debug    # Debug-Modus
+```
+
+**Einzelne Tests:**
+```bash
+npm run test:e2e -- --grep "Testname"
+npm run test:e2e -- tests/specs/schafkopf.spec.js
+```
 
 **Neue Tests implementieren — WICHTIG:**
-- **Immer einen Test nach dem anderen.** Auch wenn 9 Tests geplant sind: erst Test 1 schreiben und grün machen, dann Test 2 usw.
-- Einzelnen Test isoliert ausführen:
-  ```bash
-  npm run test:e2e -- --grep "Testname"
-  npm run test:e2e -- tests/specs/watten.spec.js
-  ```
+- **Immer einen Test nach dem anderen.** Erst Test schreiben, grün machen, dann nächsten.
 - Commentary-Overlays nach jeder Runde schließen bevor der Test weiterläuft
 - Siehe `docs/testing.md` für vollständigen Implementierungs-Workflow
 
@@ -98,81 +86,48 @@ npm run test:e2e:debug        # Debug-Modus
 ```
 schafkopf-tracker/
 ├── server/                 # Express Backend
-│   ├── index.js           # Main entry point
+│   ├── index.js           # Main entry point (0.0.0.0, statische Files in Prod)
 │   ├── db.js              # SQLite Schema & Migrationen
 │   └── routes/            # API Endpoints
-│       ├── sessions.js     # Runden-Endpunkte
-│       ├── games.js        # Schafkopf-Spiele
-│       ├── players.js      # Spieler-Endpunkte
-│       ├── wizard/
-│       │   └── rounds.js  # Wizard-Runden
-│       └── watten/
-│           └── games.js   # Watten-Runden & Games
+│       ├── sessions.js
+│       ├── games.js        # Schafkopf & Doppelkopf
+│       ├── players.js
+│       ├── wizard/rounds.js
+│       ├── watten/games.js
+│       ├── romme/rounds.js
+│       ├── kinderkarten/rounds.js
+│       └── skat/          # Skat-Endpunkte
 ├── src/                   # React Frontend
 │   ├── App.jsx            # View Router
 │   ├── components/        # Shared UI Komponenten
 │   ├── games/            # Game Plugins
-│   │   ├── schafkopf/    # Schafkopf Plugin
-│   │   ├── wizard/       # Wizard Plugin
-│   │   └── watten/       # Watten Plugin
+│   │   ├── schafkopf/
+│   │   ├── doppelkopf/
+│   │   ├── skat/
+│   │   ├── wizard/
+│   │   ├── watten/
+│   │   ├── romme/
+│   │   ├── kinderkarten/
+│   │   └── shared/        # GameSessionContainer (generischer Container)
 │   └── hooks/            # React Hooks
 ├── data/                 # SQLite Datenbanken
-│   ├── tracker.db        # Production (echte Spiele, git-tracked)
-│   ├── tracker-dev.db    # Development (Testing, nicht git-tracked)
-│   └── tracker-test.db   # E2E Tests (Auto-Reset, nicht git-tracked)
-├── ecosystem.config.cjs  # PM2 Prozess-Konfiguration
+│   ├── tracker.db        # Production (Docker Volume, nicht lokal)
+│   ├── tracker-dev.db    # Development (git-ignored)
+│   └── tracker-test.db   # E2E Tests (auto-reset, git-ignored)
+├── Dockerfile            # Multi-Stage Build (node:22-alpine)
+├── .github/workflows/
+│   └── ci.yml            # CI/CD Pipeline
 ├── tests/                # Playwright E2E Tests
 └── docs/                 # Vollständige Dokumentation
 ```
 
 ## Plugin Architecture
 
-Alle Spiellogik ist plugin-basiert in `src/games/`:
+Alle Spiellogik ist plugin-basiert in `src/games/`. Neues Spiel hinzufügen: `docs/NEW_GAME_IMPLEMENTATION_GUIDE.md` lesen.
 
-**Schafkopf Plugin:** `src/games/schafkopf/plugin.js`
-- Vollständige Spiellogik, UI, Kommentator
-- Live Score-Berechnung
-- Bockrunden, Klopfer Support
-
-**Wizard Plugin:** `src/games/wizard/plugin.js`
-- Vorhersage-basiertes Spiel mit Phasen
-- Automatische Score-Berechnung
-- Live Kommentator-System
-
-**Watten Plugin:** `src/games/watten/plugin.js`
-- Bayerisches 4-Spieler-Kartenspiel (2 Teams à 2 Spieler)
-- Team-basiertes Scoring mit Zielwert (13 oder 15 Punkte)
-- Gespannt-Modus, Maschine, Gegangen
-- Bommerl (verlorene Spiele) pro Team
-- Live Kommentator-System (`src/games/watten/commentary.js`)
+Der generische `GameSessionContainer` (`src/games/shared/`) übernimmt History, Form-State, Commentary und Rules-Toggle. Spiel-spezifische Logik kommt als Props (Wizard und Watten nutzen ihn **nicht** — sie haben eigene UIs).
 
 ## Key Patterns
-
-### Session-Erstellung für verschiedene Spieltypen
-
-**WICHTIG:**
-- Watten benötigt Team-Konfiguration (Team 1 und Team 2, je 2 Spieler)
-- Andere Spiele (Schafkopf, Wizard, Skat, etc.) benötigen nur Spieler-Auswahl
-- Bei Spielart-Wechsel müssen die entsprechenden States zurückgesetzt werden
-
-**Beispiel:**
-```javascript
-onClick={() => {
-  setGameType(p.id);
-  setStake(p.defaultStake);
-  if (p.id === 'watten') {
-    // Watten-spezifische States zurücksetzen
-    setTeam1Players([]);
-    setTeam2Players([]);
-    setSelectedNames([]);
-  } else {
-    // Nicht-Watten-spezifische States zurücksetzen
-    setSelectedNames([]);
-    setTeam1Players([]);
-    setTeam2Players([]);
-  }
-}}
-```
 
 ### Neue Features implementieren
 
@@ -180,37 +135,29 @@ onClick={() => {
    - Nur Frontend? → React Components editieren
    - Nur Backend? → Express Routes editieren
    - Beide? → Beide Layer editieren
-   - DB-Änderung? → `server/db.js` mit Migrationen updaten
+   - DB-Änderung? → `server/db.js` mit Migrationen updaten (immer `try/catch` für `ALTER TABLE`)
 
 2. **Implement changes:**
    - Bestehenden Code-Style folgen
    - Inline Styles aus `src/components/styles.js` verwenden
-   - Proper Error Handling hinzufügen
 
 3. **Lokal testen:**
    ```bash
    npm run dev
-   # Im Browser testen unter localhost:5173
+   # Browser: localhost:5173
    ```
 
-4. **E2E Tests laufen lassen:**
+4. **Tests laufen lassen:**
    ```bash
-   npm run test:e2e
+   npm test
    ```
 
-5. **Auf Dev deployen (wir sind bereits auf der VM):**
+5. **Push (Pre-Push Hook läuft Tests automatisch):**
    ```bash
-   npm run build
-   pm2 restart schafkopf-dev
-   ```
-
-6. **Auf Dev verifizieren:**
-   - Testen unter dev.schafkopf.eventig.app
-   - PM2 Logs prüfen: `pm2 logs schafkopf-dev`
-
-7. **Auf Prod deployen (nach Dev-Verifizierung):**
-   ```bash
-   # Auf VM: pm2 restart schafkopf-prod
+   git add .
+   git commit -m "feat: beschreibung"
+   git push origin master
+   # → GitHub Actions baut Docker Image → Watchtower deployed
    ```
 
 ### Code Standards
@@ -218,10 +165,9 @@ onClick={() => {
 - Inline Styles aus `src/components/styles.js` verwenden
 - React Hooks Patterns folgen
 - async/await für API-Calls
-- Proper Error Handling hinzufügen
+- Datenbank-Migrationen backward-kompatibel halten (`try { ALTER TABLE } catch { /* expected */ }`)
 - E2E Tests für neue Features schreiben
-- Datenbank-Migrationen backward-kompatibel halten
-- **Git-Operationen**: Der Agent führt niemals Commits selbst durch. Commits und Pushes müssen vom User explizit angefordert werden
+- **Git-Operationen**: Commits nur nach expliziter Anfrage des Users
 
 ## Commands
 
@@ -231,82 +177,48 @@ npm install                      # Dependencies installieren
 npm run dev                      # Local dev (Vite :5173 + Express :3001)
 npm run dev:clean                # Mit sauberer Dev-DB
 
-# Build
-npm run build                    # Frontend bauen
-
 # Testing
-npm run test:e2e                # E2E Tests laufen lassen
-npm run test:e2e:clean          # Mit sauberer Test-DB
-npm run test:e2e:ui             # Mit UI
-npm run test:e2e:debug          # Debug-Modus
+npm test                         # Lint + alle E2E Tests (Standard)
+npm run test:e2e                 # Nur E2E Tests
+npm run test:e2e:clean           # Mit frischer Test-DB
+npm run test:e2e:ui              # Mit UI
+npm run test:e2e:debug           # Debug-Modus
 
-# Server (Production)
-NODE_ENV=production PORT=3002 node server/index.js
+# Lint
+npm run lint                     # ESLint prüfen
+
+# Build (nur für Docker, nicht manuell nötig)
+npm run build                    # Vite Frontend bauen
 ```
 
 ## Database Schema
 
-Siehe `docs/architecture.md` für Details:
-
-- **sessions** - Game rounds mit Spielern (inkl. watten_team1_players, watten_team2_players, watten_target_score)
+- **sessions** - Game rounds mit Spielern und Spieltyp
 - **players** - Registrierte Spieler mit Avataren/Charakteren
-- **games** - Schafkopf Spiele mit Scores
+- **games** - Schafkopf/Doppelkopf Spiele mit Scores
 - **wizard_rounds** - Wizard Vorhersagen/Stiche/Scores
-- **watten_games** - Watten Spiele (je Session mehrere Spiele möglich, Bommerl-Tracking)
-- **watten_rounds** - Einzelne Watten-Runden innerhalb eines Spiels
+- **watten_games** / **watten_rounds** - Watten Spiele und Runden
+- **skat_games** - Skat Spiele
+- **romme_rounds** - Romme Runden
+- **kinderkarten_rounds** - Kinderkarten Runden
+
+Siehe `docs/architecture.md` für vollständiges Schema.
 
 ## API Reference
 
-Siehe `docs/api.md` für vollständige API-Dokumentation:
+Siehe `docs/api.md` für vollständige API-Dokumentation.
 
-**Sessions:**
-- `GET /api/sessions` - Alle Sessions auflisten
-- `POST /api/sessions` - Neue Session erstellen
-- `GET /api/sessions/:id` - Session abrufen
-- `PATCH /api/sessions/:id` - Session aktualisieren
-- `DELETE /api/sessions/:id` - Session löschen
+**Sessions:** `GET/POST /api/sessions`, `GET/PATCH/DELETE /api/sessions/:id`
 
-**Schafkopf Games:**
-- `GET /api/sessions/:id/games` - Spiele auflisten
-- `POST /api/sessions/:id/games` - Spiel erstellen
-- `PATCH /api/sessions/:id/games/:gameId` - Spiel bearbeiten
-- `DELETE /api/sessions/:id/games/last` - Letztes Spiel löschen
+**Spiel-Endpunkte:**
+- `/api/sessions/:id/games` — Schafkopf/Doppelkopf
+- `/api/sessions/:id/wizard-rounds` — Wizard
+- `/api/sessions/:id/watten` — Watten
+- `/api/sessions/:id/skat-games` — Skat
+- `/api/sessions/:id/romme-rounds` — Romme
+- `/api/sessions/:id/kinderkarten-rounds` — Kinderkarten
 
-**Wizard Rounds:**
-- `GET /api/sessions/:id/wizard-rounds` - Runden auflisten
-- `POST /api/sessions/:id/wizard-rounds` - Runde erstellen
-- `PATCH /api/sessions/:id/wizard-rounds/:roundId` - Runde bearbeiten
-- `DELETE /api/sessions/:id/wizard-rounds/last` - Letzte Runde löschen
-
-**Watten:**
-- `GET /api/sessions/:id/watten/rounds` - Runden auflisten (gruppiert nach Game)
-- `POST /api/sessions/:id/watten/rounds` - Neue Runde eintragen
-- `DELETE /api/sessions/:id/watten/rounds/last` - Letzte Runde rückgängig
-- `GET /api/sessions/:id/watten/games` - Spiele auflisten (aktiv + abgeschlossen)
-- `POST /api/sessions/:id/watten/games` - Neues Spiel starten
-- `DELETE /api/sessions/:id/watten/games/last` - Letztes Spiel löschen
-
-**Players:**
-- `GET /api/players` - Alle Spieler auflisten
-- `POST /api/players` - Spieler erstellen
-- `PATCH /api/players/:id` - Spieler aktualisieren
-- `DELETE /api/players/:id` - Spieler löschen
-
-## Game Logic Reference
-
-**Schafkopf Scoring:**
-Siehe `docs/game-logic.md` für vollständige Regeln
-
-**Wizard Scoring:**
-- Korrekte Vorhersage: `20 + (stiche * 10)`
-- Falsche Vorhersage: `-(|differenz| * 10)`
-
-**Watten Scoring:**
-- Grundpunkte: 2 pro Runde
-- Gespannt (Team ≥ Ziel-2): automatisch 3 Punkte
-- Maschine (alle 3 Kritischen): spezielle Markierung
-- Gegangen: Markierung für aufgegebene Runde
-- Zielwert: 13 oder 15 Punkte (konfigurierbar)
+**Players:** `GET/POST /api/players`, `PATCH/DELETE /api/players/:id`
 
 ## Commentary System
 
@@ -315,50 +227,26 @@ Siehe `docs/commentary.md` für:
 - 10 Spieler-Charakter-Typen mit je 15 Szenarien
 - TTS Integration mit Web Speech API
 - Template-basierte Kommentar-Generierung
-- Watten-Kommentator: 17 Szenarien × 4 Persönlichkeiten × 3 Varianten = 204 Templates
 
 ## Troubleshooting
 
-**Dev und Prod zeigen gleiche Daten:**
-- PM2 Status prüfen: `pm2 list`
-- Datenbank-Dateien prüfen: `ls -lah data/`
-- Server neustarten: `pm2 restart schafkopf-dev schafkopf-prod`
-- Browser-Cache löschen: `Ctrl + Shift + R`
-- **Systemd-Dienst prüfen!** Es existierte ein `schafkopf-backend.service` der ohne PORT-Env lief und Port 3001 blockierte → `sudo systemctl status schafkopf-backend` prüfen, ggf. deaktivieren
+**Prod zeigt alten Stand nach Push:**
+1. GitHub Actions prüfen: `github.com/bastiwasti/schafkopf-tracker/actions`
+2. Watchtower-Logs: `ssh sebastian@192.168.178.160 "docker logs watchtower --tail 50"`
+3. Manuell deployen: `ssh sebastian@192.168.178.160 "cd /opt/apps/schafkopf-tracker && docker compose pull && docker compose up -d --force-recreate"`
+4. Browser-Cache: `Ctrl + Shift + R`
 
-**⚠️ PM2 Prozesse nicht aktualisiert (kritisch!):**
-- Symptom: Code-Änderungen werden nicht sichtbar nach `pm2 restart`
-- Ursache: Alte PM2-Prozesse laufen noch, binden den Port
-- Lösung: Doppelte Prozesse löschen, neu starten
-- Siehe `docs/deployment.md` → "Doppelte Prozesse auf Port 3001 vermeiden" für Details
-
-**Doppelte PM2-Prozesse auf Port 3001:**
+**API antwortet nicht (Prod):**
 ```bash
-# Prüfen ob mehrere Prozesse auf Port 3001
-lsof -i :3001 | grep LISTEN
-ss -tlnp | grep 3001
-
-# Doppelte PM2-Einträge löschen
-pm2 delete <alte_id>
-pm2 delete <weitere_alte_id>
-
-# PM2 Dev neu starten
-pm2 start ecosystem.config.cjs --only schafkopf-dev
-
-# Verifizieren
-pm2 list              # Nur EIN schafkopf-dev
-curl http://localhost:3001/api/sessions | head  # Dev-Daten (nicht Prod!)
+ssh sebastian@192.168.178.160 "docker logs schafkopf-tracker --tail 50"
+ssh sebastian@192.168.178.160 "docker ps | grep schafkopf"
 ```
 
-**API antwortet nicht:**
-- PM2 Logs prüfen: `pm2 logs schafkopf-dev`
-- Port-Verfügbarkeit prüfen: `ss -tlnp | grep 3001`
-- API direkt testen: `curl http://localhost:3001/api/sessions`
-
-**Build-Probleme:**
-- Cache löschen: `rm -rf node_modules/.vite`
-- Neu installieren: `npm install`
-- package.json Scripts prüfen
+**Build-Probleme lokal:**
+```bash
+rm -rf node_modules/.vite
+npm install
+```
 
 ## Complete Documentation
 
@@ -368,8 +256,8 @@ curl http://localhost:3001/api/sessions | head  # Dev-Daten (nicht Prod!)
 - **[Commentary](./docs/commentary.md)** - Kommentator-System, Persönlichkeiten, TTS
 - **[Frontend](./docs/frontend.md)** - Komponentenübersicht, UI-Struktur
 - **[Testing](./docs/testing.md)** - E2E-Test-Setup, Spec-Dateien, Playwright-Konfiguration
-- **[Deployment](./docs/deployment.md)** - Hosting, Deployment-Prozess, CI/CD
-- **[Dev/Prod Separation](./docs/dev-prod-separation.md)** - Umgebungs-Setup und Trennung
+- **[Deployment](./docs/deployment.md)** - Docker, GitHub Actions, Watchtower, Cloudflare
+- **[New Game Guide](./docs/NEW_GAME_IMPLEMENTATION_GUIDE.md)** - Neues Spiel hinzufügen
 
 ## Tech Stack
 
@@ -377,18 +265,18 @@ curl http://localhost:3001/api/sessions | head  # Dev-Daten (nicht Prod!)
 - **Backend:** Express 5, Node.js
 - **Database:** SQLite 3 (better-sqlite3)
 - **Styling:** Inline Styles (kein CSS-Framework)
-- **Testing:** Playwright E2E
+- **Testing:** Playwright E2E + ESLint
+- **CI/CD:** GitHub Actions → ghcr.io → Watchtower
+- **Hosting:** Docker auf Proxmox VM, Cloudflare Tunnel, Traefik
 - **Language:** JavaScript (ES Modules)
 
 ## Session Start Checklist
 
 Als Agent beim Session-Start:
 
-1. ✅ Aktuelle Arbeitsdirectory bestätigen (`pwd`)
-2. ✅ Environment prüfen (`NODE_ENV`)
-3. ✅ PM2 Status prüfen (`pm2 list`)
-4. ✅ Dafür sorgen, dass auf Dev gearbeitet wird, nicht Prod
-5. ✅ E2E Tests vor Deployments laufen lassen
-6. ✅ Build vor Deployment ausführen
-7. ✅ Deploy auf Dev verifizieren, erst dann Prod
-8. ✅ Fehler und Learnings dokumentieren
+1. ✅ Arbeitsverzeichnis bestätigen (`pwd` → `/home/sebastian/projects/schafkopf-tracker`)
+2. ✅ Lokal entwickeln auf Dev-VM (192.168.178.192) — nie direkt auf docker-host
+3. ✅ `npm test` vor Commits laufen lassen
+4. ✅ DB-Migrationen backward-kompatibel halten
+5. ✅ Neue Features: E2E Test schreiben
+6. ✅ Commits nur nach expliziter Anfrage des Users

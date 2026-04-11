@@ -9,7 +9,10 @@ E2E-Tests mit [Playwright](https://playwright.dev/). Alle Tests laufen gegen ein
 ## Ausführen
 
 ```bash
-# Alle Tests
+# Standard: Lint + alle E2E Tests (identisch mit CI und pre-push Hook)
+npm test
+
+# Nur E2E Tests (ohne Lint)
 npm run test:e2e
 
 # Mit frischer Test-DB (empfohlen wenn Tests seltsam verhalten)
@@ -25,6 +28,8 @@ npm run test:e2e:debug
 npm run test:e2e -- --grep "Testname"
 npm run test:e2e -- tests/specs/schafkopf.spec.js
 ```
+
+> **Hinweis:** Ein git pre-push Hook führt `npm test` automatisch vor jedem `git push` aus. Schlägt er fehl, wird der Push abgebrochen — CI-Fehler durch lokale Fehler werden damit verhindert.
 
 ---
 

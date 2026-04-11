@@ -12,19 +12,21 @@ Schafkopf Tracker ist eine Web-App zum Erfassen und Auswerten von Kartenspielrun
 | [game-logic.md](./game-logic.md) | Spielregeln, Wertberechnung, Plugin-System |
 | [commentary.md](./commentary.md) | Kommentator-System, Persönlichkeiten, TTS |
 | [frontend.md](./frontend.md) | Komponentenübersicht & UI-Struktur |
-| [deployment.md](./deployment.md) | Hosting, Deployment-Prozess, CI/CD |
+| [deployment.md](./deployment.md) | Docker, GitHub Actions, Watchtower, Cloudflare Tunnel |
+| [testing.md](./testing.md) | E2E-Test-Setup, Playwright, Spec-Dateien, CI-Integration |
 
 ---
 
 ## Umgebungen
 
-| | Lokal (dev) | Dev | Prod |
-|---|---|---|---|
-| URL | localhost:5173 | dev.schafkopf.eventig.app | schafkopf.eventig.app |
-| DB | `tracker-dev.db` | `tracker-dev.db` | `tracker.db` |
-| Zweck | Entwicklung | Feature-Tests | Echte Spielstände |
+| | Lokal | Prod |
+|---|---|---|
+| URL | localhost:5173 | schafkopf.eventig.app |
+| DB | `tracker-dev.db` | `tracker.db` (Docker Volume) |
+| Zweck | Entwicklung | Echte Spielstände |
+| Hosting | Dev-VM (192.168.178.192) | Docker auf docker-host (192.168.178.160) |
 
-> **Regel:** Neue Features werden ausschließlich auf Dev getestet. Prod enthält nur echte Spielstände — nie Testdaten eintragen.
+> **Deployment:** `git push` → GitHub Actions (lint + E2E) → Docker Image → Watchtower → Prod. Vollautomatisch, kein manueller Eingriff nötig.
 
 ---
 

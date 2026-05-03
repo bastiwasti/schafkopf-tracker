@@ -22,6 +22,10 @@ app.use('/api/sessions/:id/romme-rounds', rommeRoundsRouter);
 app.use('/api/sessions/:id/kinderkarten-rounds', kinderkartenRoundsRouter);
 app.use('/api/sessions', sessionsRouter);
 
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: process.env.npm_package_version ?? 'unknown' });
+});
+
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(join(__dirname, '../dist')));
   app.get('/*path', (_req, res) => res.sendFile(join(__dirname, '../dist/index.html')));

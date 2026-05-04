@@ -1,0 +1,3188 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "eslint.config.js",
+      "file_type": "code",
+      "source_file": "eslint.config.js",
+      "source_location": "L1",
+      "id": "eslint_config_js",
+      "community": 22,
+      "norm_label": "eslint.config.js"
+    },
+    {
+      "label": "playwright.config.js",
+      "file_type": "code",
+      "source_file": "playwright.config.js",
+      "source_location": "L1",
+      "id": "playwright_config_js",
+      "community": 23,
+      "norm_label": "playwright.config.js"
+    },
+    {
+      "label": "db.js",
+      "file_type": "code",
+      "source_file": "server/db.js",
+      "source_location": "L1",
+      "id": "server_db_js",
+      "community": 24,
+      "norm_label": "db.js"
+    },
+    {
+      "label": "index.js",
+      "file_type": "code",
+      "source_file": "server/index.js",
+      "source_location": "L1",
+      "id": "server_index_js",
+      "community": 25,
+      "norm_label": "index.js"
+    },
+    {
+      "label": "skat.js",
+      "file_type": "code",
+      "source_file": "server/routes/games/skat.js",
+      "source_location": "L1",
+      "id": "server_routes_games_skat_js",
+      "community": 11,
+      "norm_label": "skat.js"
+    },
+    {
+      "label": "calculateSkatPoints()",
+      "file_type": "code",
+      "source_file": "server/routes/games/skat.js",
+      "source_location": "L16",
+      "id": "games_skat_calculateskatpoints",
+      "community": 11,
+      "norm_label": "calculateskatpoints()"
+    },
+    {
+      "label": "getNextSeq()",
+      "file_type": "code",
+      "source_file": "server/routes/games/skat.js",
+      "source_location": "L29",
+      "id": "games_skat_getnextseq",
+      "community": 11,
+      "norm_label": "getnextseq()"
+    },
+    {
+      "label": "games.js",
+      "file_type": "code",
+      "source_file": "server/routes/games.js",
+      "source_location": "L1",
+      "id": "server_routes_games_js",
+      "community": 16,
+      "norm_label": "games.js"
+    },
+    {
+      "label": "parseGame()",
+      "file_type": "code",
+      "source_file": "server/routes/games.js",
+      "source_location": "L6",
+      "id": "routes_games_parsegame",
+      "community": 16,
+      "norm_label": "parsegame()"
+    },
+    {
+      "label": "rounds.js",
+      "file_type": "code",
+      "source_file": "server/routes/kinderkarten/rounds.js",
+      "source_location": "L1",
+      "id": "server_routes_kinderkarten_rounds_js",
+      "community": 17,
+      "norm_label": "rounds.js"
+    },
+    {
+      "label": "parseRound()",
+      "file_type": "code",
+      "source_file": "server/routes/kinderkarten/rounds.js",
+      "source_location": "L6",
+      "id": "kinderkarten_rounds_parseround",
+      "community": 17,
+      "norm_label": "parseround()"
+    },
+    {
+      "label": "players.js",
+      "file_type": "code",
+      "source_file": "server/routes/players.js",
+      "source_location": "L1",
+      "id": "server_routes_players_js",
+      "community": 26,
+      "norm_label": "players.js"
+    },
+    {
+      "label": "rounds.js",
+      "file_type": "code",
+      "source_file": "server/routes/romme/rounds.js",
+      "source_location": "L1",
+      "id": "server_routes_romme_rounds_js",
+      "community": 18,
+      "norm_label": "rounds.js"
+    },
+    {
+      "label": "parseRound()",
+      "file_type": "code",
+      "source_file": "server/routes/romme/rounds.js",
+      "source_location": "L6",
+      "id": "romme_rounds_parseround",
+      "community": 18,
+      "norm_label": "parseround()"
+    },
+    {
+      "label": "sessions.js",
+      "file_type": "code",
+      "source_file": "server/routes/sessions.js",
+      "source_location": "L1",
+      "id": "server_routes_sessions_js",
+      "community": 27,
+      "norm_label": "sessions.js"
+    },
+    {
+      "label": "games.js",
+      "file_type": "code",
+      "source_file": "server/routes/watten/games.js",
+      "source_location": "L1",
+      "id": "server_routes_watten_games_js",
+      "community": 12,
+      "norm_label": "games.js"
+    },
+    {
+      "label": "parseRound()",
+      "file_type": "code",
+      "source_file": "server/routes/watten/games.js",
+      "source_location": "L6",
+      "id": "watten_games_parseround",
+      "community": 12,
+      "norm_label": "parseround()"
+    },
+    {
+      "label": "parseGame()",
+      "file_type": "code",
+      "source_file": "server/routes/watten/games.js",
+      "source_location": "L17",
+      "id": "watten_games_parsegame",
+      "community": 12,
+      "norm_label": "parsegame()"
+    },
+    {
+      "label": "rounds.js",
+      "file_type": "code",
+      "source_file": "server/routes/wizard/rounds.js",
+      "source_location": "L1",
+      "id": "server_routes_wizard_rounds_js",
+      "community": 13,
+      "norm_label": "rounds.js"
+    },
+    {
+      "label": "calculateWizardScores()",
+      "file_type": "code",
+      "source_file": "server/routes/wizard/rounds.js",
+      "source_location": "L7",
+      "id": "wizard_rounds_calculatewizardscores",
+      "community": 13,
+      "norm_label": "calculatewizardscores()"
+    },
+    {
+      "label": "parseRound()",
+      "file_type": "code",
+      "source_file": "server/routes/wizard/rounds.js",
+      "source_location": "L17",
+      "id": "wizard_rounds_parseround",
+      "community": 13,
+      "norm_label": "parseround()"
+    },
+    {
+      "label": "styles.js",
+      "file_type": "code",
+      "source_file": "src/components/styles.js",
+      "source_location": "L1",
+      "id": "src_components_styles_js",
+      "community": 28,
+      "norm_label": "styles.js"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_doppelkopf_commentary_js",
+      "community": 0,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "buildCommentatorText()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L144",
+      "id": "doppelkopf_commentary_buildcommentatortext",
+      "community": 0,
+      "norm_label": "buildcommentatortext()"
+    },
+    {
+      "label": "buildKontraNote()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L152",
+      "id": "doppelkopf_commentary_buildkontranote",
+      "community": 0,
+      "norm_label": "buildkontranote()"
+    },
+    {
+      "label": "buildSonderNote()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L170",
+      "id": "doppelkopf_commentary_buildsondernote",
+      "community": 0,
+      "norm_label": "buildsondernote()"
+    },
+    {
+      "label": "buildFullCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L196",
+      "id": "doppelkopf_commentary_buildfullcommentary",
+      "community": 0,
+      "norm_label": "buildfullcommentary()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L1",
+      "id": "src_games_doppelkopf_logic_js",
+      "community": 5,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "ansagePts()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L6",
+      "id": "doppelkopf_logic_ansagepts",
+      "community": 5,
+      "norm_label": "ansagepts()"
+    },
+    {
+      "label": "countSonder()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L10",
+      "id": "doppelkopf_logic_countsonder",
+      "community": 5,
+      "norm_label": "countsonder()"
+    },
+    {
+      "label": "calcSpielwert()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L14",
+      "id": "doppelkopf_logic_calcspielwert",
+      "community": 5,
+      "norm_label": "calcspielwert()"
+    },
+    {
+      "label": "resolveGame()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L19",
+      "id": "doppelkopf_logic_resolvegame",
+      "community": 5,
+      "norm_label": "resolvegame()"
+    },
+    {
+      "label": "calcBalances()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L45",
+      "id": "doppelkopf_logic_calcbalances",
+      "community": 5,
+      "norm_label": "calcbalances()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_doppelkopf_plugin_js",
+      "community": 5,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "makeDefaultForm()",
+      "file_type": "code",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L9",
+      "id": "doppelkopf_plugin_makedefaultform",
+      "community": 5,
+      "norm_label": "makedefaultform()"
+    },
+    {
+      "label": "index.js",
+      "file_type": "code",
+      "source_file": "src/games/index.js",
+      "source_location": "L1",
+      "id": "src_games_index_js",
+      "community": 29,
+      "norm_label": "index.js"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_kinderkarten_commentary_js",
+      "community": 1,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "buildKinderkartenCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L278",
+      "id": "kinderkarten_commentary_buildkinderkartencommentary",
+      "community": 1,
+      "norm_label": "buildkinderkartencommentary()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L1",
+      "id": "src_games_kinderkarten_logic_js",
+      "community": 9,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "calculateBalances()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L1",
+      "id": "kinderkarten_logic_calculatebalances",
+      "community": 9,
+      "norm_label": "calculatebalances()"
+    },
+    {
+      "label": "determineWinners()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L18",
+      "id": "kinderkarten_logic_determinewinners",
+      "community": 9,
+      "norm_label": "determinewinners()"
+    },
+    {
+      "label": "calculateScores()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L25",
+      "id": "kinderkarten_logic_calculatescores",
+      "community": 9,
+      "norm_label": "calculatescores()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_kinderkarten_plugin_js",
+      "community": 1,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "roundScenarios.js",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/roundScenarios.js",
+      "source_location": "L1",
+      "id": "src_games_kinderkarten_roundscenarios_js",
+      "community": 1,
+      "norm_label": "roundscenarios.js"
+    },
+    {
+      "label": "analyzeKinderkartenScenario()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/roundScenarios.js",
+      "source_location": "L25",
+      "id": "kinderkarten_roundscenarios_analyzekinderkartenscenario",
+      "community": 1,
+      "norm_label": "analyzekinderkartenscenario()"
+    },
+    {
+      "label": "buildTemplateVars()",
+      "file_type": "code",
+      "source_file": "src/games/kinderkarten/roundScenarios.js",
+      "source_location": "L114",
+      "id": "kinderkarten_roundscenarios_buildtemplatevars",
+      "community": 1,
+      "norm_label": "buildtemplatevars()"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_romme_commentary_js",
+      "community": 0,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "getRommeScenario()",
+      "file_type": "code",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L203",
+      "id": "romme_commentary_getrommescenario",
+      "community": 0,
+      "norm_label": "getrommescenario()"
+    },
+    {
+      "label": "buildRommeCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L289",
+      "id": "romme_commentary_buildrommecommentary",
+      "community": 0,
+      "norm_label": "buildrommecommentary()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/romme/logic.js",
+      "source_location": "L1",
+      "id": "src_games_romme_logic_js",
+      "community": 19,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "calculateBalances()",
+      "file_type": "code",
+      "source_file": "src/games/romme/logic.js",
+      "source_location": "L1",
+      "id": "romme_logic_calculatebalances",
+      "community": 19,
+      "norm_label": "calculatebalances()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/romme/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_romme_plugin_js",
+      "community": 1,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_schafkopf_commentary_js",
+      "community": 7,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "getExoticPrefix()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L345",
+      "id": "schafkopf_commentary_getexoticprefix",
+      "community": 7,
+      "norm_label": "getexoticprefix()"
+    },
+    {
+      "label": "buildCommentatorText()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L355",
+      "id": "schafkopf_commentary_buildcommentatortext",
+      "community": 7,
+      "norm_label": "buildcommentatortext()"
+    },
+    {
+      "label": "reactionChance()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L391",
+      "id": "schafkopf_commentary_reactionchance",
+      "community": 7,
+      "norm_label": "reactionchance()"
+    },
+    {
+      "label": "buildFullCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L413",
+      "id": "schafkopf_commentary_buildfullcommentary",
+      "community": 7,
+      "norm_label": "buildfullcommentary()"
+    },
+    {
+      "label": "gameScenarios.js",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/gameScenarios.js",
+      "source_location": "L1",
+      "id": "src_games_schafkopf_gamescenarios_js",
+      "community": 7,
+      "norm_label": "gamescenarios.js"
+    },
+    {
+      "label": "analyzeGameScenario()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/gameScenarios.js",
+      "source_location": "L19",
+      "id": "schafkopf_gamescenarios_analyzegamescenario",
+      "community": 7,
+      "norm_label": "analyzegamescenario()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L1",
+      "id": "src_games_schafkopf_logic_js",
+      "community": 2,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "getEnabledGameTypes()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L13",
+      "id": "schafkopf_logic_getenabledgametypes",
+      "community": 2,
+      "norm_label": "getenabledgametypes()"
+    },
+    {
+      "label": "calcSpielwert()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L21",
+      "id": "schafkopf_logic_calcspielwert",
+      "community": 2,
+      "norm_label": "calcspielwert()"
+    },
+    {
+      "label": "resolveGame()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L31",
+      "id": "schafkopf_logic_resolvegame",
+      "community": 2,
+      "norm_label": "resolvegame()"
+    },
+    {
+      "label": "calcBalances()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L62",
+      "id": "schafkopf_logic_calcbalances",
+      "community": 2,
+      "norm_label": "calcbalances()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_schafkopf_plugin_js",
+      "community": 2,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "makeDefaultForm()",
+      "file_type": "code",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L9",
+      "id": "schafkopf_plugin_makedefaultform",
+      "community": 2,
+      "norm_label": "makedefaultform()"
+    },
+    {
+      "label": "balanceCalculator.js",
+      "file_type": "code",
+      "source_file": "src/games/shared/balanceCalculator.js",
+      "source_location": "L1",
+      "id": "src_games_shared_balancecalculator_js",
+      "community": 2,
+      "norm_label": "balancecalculator.js"
+    },
+    {
+      "label": "calcBalances()",
+      "file_type": "code",
+      "source_file": "src/games/shared/balanceCalculator.js",
+      "source_location": "L9",
+      "id": "shared_balancecalculator_calcbalances",
+      "community": 2,
+      "norm_label": "calcbalances()"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/shared/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_shared_commentary_js",
+      "community": 0,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "pickRandom()",
+      "file_type": "code",
+      "source_file": "src/games/shared/commentary.js",
+      "source_location": "L8",
+      "id": "shared_commentary_pickrandom",
+      "community": 0,
+      "norm_label": "pickrandom()"
+    },
+    {
+      "label": "fill()",
+      "file_type": "code",
+      "source_file": "src/games/shared/commentary.js",
+      "source_location": "L12",
+      "id": "shared_commentary_fill",
+      "community": 0,
+      "norm_label": "fill()"
+    },
+    {
+      "label": "createPlugin.js",
+      "file_type": "code",
+      "source_file": "src/games/shared/createPlugin.js",
+      "source_location": "L1",
+      "id": "src_games_shared_createplugin_js",
+      "community": 1,
+      "norm_label": "createplugin.js"
+    },
+    {
+      "label": "createPlugin()",
+      "file_type": "code",
+      "source_file": "src/games/shared/createPlugin.js",
+      "source_location": "L10",
+      "id": "shared_createplugin_createplugin",
+      "community": 1,
+      "norm_label": "createplugin()"
+    },
+    {
+      "label": "playerPersonalities.js",
+      "file_type": "code",
+      "source_file": "src/games/shared/playerPersonalities.js",
+      "source_location": "L1",
+      "id": "src_games_shared_playerpersonalities_js",
+      "community": 30,
+      "norm_label": "playerpersonalities.js"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_skat_commentary_js",
+      "community": 3,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "getNullGroup()",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L466",
+      "id": "skat_commentary_getnullgroup",
+      "community": 3,
+      "norm_label": "getnullgroup()"
+    },
+    {
+      "label": "buildCommentatorText()",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L473",
+      "id": "skat_commentary_buildcommentatortext",
+      "community": 3,
+      "norm_label": "buildcommentatortext()"
+    },
+    {
+      "label": "buildRamschText()",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L524",
+      "id": "skat_commentary_buildramschtext",
+      "community": 3,
+      "norm_label": "buildramschtext()"
+    },
+    {
+      "label": "reactionChance()",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L542",
+      "id": "skat_commentary_reactionchance",
+      "community": 3,
+      "norm_label": "reactionchance()"
+    },
+    {
+      "label": "buildFullCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L566",
+      "id": "skat_commentary_buildfullcommentary",
+      "community": 3,
+      "norm_label": "buildfullcommentary()"
+    },
+    {
+      "label": "gameScenarios.js",
+      "file_type": "code",
+      "source_file": "src/games/skat/gameScenarios.js",
+      "source_location": "L1",
+      "id": "src_games_skat_gamescenarios_js",
+      "community": 3,
+      "norm_label": "gamescenarios.js"
+    },
+    {
+      "label": "analyzeGameScenario()",
+      "file_type": "code",
+      "source_file": "src/games/skat/gameScenarios.js",
+      "source_location": "L3",
+      "id": "skat_gamescenarios_analyzegamescenario",
+      "community": 3,
+      "norm_label": "analyzegamescenario()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L1",
+      "id": "src_games_skat_logic_js",
+      "community": 4,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "isNullType()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L24",
+      "id": "skat_logic_isnulltype",
+      "community": 3,
+      "norm_label": "isnulltype()"
+    },
+    {
+      "label": "isFarbGrandType()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L28",
+      "id": "skat_logic_isfarbgrandtype",
+      "community": 4,
+      "norm_label": "isfarbgrandtype()"
+    },
+    {
+      "label": "isRamsch()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L32",
+      "id": "skat_logic_isramsch",
+      "community": 4,
+      "norm_label": "isramsch()"
+    },
+    {
+      "label": "calcGamePoints()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L40",
+      "id": "skat_logic_calcgamepoints",
+      "community": 4,
+      "norm_label": "calcgamepoints()"
+    },
+    {
+      "label": "calculatePlayerPoints()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L60",
+      "id": "skat_logic_calculateplayerpoints",
+      "community": 4,
+      "norm_label": "calculateplayerpoints()"
+    },
+    {
+      "label": "calcBalances()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L82",
+      "id": "skat_logic_calcbalances",
+      "community": 4,
+      "norm_label": "calcbalances()"
+    },
+    {
+      "label": "calcSpielwert()",
+      "file_type": "code",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L87",
+      "id": "skat_logic_calcspielwert",
+      "community": 4,
+      "norm_label": "calcspielwert()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_skat_plugin_js",
+      "community": 4,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "makeDefaultForm()",
+      "file_type": "code",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L7",
+      "id": "skat_plugin_makedefaultform",
+      "community": 4,
+      "norm_label": "makedefaultform()"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_watten_commentary_js",
+      "community": 0,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "reactionChance()",
+      "file_type": "code",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L511",
+      "id": "watten_commentary_reactionchance",
+      "community": 0,
+      "norm_label": "reactionchance()"
+    },
+    {
+      "label": "getPlayerReaction()",
+      "file_type": "code",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L522",
+      "id": "watten_commentary_getplayerreaction",
+      "community": 0,
+      "norm_label": "getplayerreaction()"
+    },
+    {
+      "label": "buildWattenCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L551",
+      "id": "watten_commentary_buildwattencommentary",
+      "community": 0,
+      "norm_label": "buildwattencommentary()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/watten/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_watten_plugin_js",
+      "community": 1,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "roundScenarios.js",
+      "file_type": "code",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L1",
+      "id": "src_games_watten_roundscenarios_js",
+      "community": 0,
+      "norm_label": "roundscenarios.js"
+    },
+    {
+      "label": "calcMaxDeficit()",
+      "file_type": "code",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L16",
+      "id": "watten_roundscenarios_calcmaxdeficit",
+      "community": 0,
+      "norm_label": "calcmaxdeficit()"
+    },
+    {
+      "label": "buildTemplateVars()",
+      "file_type": "code",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L31",
+      "id": "watten_roundscenarios_buildtemplatevars",
+      "community": 0,
+      "norm_label": "buildtemplatevars()"
+    },
+    {
+      "label": "analyzeWattenScenario()",
+      "file_type": "code",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L77",
+      "id": "watten_roundscenarios_analyzewattenscenario",
+      "community": 0,
+      "norm_label": "analyzewattenscenario()"
+    },
+    {
+      "label": "commentary.js",
+      "file_type": "code",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L1",
+      "id": "src_games_wizard_commentary_js",
+      "community": 8,
+      "norm_label": "commentary.js"
+    },
+    {
+      "label": "analyzeRound()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L310",
+      "id": "wizard_commentary_analyzeround",
+      "community": 8,
+      "norm_label": "analyzeround()"
+    },
+    {
+      "label": "getTotalRounds()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L339",
+      "id": "wizard_commentary_gettotalrounds",
+      "community": 8,
+      "norm_label": "gettotalrounds()"
+    },
+    {
+      "label": "reactionChance()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L344",
+      "id": "wizard_commentary_reactionchance",
+      "community": 8,
+      "norm_label": "reactionchance()"
+    },
+    {
+      "label": "buildWizardCommentary()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L365",
+      "id": "wizard_commentary_buildwizardcommentary",
+      "community": 8,
+      "norm_label": "buildwizardcommentary()"
+    },
+    {
+      "label": "logic.js",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L1",
+      "id": "src_games_wizard_logic_js",
+      "community": 6,
+      "norm_label": "logic.js"
+    },
+    {
+      "label": "getRoundCount()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L2",
+      "id": "wizard_logic_getroundcount",
+      "community": 6,
+      "norm_label": "getroundcount()"
+    },
+    {
+      "label": "calculatePlayerScore()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L13",
+      "id": "wizard_logic_calculateplayerscore",
+      "community": 6,
+      "norm_label": "calculateplayerscore()"
+    },
+    {
+      "label": "resolveRound()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L26",
+      "id": "wizard_logic_resolveround",
+      "community": 6,
+      "norm_label": "resolveround()"
+    },
+    {
+      "label": "calcBalances()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L42",
+      "id": "wizard_logic_calcbalances",
+      "community": 6,
+      "norm_label": "calcbalances()"
+    },
+    {
+      "label": "getPredictionRange()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L47",
+      "id": "wizard_logic_getpredictionrange",
+      "community": 6,
+      "norm_label": "getpredictionrange()"
+    },
+    {
+      "label": "makeDefaultRound()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L55",
+      "id": "wizard_logic_makedefaultround",
+      "community": 6,
+      "norm_label": "makedefaultround()"
+    },
+    {
+      "label": "plugin.js",
+      "file_type": "code",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L1",
+      "id": "src_games_wizard_plugin_js",
+      "community": 6,
+      "norm_label": "plugin.js"
+    },
+    {
+      "label": "roundScenarios.js",
+      "file_type": "code",
+      "source_file": "src/games/wizard/roundScenarios.js",
+      "source_location": "L1",
+      "id": "src_games_wizard_roundscenarios_js",
+      "community": 8,
+      "norm_label": "roundscenarios.js"
+    },
+    {
+      "label": "analyzeRoundScenario()",
+      "file_type": "code",
+      "source_file": "src/games/wizard/roundScenarios.js",
+      "source_location": "L29",
+      "id": "wizard_roundscenarios_analyzeroundscenario",
+      "community": 8,
+      "norm_label": "analyzeroundscenario()"
+    },
+    {
+      "label": "useCommentatorSettings.js",
+      "file_type": "code",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L1",
+      "id": "src_hooks_usecommentatorsettings_js",
+      "community": 10,
+      "norm_label": "usecommentatorsettings.js"
+    },
+    {
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L9",
+      "id": "hooks_usecommentatorsettings_load",
+      "community": 10,
+      "norm_label": "load()"
+    },
+    {
+      "label": "save()",
+      "file_type": "code",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L18",
+      "id": "hooks_usecommentatorsettings_save",
+      "community": 10,
+      "norm_label": "save()"
+    },
+    {
+      "label": "useCommentatorSettings()",
+      "file_type": "code",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L26",
+      "id": "hooks_usecommentatorsettings_usecommentatorsettings",
+      "community": 10,
+      "norm_label": "usecommentatorsettings()"
+    },
+    {
+      "label": "global-setup.js",
+      "file_type": "code",
+      "source_file": "tests/global-setup.js",
+      "source_location": "L1",
+      "id": "tests_global_setup_js",
+      "community": 20,
+      "norm_label": "global-setup.js"
+    },
+    {
+      "label": "globalSetup()",
+      "file_type": "code",
+      "source_file": "tests/global-setup.js",
+      "source_location": "L4",
+      "id": "tests_global_setup_globalsetup",
+      "community": 20,
+      "norm_label": "globalsetup()"
+    },
+    {
+      "label": "doppelkopf.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/doppelkopf.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_doppelkopf_spec_js",
+      "community": 14,
+      "norm_label": "doppelkopf.spec.js"
+    },
+    {
+      "label": "closeOverlays()",
+      "file_type": "code",
+      "source_file": "tests/specs/doppelkopf.spec.js",
+      "source_location": "L6",
+      "id": "specs_doppelkopf_spec_closeoverlays",
+      "community": 14,
+      "norm_label": "closeoverlays()"
+    },
+    {
+      "label": "createSessionViaApi()",
+      "file_type": "code",
+      "source_file": "tests/specs/doppelkopf.spec.js",
+      "source_location": "L28",
+      "id": "specs_doppelkopf_spec_createsessionviaapi",
+      "community": 14,
+      "norm_label": "createsessionviaapi()"
+    },
+    {
+      "label": "players.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/players.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_players_spec_js",
+      "community": 31,
+      "norm_label": "players.spec.js"
+    },
+    {
+      "label": "romme.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/romme.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_romme_spec_js",
+      "community": 32,
+      "norm_label": "romme.spec.js"
+    },
+    {
+      "label": "schafkopf.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/schafkopf.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_schafkopf_spec_js",
+      "community": 33,
+      "norm_label": "schafkopf.spec.js"
+    },
+    {
+      "label": "sessions.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/sessions.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_sessions_spec_js",
+      "community": 34,
+      "norm_label": "sessions.spec.js"
+    },
+    {
+      "label": "skat.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/skat.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_skat_spec_js",
+      "community": 21,
+      "norm_label": "skat.spec.js"
+    },
+    {
+      "label": "closeOverlay()",
+      "file_type": "code",
+      "source_file": "tests/specs/skat.spec.js",
+      "source_location": "L6",
+      "id": "specs_skat_spec_closeoverlay",
+      "community": 21,
+      "norm_label": "closeoverlay()"
+    },
+    {
+      "label": "watten.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/watten.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_watten_spec_js",
+      "community": 15,
+      "norm_label": "watten.spec.js"
+    },
+    {
+      "label": "closeOverlays()",
+      "file_type": "code",
+      "source_file": "tests/specs/watten.spec.js",
+      "source_location": "L4",
+      "id": "specs_watten_spec_closeoverlays",
+      "community": 15,
+      "norm_label": "closeoverlays()"
+    },
+    {
+      "label": "addRound()",
+      "file_type": "code",
+      "source_file": "tests/specs/watten.spec.js",
+      "source_location": "L107",
+      "id": "specs_watten_spec_addround",
+      "community": 15,
+      "norm_label": "addround()"
+    },
+    {
+      "label": "wizard.spec.js",
+      "file_type": "code",
+      "source_file": "tests/specs/wizard.spec.js",
+      "source_location": "L1",
+      "id": "tests_specs_wizard_spec_js",
+      "community": 35,
+      "norm_label": "wizard.spec.js"
+    },
+    {
+      "label": "vite.config.js",
+      "file_type": "code",
+      "source_file": "vite.config.js",
+      "source_location": "L1",
+      "id": "vite_config_js",
+      "community": 36,
+      "norm_label": "vite.config.js"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/games/skat.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "server_routes_games_skat_js",
+      "target": "games_skat_calculateskatpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/games/skat.js",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "server_routes_games_skat_js",
+      "target": "games_skat_getnextseq",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/games.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "server_routes_games_js",
+      "target": "routes_games_parsegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/kinderkarten/rounds.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "server_routes_kinderkarten_rounds_js",
+      "target": "kinderkarten_rounds_parseround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/romme/rounds.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "server_routes_romme_rounds_js",
+      "target": "romme_rounds_parseround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/watten/games.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "server_routes_watten_games_js",
+      "target": "watten_games_parseround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/watten/games.js",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "server_routes_watten_games_js",
+      "target": "watten_games_parsegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/wizard/rounds.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "server_routes_wizard_rounds_js",
+      "target": "wizard_rounds_calculatewizardscores",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "server/routes/wizard/rounds.js",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "server_routes_wizard_rounds_js",
+      "target": "wizard_rounds_parseround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "doppelkopf_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L152",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "doppelkopf_commentary_buildkontranote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L170",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "doppelkopf_commentary_buildsondernote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_commentary_js",
+      "target": "doppelkopf_commentary_buildfullcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L199",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildfullcommentary",
+      "target": "doppelkopf_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildcommentatortext",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildcommentatortext",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L200",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildfullcommentary",
+      "target": "doppelkopf_commentary_buildkontranote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L201",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildfullcommentary",
+      "target": "doppelkopf_commentary_buildsondernote",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "doppelkopf_commentary_buildfullcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/doppelkopf/commentary.js",
+      "source_location": "L228",
+      "weight": 1.0,
+      "source": "doppelkopf_commentary_buildfullcommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "doppelkopf_logic_ansagepts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "doppelkopf_logic_countsonder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "doppelkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "doppelkopf_logic_resolvegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "shared_balancecalculator_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_logic_js",
+      "target": "doppelkopf_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "doppelkopf_logic_calcspielwert",
+      "target": "doppelkopf_logic_ansagepts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "doppelkopf_logic_resolvegame",
+      "target": "doppelkopf_logic_countsonder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/logic.js",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "doppelkopf_logic_resolvegame",
+      "target": "doppelkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "doppelkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "doppelkopf_logic_resolvegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "doppelkopf_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/doppelkopf/plugin.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_games_doppelkopf_plugin_js",
+      "target": "doppelkopf_plugin_makedefaultform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_commentary_js",
+      "target": "kinderkarten_roundscenarios_analyzekinderkartenscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_commentary_js",
+      "target": "kinderkarten_roundscenarios_buildtemplatevars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L278",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_commentary_js",
+      "target": "kinderkarten_commentary_buildkinderkartencommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/plugin.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_plugin_js",
+      "target": "kinderkarten_commentary_buildkinderkartencommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L311",
+      "weight": 1.0,
+      "source": "kinderkarten_commentary_buildkinderkartencommentary",
+      "target": "kinderkarten_roundscenarios_analyzekinderkartenscenario"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "kinderkarten_commentary_buildkinderkartencommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/kinderkarten/commentary.js",
+      "source_location": "L325",
+      "weight": 1.0,
+      "source": "kinderkarten_commentary_buildkinderkartencommentary",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_logic_js",
+      "target": "kinderkarten_logic_calculatebalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_logic_js",
+      "target": "kinderkarten_logic_determinewinners",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/logic.js",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_logic_js",
+      "target": "kinderkarten_logic_calculatescores",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/plugin.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/roundScenarios.js",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_roundscenarios_js",
+      "target": "kinderkarten_roundscenarios_analyzekinderkartenscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/kinderkarten/roundScenarios.js",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "src_games_kinderkarten_roundscenarios_js",
+      "target": "kinderkarten_roundscenarios_buildtemplatevars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_romme_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_romme_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L203",
+      "weight": 1.0,
+      "source": "src_games_romme_commentary_js",
+      "target": "romme_commentary_getrommescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L289",
+      "weight": 1.0,
+      "source": "src_games_romme_commentary_js",
+      "target": "romme_commentary_buildrommecommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L312",
+      "weight": 1.0,
+      "source": "romme_commentary_buildrommecommentary",
+      "target": "romme_commentary_getrommescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/plugin.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_games_romme_plugin_js",
+      "target": "romme_commentary_buildrommecommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "romme_commentary_buildrommecommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/romme/commentary.js",
+      "source_location": "L325",
+      "weight": 1.0,
+      "source": "romme_commentary_buildrommecommentary",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/logic.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_romme_logic_js",
+      "target": "romme_logic_calculatebalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/romme/plugin.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_romme_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "schafkopf_gamescenarios_analyzegamescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L345",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "schafkopf_commentary_getexoticprefix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L355",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "schafkopf_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L391",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "schafkopf_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L413",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_commentary_js",
+      "target": "schafkopf_commentary_buildfullcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L420",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildfullcommentary",
+      "target": "schafkopf_commentary_getexoticprefix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L439",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildfullcommentary",
+      "target": "schafkopf_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L378",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildcommentatortext",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L378",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildcommentatortext",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L453",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildfullcommentary",
+      "target": "schafkopf_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "schafkopf_commentary_buildfullcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/schafkopf/commentary.js",
+      "source_location": "L468",
+      "weight": 1.0,
+      "source": "schafkopf_commentary_buildfullcommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/gameScenarios.js",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_gamescenarios_js",
+      "target": "schafkopf_gamescenarios_analyzegamescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_logic_js",
+      "target": "schafkopf_logic_getenabledgametypes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_logic_js",
+      "target": "schafkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_logic_js",
+      "target": "schafkopf_logic_resolvegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_logic_js",
+      "target": "shared_balancecalculator_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_logic_js",
+      "target": "schafkopf_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/logic.js",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "schafkopf_logic_resolvegame",
+      "target": "schafkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "schafkopf_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "schafkopf_logic_resolvegame",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "schafkopf_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/schafkopf/plugin.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_games_schafkopf_plugin_js",
+      "target": "schafkopf_plugin_makedefaultform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/shared/balanceCalculator.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_games_shared_balancecalculator_js",
+      "target": "shared_balancecalculator_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "shared_balancecalculator_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "shared_balancecalculator_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/shared/commentary.js",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_games_shared_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/shared/commentary.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_games_shared_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "shared_commentary_pickrandom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L494",
+      "weight": 1.0,
+      "source": "skat_commentary_buildcommentatortext",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L539",
+      "weight": 1.0,
+      "source": "skat_commentary_buildramschtext",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L645",
+      "weight": 1.0,
+      "source": "skat_commentary_buildfullcommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L536",
+      "weight": 1.0,
+      "source": "watten_commentary_getplayerreaction",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L568",
+      "weight": 1.0,
+      "source": "watten_commentary_buildwattencommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L455",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "shared_commentary_pickrandom"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "shared_commentary_fill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L494",
+      "weight": 1.0,
+      "source": "skat_commentary_buildcommentatortext",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L539",
+      "weight": 1.0,
+      "source": "skat_commentary_buildramschtext",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L568",
+      "weight": 1.0,
+      "source": "watten_commentary_buildwattencommentary",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L455",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "shared_commentary_fill"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/shared/createPlugin.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_games_shared_createplugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_games_skat_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/plugin.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_games_watten_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_games_wizard_plugin_js",
+      "target": "shared_createplugin_createplugin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_logic_isnulltype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_gamescenarios_analyzegamescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L466",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_commentary_getnullgroup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L473",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L524",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_commentary_buildramschtext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L542",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L566",
+      "weight": 1.0,
+      "source": "src_games_skat_commentary_js",
+      "target": "skat_commentary_buildfullcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L490",
+      "weight": 1.0,
+      "source": "skat_commentary_buildcommentatortext",
+      "target": "skat_commentary_getnullgroup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L603",
+      "weight": 1.0,
+      "source": "skat_commentary_buildfullcommentary",
+      "target": "skat_commentary_buildcommentatortext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L489",
+      "weight": 1.0,
+      "source": "skat_commentary_buildcommentatortext",
+      "target": "skat_logic_isnulltype"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L602",
+      "weight": 1.0,
+      "source": "skat_commentary_buildfullcommentary",
+      "target": "skat_commentary_buildramschtext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L612",
+      "weight": 1.0,
+      "source": "skat_commentary_buildfullcommentary",
+      "target": "skat_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/commentary.js",
+      "source_location": "L545",
+      "weight": 1.0,
+      "source": "skat_commentary_reactionchance",
+      "target": "skat_logic_isnulltype"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/gameScenarios.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_gamescenarios_js",
+      "target": "skat_logic_isnulltype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/gameScenarios.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_skat_gamescenarios_js",
+      "target": "skat_gamescenarios_analyzegamescenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/skat/gameScenarios.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "skat_gamescenarios_analyzegamescenario",
+      "target": "skat_logic_isnulltype"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_isnulltype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_isfarbgrandtype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_isramsch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_calcgamepoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_calculateplayerpoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "src_games_skat_logic_js",
+      "target": "skat_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "skat_logic_calcgamepoints",
+      "target": "skat_logic_isnulltype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "skat_logic_calcgamepoints",
+      "target": "skat_logic_isramsch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "skat_logic_calculateplayerpoints",
+      "target": "skat_logic_isramsch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/logic.js",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "skat_logic_calcspielwert",
+      "target": "skat_logic_calcgamepoints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_plugin_js",
+      "target": "skat_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_skat_plugin_js",
+      "target": "skat_logic_calcspielwert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/skat/plugin.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_games_skat_plugin_js",
+      "target": "skat_plugin_makedefaultform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "watten_roundscenarios_analyzewattenscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "watten_roundscenarios_buildtemplatevars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L511",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "watten_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L522",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "watten_commentary_getplayerreaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L551",
+      "weight": 1.0,
+      "source": "src_games_watten_commentary_js",
+      "target": "watten_commentary_buildwattencommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L572",
+      "weight": 1.0,
+      "source": "watten_commentary_buildwattencommentary",
+      "target": "watten_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L583",
+      "weight": 1.0,
+      "source": "watten_commentary_buildwattencommentary",
+      "target": "watten_commentary_getplayerreaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/watten/commentary.js",
+      "source_location": "L554",
+      "weight": 1.0,
+      "source": "watten_commentary_buildwattencommentary",
+      "target": "watten_roundscenarios_analyzewattenscenario"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_games_watten_roundscenarios_js",
+      "target": "watten_roundscenarios_calcmaxdeficit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_games_watten_roundscenarios_js",
+      "target": "watten_roundscenarios_buildtemplatevars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "src_games_watten_roundscenarios_js",
+      "target": "watten_roundscenarios_analyzewattenscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "watten_roundscenarios_buildtemplatevars",
+      "target": "watten_roundscenarios_calcmaxdeficit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/watten/roundScenarios.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "watten_roundscenarios_analyzewattenscenario",
+      "target": "watten_roundscenarios_calcmaxdeficit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "wizard_roundscenarios_analyzeroundscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L310",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "wizard_commentary_analyzeround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L339",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "wizard_commentary_gettotalrounds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L344",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "wizard_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L365",
+      "weight": 1.0,
+      "source": "src_games_wizard_commentary_js",
+      "target": "wizard_commentary_buildwizardcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L345",
+      "weight": 1.0,
+      "source": "wizard_commentary_reactionchance",
+      "target": "wizard_commentary_analyzeround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L386",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "wizard_commentary_analyzeround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L382",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "wizard_commentary_gettotalrounds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L460",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "wizard_commentary_reactionchance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_games_wizard_plugin_js",
+      "target": "wizard_commentary_buildwizardcommentary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/games/wizard/commentary.js",
+      "source_location": "L388",
+      "weight": 1.0,
+      "source": "wizard_commentary_buildwizardcommentary",
+      "target": "wizard_roundscenarios_analyzeroundscenario"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_getroundcount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_calculateplayerscore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_resolveround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_getpredictionrange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/logic.js",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "src_games_wizard_logic_js",
+      "target": "wizard_logic_makedefaultround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_wizard_plugin_js",
+      "target": "wizard_logic_getroundcount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_wizard_plugin_js",
+      "target": "wizard_logic_calcbalances",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/plugin.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_games_wizard_plugin_js",
+      "target": "wizard_logic_makedefaultround",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/games/wizard/roundScenarios.js",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "src_games_wizard_roundscenarios_js",
+      "target": "wizard_roundscenarios_analyzeroundscenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_hooks_usecommentatorsettings_js",
+      "target": "hooks_usecommentatorsettings_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "src_hooks_usecommentatorsettings_js",
+      "target": "hooks_usecommentatorsettings_save",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/hooks/useCommentatorSettings.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "src_hooks_usecommentatorsettings_js",
+      "target": "hooks_usecommentatorsettings_usecommentatorsettings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/global-setup.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_global_setup_js",
+      "target": "tests_global_setup_globalsetup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/specs/doppelkopf.spec.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "tests_specs_doppelkopf_spec_js",
+      "target": "specs_doppelkopf_spec_closeoverlays",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/specs/doppelkopf.spec.js",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "tests_specs_doppelkopf_spec_js",
+      "target": "specs_doppelkopf_spec_createsessionviaapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/specs/skat.spec.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "tests_specs_skat_spec_js",
+      "target": "specs_skat_spec_closeoverlay",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/specs/watten.spec.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_specs_watten_spec_js",
+      "target": "specs_watten_spec_closeoverlays",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/specs/watten.spec.js",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "tests_specs_watten_spec_js",
+      "target": "specs_watten_spec_addround",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "801e565b21f2060952668bde8b273a98d1717592"
+}

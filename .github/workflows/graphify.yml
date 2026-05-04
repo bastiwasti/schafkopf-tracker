@@ -1,0 +1,122 @@
+name: Graphify
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - 'graphify-out/**'
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  graphify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install graphify
+        run: pip install graphifyy
+
+      - name: Run graphify pipeline
+        run: |
+          python -c "
+          import json, os
+          from pathlib import Path
+          from graphify.detect import detect
+          from graphify.extract import collect_files, extract
+          from graphify.build import build_from_json
+          from graphify.cluster import cluster, score_all
+          from graphify.analyze import god_nodes, surprising_connections, suggest_questions
+          from graphify.report import generate
+          from graphify.export import to_json, to_html
+
+          root = Path('.').resolve()
+          project_info = detect(root)
+          code_files = collect_files(root)
+          ast_data = extract(code_files)
+
+          G = build_from_json(ast_data)
+          partition = cluster(G)
+          scores = score_all(G, partition)
+
+          gods = god_nodes(G)
+          surprises = surprising_connections(G, partition)
+
+          community_labels = {}
+          for comm_id, members in sorted(partition.items()):
+              member_str = ' '.join(members)
+              if 'schafkopf' in member_str:
+                  community_labels[comm_id] = 'Schafkopf Game Logic & Scoring'
+              elif 'doppelkopf' in member_str and 'commentary' in member_str:
+                  community_labels[comm_id] = 'Doppelkopf Commentary System'
+              elif 'romme' in member_str and 'commentary' in member_str:
+                  community_labels[comm_id] = 'Romme Commentary'
+              elif 'romme' in member_str:
+                  community_labels[comm_id] = 'Romme Plugin & History'
+              elif 'watten' in member_str and ('commentary' in member_str or 'scenario' in member_str):
+                  community_labels[comm_id] = 'Watten Commentary & Scenarios'
+              elif 'watten' in member_str:
+                  community_labels[comm_id] = 'Watten Session UI'
+              elif 'skat' in member_str:
+                  community_labels[comm_id] = 'Skat Game Logic & UI'
+              elif 'kinderkarten' in member_str:
+                  community_labels[comm_id] = 'Kinderkarten Game Module'
+              elif 'wizard' in member_str:
+                  community_labels[comm_id] = 'Wizard Game Module'
+              elif 'shared' in member_str and 'commentary' in member_str:
+                  community_labels[comm_id] = 'Shared Commentary Utils'
+              elif 'shared' in member_str and 'createplugin' in member_str:
+                  community_labels[comm_id] = 'Plugin System'
+              elif 'shared' in member_str and 'balancecalculator' in member_str:
+                  community_labels[comm_id] = 'Balance Calculator'
+              elif 'server' in member_str and 'db' in member_str:
+                  community_labels[comm_id] = 'Database Layer'
+              elif 'server' in member_str and ('route' in member_str or 'router' in member_str):
+                  community_labels[comm_id] = 'API Routes'
+              else:
+                  community_labels[comm_id] = f'Module Group {comm_id}'
+
+          questions = suggest_questions(G, partition, community_labels)
+          token_cost = {'input_tokens': ast_data.get('input_tokens', 0), 'output_tokens': ast_data.get('output_tokens', 0)}
+
+          os.makedirs('graphify-out', exist_ok=True)
+
+          report = generate(
+              G, partition, scores, community_labels,
+              god_node_list=gods,
+              surprise_list=surprises,
+              detection_result=project_info,
+              token_cost=token_cost,
+              root=str(root),
+              suggested_questions=questions,
+              min_community_size=2,
+          )
+          with open('graphify-out/GRAPH_REPORT.md', 'w') as f:
+              f.write(report)
+
+          to_json(G, partition, 'graphify-out/graph.json', force=True)
+
+          member_counts = {cid: len(members) for cid, members in partition.items()}
+          to_html(G, partition, 'graphify-out/graph.html', community_labels=community_labels, member_counts=member_counts)
+
+          print(f'Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges, {len(partition)} communities')
+          "
+
+      - name: Commit graphify outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add graphify-out/GRAPH_REPORT.md graphify-out/graph.json graphify-out/graph.html
+          git diff --cached --quiet || git commit -m "chore: update graphify knowledge graph [skip ci]"
+          git push

@@ -1,7 +1,7 @@
 # Graph Report - /home/runner/work/schafkopf-tracker/schafkopf-tracker  (2026-05-04)
 
 ## Corpus Check
-- Large corpus: 397 files · ~13,753,271 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
+- Large corpus: 397 files · ~13,753,380 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
 
 ## Summary
 - 136 nodes · 185 edges · 37 communities

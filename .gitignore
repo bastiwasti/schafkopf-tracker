@@ -38,3 +38,8 @@ test-*.png
 # Graphify
 graphify-out/manifest.json
 graphify-out/cost.json
+
+# Environment
+.env
+.env.*
+!.env.example
